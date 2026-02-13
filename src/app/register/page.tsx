@@ -1,52 +1,73 @@
 'use client'
 
 import { useState } from 'react'
-import { signIn } from 'next-auth/react'
 import { TextField, Button, Alert, CircularProgress, IconButton, InputAdornment } from "@mui/material"
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import { useRouter } from "next/navigation"
 
-export default function Login() {
+export default function Register() {
     const router = useRouter()
+    const [name, setName] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
+    const [success, setSuccess] = useState(false)
 
     const handleHome = () => {
         router.push('/')
     }
 
-    const handleSignUp = () => {
-        router.push('/register')
+    const handleLogin = () => {
+        router.push('/login')
     }
 
-    const handleLogin = async (e: React.FormEvent) => {
+    const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault()
-        
-        if (!email || !password) {
+        setError('')
+        setSuccess(false)
+
+        if (!name || !email || !password || !confirmPassword) {
             setError('Please fill all fields')
             return
         }
 
+        if (password !== confirmPassword) {
+            setError('Passwords do not match')
+            return
+        }
+
+        if (password.length < 6) {
+            setError('Password must be at least 6 characters')
+            return
+        }
+
         setLoading(true)
-        setError('')
 
         try {
-            const result = await signIn('credentials', {
-                email,
-                password,
-                redirect: false,
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password })
             })
 
-            if (result?.error) {
-                setError('Invalid email or password')
-            } else {
-                router.push('/dashboard')
+            const data = await response.json()
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Registration failed')
             }
-        } catch (err) {
-            setError('Something went wrong')
+
+            setSuccess(true)
+            
+            setTimeout(() => {
+                router.push('/login')
+            }, 2000)
+
+        } catch (err: any) {
+            setError(err.message)
         } finally {
             setLoading(false)
         }
@@ -55,7 +76,7 @@ export default function Login() {
     return (
         <div className="flex h-screen">
             <div className="flex-1 bg-white flex flex-col justify-center items-center h-screen">
-                <form onSubmit={handleLogin} className="flex flex-col gap-4 w-3/4 max-w-md">
+                <form onSubmit={handleRegister} className="flex flex-col gap-4 w-3/4 max-w-md">
                     <p 
                         className="text-emerald-500 font-bold text-4xl cursor-pointer" 
                         onClick={handleHome}
@@ -63,9 +84,19 @@ export default function Login() {
                         eose888
                     </p>
 
-                    <h2 className="text-2xl font-semibold text-gray-700">Welcome Back</h2>
+                    <h2 className="text-2xl font-semibold text-gray-700">Create Account</h2>
 
                     {error && <Alert severity="error">{error}</Alert>}
+                    {success && <Alert severity="success">Account created! Redirecting to login...</Alert>}
+
+                    <TextField 
+                        label="Name" 
+                        variant="outlined" 
+                        fullWidth 
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        disabled={loading}
+                    />
 
                     <TextField 
                         label="Email" 
@@ -99,6 +130,28 @@ export default function Login() {
                         }}
                     />
 
+                    <TextField 
+                        label="Confirm Password" 
+                        variant="outlined" 
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        fullWidth 
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        disabled={loading}
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        edge="end"
+                                    >
+                                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                                    </IconButton>
+                                </InputAdornment>
+                            )
+                        }}
+                    />
+
                     <div className="flex gap-4 w-full justify-center">
                         <Button 
                             type="submit"
@@ -107,19 +160,19 @@ export default function Login() {
                             className="flex-1"
                             disabled={loading}
                         >
-                            {loading ? <CircularProgress size={24} color="inherit" /> : 'Login'}
+                            {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign Up'}
                         </Button>
                         
 
                     </div>
 
                     <p className="text-center text-sm text-gray-500">
-                        Don't have an account?{' '}
+                        Already have an account?{' '}
                         <span 
                             className="text-emerald-500 cursor-pointer hover:underline"
-                            onClick={handleSignUp}
+                            onClick={handleLogin}
                         >
-                            Sign up here
+                            Login here
                         </span>
                     </p>
                 </form>
