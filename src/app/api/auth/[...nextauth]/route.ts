@@ -81,7 +81,7 @@ const handler = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string
-        session.user.role = token.role  // เพิ่มบรรทัดนี้
+        session.user.role = token.role  
       }
       return session
     }
