@@ -17,7 +17,7 @@ datasource db {
 
 model Account {
   id                 String  @id @default(cuid())
-  userId             String  // เป็น String เพื่อเชื่อมกับ User
+  userId             String  
   type               String
   provider           String
   providerAccountId  String
@@ -37,7 +37,7 @@ model Account {
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
-  userId       String   // เป็น String เพื่อเชื่อมกับ User
+  userId       String   
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -48,7 +48,7 @@ enum Role {
 
 
 model User {
-  id            String    @id @default(cuid()) // สร้าง ID เป็น String (CUID) อัตโนมัติ
+  id            String    @id @default(cuid()) 
   name          String?
   email         String?   @unique
   password      String?
