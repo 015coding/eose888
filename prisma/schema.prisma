@@ -41,6 +41,11 @@ model Session {
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+enum Role {
+  USER
+  ADMIN
+}
+
 
 model User {
   id            String    @id @default(cuid()) // สร้าง ID เป็น String (CUID) อัตโนมัติ
@@ -49,6 +54,7 @@ model User {
   password      String?
   emailVerified DateTime?
   image         String?
+  role          Role      @default(USER)
   accounts      Account[]
   sessions      Session[]
 }
