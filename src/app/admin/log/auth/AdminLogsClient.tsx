@@ -70,7 +70,7 @@ export default function AdminLogsClient() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 p-8" suppressHydrationWarning>
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Login Logs Dashboard</h1>
 
@@ -229,16 +229,6 @@ export default function AdminLogsClient() {
             No logs found
           </div>
         )}
-
-        {/* Back Button */}
-        <div className="mt-6">
-          <a
-            href="/dashboard"
-            className="inline-block bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600"
-          >
-            Back to Dashboard
-          </a>
-        </div>
       </div>
     </div>
   )

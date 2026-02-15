@@ -1,3 +1,4 @@
+// components/SidebarAdmin.tsx
 'use client'
 
 import { useState } from 'react'
@@ -12,13 +13,13 @@ import {
   Toolbar, 
   List, 
   Typography, 
-  Divider, 
   IconButton, 
   ListItem, 
   ListItemButton, 
   ListItemIcon, 
   ListItemText,
   Avatar,
+  Collapse,
 } from '@mui/material'
 
 // Icons
@@ -28,7 +29,12 @@ import PeopleIcon from '@mui/icons-material/People'
 import SettingsIcon from '@mui/icons-material/Settings'
 import LogoutIcon from '@mui/icons-material/Logout'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
-import { Session } from 'inspector/promises'
+import HistoryIcon from '@mui/icons-material/History'
+import ExpandLess from '@mui/icons-material/ExpandLess'
+import ExpandMore from '@mui/icons-material/ExpandMore'
+import LoginIcon from '@mui/icons-material/Login'
+import PersonAddIcon from '@mui/icons-material/PersonAdd'
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz'
 
 const drawerWidth = 260
 
@@ -39,6 +45,7 @@ interface SidebarProps {
 
 export default function Sidebar({ children, session }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [logsOpen, setLogsOpen] = useState(false) 
   const pathname = usePathname()
   const router = useRouter()
 
@@ -46,11 +53,21 @@ export default function Sidebar({ children, session }: SidebarProps) {
     setMobileOpen(!mobileOpen)
   }
 
-  // รายการเมนู
+  const handleLogsClick = () => {
+    setLogsOpen(!logsOpen)
+  }
+
+  // รายการเมนูหลัก
   const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'Users', icon: <PeopleIcon />, path: '/users' },
-    { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
+    { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin/dashboard' },
+    { text: 'Users', icon: <PeopleIcon />, path: '/admin/users' },
+    { text: 'Settings', icon: <SettingsIcon />, path: '/admin/settings' },
+  ]
+
+  // ✅ Logs submenu
+  const logMenuItems = [
+    { text: 'Login & Register', icon: <LoginIcon />, path: '/admin/log/auth' },
+    { text: 'Transactions', icon: <SwapHorizIcon />, path: '/admin/log/transactions' },
   ]
 
   const drawerContent = (
@@ -60,7 +77,7 @@ export default function Sidebar({ children, session }: SidebarProps) {
         <Typography 
           variant="h5" 
           className="font-bold text-emerald-500 cursor-pointer"
-          onClick={() => router.push('/dashboard')}
+          onClick={() => router.push('/admin')}
         >
           eose888
         </Typography>
@@ -69,16 +86,21 @@ export default function Sidebar({ children, session }: SidebarProps) {
       {/* User Profile Summary */}
       <div className="p-4 flex items-center gap-3 bg-gray-50/50 mx-2 mt-2 rounded-lg">
         <Avatar sx={{ bgcolor: '#49e6b7' }}>
-            <AccountCircleIcon />
+          <AccountCircleIcon />
         </Avatar>
         <div className="overflow-hidden">
-            <p className="text-sm font-semibold text-gray-700 truncate">Admin User</p>
-            <p className="text-xs text-gray-500 truncate">admin@eose888.com</p>
+          <p className="text-sm font-semibold text-gray-700 truncate">
+            {session.user?.name || 'Admin User'}
+          </p>
+          <p className="text-xs text-gray-500 truncate">
+            {session.user?.email || 'admin@eose888.com'}
+          </p>
         </div>
       </div>
 
       {/* Menu List */}
       <List className="flex-1 px-2 mt-2 space-y-1">
+        {/* Main Menu Items */}
         {menuItems.map((item) => {
           const isActive = pathname === item.path
           return (
@@ -89,8 +111,8 @@ export default function Sidebar({ children, session }: SidebarProps) {
                 sx={{
                   borderRadius: '8px',
                   '&.Mui-selected': {
-                    backgroundColor: '#ecfdf5', // สีเขียวอ่อนๆ (Emerald-50)
-                    color: '#059669', // สีเขียวเข้ม (Emerald-600)
+                    backgroundColor: '#ecfdf5',
+                    color: '#059669',
                     '&:hover': {
                       backgroundColor: '#d1fae5',
                     },
@@ -122,6 +144,78 @@ export default function Sidebar({ children, session }: SidebarProps) {
             </ListItem>
           )
         })}
+
+        {/* ✅ Logs Menu with Submenu */}
+        <ListItem disablePadding>
+          <ListItemButton
+            onClick={handleLogsClick}
+            sx={{
+              borderRadius: '8px',
+              '&:hover': {
+                backgroundColor: '#f3f4f6',
+              },
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 40, color: '#9ca3af' }}>
+              <HistoryIcon />
+            </ListItemIcon>
+            <ListItemText 
+              primary="Logs" 
+              primaryTypographyProps={{ fontSize: '0.95rem' }} 
+            />
+            {logsOpen ? <ExpandLess /> : <ExpandMore />}
+          </ListItemButton>
+        </ListItem>
+
+        {/* ✅ Logs Submenu Items */}
+        <Collapse in={logsOpen} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            {logMenuItems.map((item) => {
+              const isActive = pathname === item.path
+              return (
+                <ListItem key={item.text} disablePadding>
+                  <ListItemButton
+                    onClick={() => router.push(item.path)}
+                    selected={isActive}
+                    sx={{
+                      pl: 4,
+                      borderRadius: '8px',
+                      '&.Mui-selected': {
+                        backgroundColor: '#ecfdf5',
+                        color: '#059669',
+                        '&:hover': {
+                          backgroundColor: '#d1fae5',
+                        },
+                        '& .MuiListItemIcon-root': {
+                          color: '#059669',
+                        },
+                      },
+                      '&:hover': {
+                        backgroundColor: '#f3f4f6',
+                      },
+                    }}
+                  >
+                    <ListItemIcon 
+                      sx={{ 
+                        minWidth: 36,
+                        color: isActive ? '#059669' : '#9ca3af' 
+                      }}
+                    >
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={item.text} 
+                      primaryTypographyProps={{ 
+                        fontSize: '0.9rem',
+                        fontWeight: isActive ? 600 : 400
+                      }} 
+                    />
+                  </ListItemButton>
+                </ListItem>
+              )
+            })}
+          </List>
+        </Collapse>
       </List>
 
       {/* Logout Button */}
@@ -130,9 +224,9 @@ export default function Sidebar({ children, session }: SidebarProps) {
           onClick={() => signOut({ callbackUrl: '/login' })}
           sx={{
             borderRadius: '8px',
-            color: '#ef4444', // Red-500
+            color: '#ef4444',
             '&:hover': {
-              backgroundColor: '#fef2f2', // Red-50
+              backgroundColor: '#fef2f2',
             },
           }}
         >
@@ -157,7 +251,7 @@ export default function Sidebar({ children, session }: SidebarProps) {
           bgcolor: 'white',
           boxShadow: 'none',
           borderBottom: '1px solid #f3f4f6',
-          display: { sm: 'none' } // ซ่อนบน Desktop
+          display: { sm: 'none' }
         }}
       >
         <Toolbar>
@@ -200,9 +294,9 @@ export default function Sidebar({ children, session }: SidebarProps) {
           sx={{
             display: { xs: 'none', sm: 'block' },
             '& .MuiDrawer-paper': { 
-                boxSizing: 'border-box', 
-                width: drawerWidth, 
-                borderRight: '1px solid #f3f4f6' 
+              boxSizing: 'border-box', 
+              width: drawerWidth, 
+              borderRight: '1px solid #f3f4f6' 
             },
           }}
           open
@@ -219,8 +313,8 @@ export default function Sidebar({ children, session }: SidebarProps) {
           p: 3,
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           minHeight: '100vh',
-          bgcolor: '#f9fafb', // Gray-50
-          mt: { xs: 8, sm: 0 } // เว้นระยะ AppBar บน Mobile
+          bgcolor: '#f9fafb',
+          mt: { xs: 8, sm: 0 }
         }}
       >
         {children}

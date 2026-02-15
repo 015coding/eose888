@@ -16,7 +16,6 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     redirect('/dashboard')
   }
 
-  // ✅ Pass session data to client component
   return (
     <SidebarLayout session={session}>
       {children}

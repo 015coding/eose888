@@ -50,7 +50,7 @@ export default function Login() {
                 await logAuthEvent('login', email, true)
                 const session = await getSession()
                 if (session?.user?.role === 'ADMIN') {
-                    router.push('/admin')
+                    router.push('/admin/dashboard')
                 } else{
                     router.push('/dashboard')
                 }
