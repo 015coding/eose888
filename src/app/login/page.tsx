@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { signIn } from 'next-auth/react'
+import { signIn , getSession} from 'next-auth/react'
 import { TextField, Button, Alert, CircularProgress, IconButton, InputAdornment } from "@mui/material"
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import { useRouter } from "next/navigation"
+import { logAuthEvent } from '@/lib/authLogger'
 
 export default function Login() {
     const router = useRouter()
@@ -41,9 +42,19 @@ export default function Login() {
             })
 
             if (result?.error) {
+                console.log('Login error:', result.error)
+                await logAuthEvent('login', email, false, undefined, undefined, result.error || 'Invalid Credentials')
+
                 setError('Invalid email or password')
             } else {
-                router.push('/dashboard')
+                await logAuthEvent('login', email, true)
+                const session = await getSession()
+                if (session?.user?.role === 'ADMIN') {
+                    router.push('/admin')
+                } else{
+                    router.push('/dashboard')
+                }
+
             }
         } catch (err) {
             setError('Something went wrong')
@@ -53,7 +64,7 @@ export default function Login() {
     }
 
     return (
-        <div className="flex h-screen">
+        <div className="flex h-screen" suppressHydrationWarning> 
             <div className="flex-1 bg-white flex flex-col justify-center items-center h-screen">
                 <form onSubmit={handleLogin} className="flex flex-col gap-4 w-3/4 max-w-md">
                     <p 

@@ -14,9 +14,12 @@ export async function middleware(request: NextRequest) {
     '/dashboard',
     '/profile',
     '/settings',
+    '/admin',
   ]
 
   const authRoutes = ['/login', '/register']
+  const adminRoutes = ['/admin']
+
 
   if (protectedRoutes.some(route => pathname.startsWith(route))) {
     if (!token) {
@@ -25,6 +28,14 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url)
     }
   }
+
+  if (adminRoutes.some(route => pathname.startsWith(route))) {
+    if (!token || token.role !== 'ADMIN') {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
+  }
+
+
 
   if (authRoutes.some(route => pathname.startsWith(route))) {
     if (token) {
@@ -42,5 +53,6 @@ export const config = {
     '/settings/:path*',
     '/login',
     '/register',
+    '/admin/:path*',
   ]
 }
