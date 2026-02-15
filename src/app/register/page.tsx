@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { TextField, Button, Alert, CircularProgress, IconButton, InputAdornment } from "@mui/material"
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import { useRouter } from "next/navigation"
+import { logAuthEvent } from '@/lib/authLogger'
+
 
 export default function Register() {
     const router = useRouter()
@@ -58,6 +60,8 @@ export default function Register() {
 
             if (!response.ok) {
                 throw new Error(data.error || 'Registration failed')
+            }else{
+                await logAuthEvent('register', email, true, data.userId, name)
             }
 
             setSuccess(true)

@@ -1,4 +1,4 @@
-import NextAuth, { DefaultSession } from "next-auth"
+import NextAuth, { DefaultSession, type NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
@@ -10,83 +10,83 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string
-      role: Role  // เพิ่ม role
+      role: Role
     } & DefaultSession["user"]
   }
-  
+
   interface User {
     id: string
-    role: Role  // เพิ่ม role
+    role: Role
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
     id: string
-    role: Role  // เพิ่ม role
+    role: Role
   }
 }
 
-const handler = NextAuth({
-  adapter: PrismaAdapter(prisma),
+export const authOptions: NextAuthOptions = {
+  
   providers: [
     CredentialsProvider({
-      name: 'Credentials',
+      name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null
-        }
+        if (!credentials?.email || !credentials?.password) return null
+
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email }
+          where: { email: credentials.email },
         })
-        if (!user || !user.password) {
-          return null
-        }
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        )
-        if (!isPasswordValid) {
-          return null
-        }
+
+        if (!user || !user.password) return null
+
+        const ok = await bcrypt.compare(credentials.password, user.password)
+        if (!ok) return null
+
         return {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role
+          role: user.role,
         }
-      }
-    })
+      },
+    }),
   ],
+
   pages: {
-    signIn: '/login',
+    signIn: "/login",
   },
+
   session: {
-    strategy: "jwt"
+    strategy: "jwt",
   },
+
   callbacks: {
-    // เพิ่ม userId และ role ใน JWT token
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
         token.role = user.role
       }
+      console.log("JWT Callback - Token:", token)
       return token
     },
-    // เพิ่ม userId และ role ใน session
+
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string
-        session.user.role = token.role  
+        session.user.role = token.role as Role
       }
       return session
-    }
+    },
   },
-  secret: process.env.NEXTAUTH_SECRET,
-})
 
+  secret: process.env.NEXTAUTH_SECRET,
+}
+
+const handler = NextAuth(authOptions)
 export { handler as GET, handler as POST }
