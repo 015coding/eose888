@@ -7,7 +7,6 @@ import { prismaApp } from '@/lib/prismaApp'
 
 export async function GET() {
   try {
-    // ✅ ตรวจสอบ Admin
     const session = await getServerSession(authOptions)
     
     if (!session || session.user?.role !== 'ADMIN') {
@@ -17,13 +16,10 @@ export async function GET() {
       )
     }
 
-    // ✅ 1. Total Users
     const totalUsers = await prisma.user.count()
 
-    // ✅ 2. Total Transactions
     const totalTransactions = await prismaApp.transactionStock.count()
 
-    // ✅ 3. Total Portfolio Value (คำนวณจาก Holdings)
     const holdings = await prismaApp.holding.findMany({
       select: {
         quantity: true,
@@ -35,7 +31,6 @@ export async function GET() {
       return sum + (Number(holding.quantity) * Number(holding.avgCost))
     }, 0)
 
-    // ✅ 4. Transaction Trend (7 วันล่าสุด)
     const sevenDaysAgo = new Date()
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
     
@@ -50,7 +45,6 @@ export async function GET() {
       }
     })
 
-    // Group by date
     const trendMap = new Map<string, number>()
     for (let i = 6; i >= 0; i--) {
       const date = new Date()

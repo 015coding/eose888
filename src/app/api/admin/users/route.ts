@@ -6,7 +6,6 @@ import { prisma } from '@/lib/prisma'
 import { prismaApp } from '@/lib/prismaApp'
 import bcrypt from 'bcrypt'
 
-// GET - ดึงรายชื่อ Users ทั้งหมด
 export async function GET() {
   try {
     const session = await getServerSession(authOptions)
@@ -38,7 +37,7 @@ export async function GET() {
   }
 }
 
-// POST - เพิ่ม User ใหม่
+// POST - Add new user
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -106,7 +105,7 @@ export async function POST(request: Request) {
   }
 }
 
-// PATCH - อัปเดต Role ของ User
+// PATCH - Update user role 
 export async function PATCH(request: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -157,7 +156,7 @@ export async function PATCH(request: Request) {
   }
 }
 
-// DELETE - ลบ User
+// DELETE - delete user
 export async function DELETE(request: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -178,7 +177,6 @@ export async function DELETE(request: Request) {
       )
     }
 
-    // Check if trying to delete self
     if (userId === session.user.id) {
       return NextResponse.json(
         { error: 'Cannot delete your own account' },
@@ -186,26 +184,65 @@ export async function DELETE(request: Request) {
       )
     }
 
-    // Delete from both databases
+    try {
+      await prismaApp.$transaction(async (tx) => {
+        const bankAccounts = await tx.bankAccount.findMany({
+          where: { userId },
+          select: { id: true }
+        })
+
+        const accountIds = bankAccounts.map(acc => acc.id)
+        if (accountIds.length > 0) {
+          await tx.accountLog.deleteMany({
+            where: { accountId: { in: accountIds } }
+          })
+        }
+
+        if (accountIds.length > 0) {
+          await tx.transferTransaction.deleteMany({
+            where: {
+              OR: [
+                { fromAccountId: { in: accountIds } },
+                { toAccountId: { in: accountIds } }
+              ]
+            }
+          })
+        }
+        await tx.bankAccount.deleteMany({
+          where: { userId }
+        })
+        await tx.holding.deleteMany({
+          where: { userId }
+        })
+        await tx.transactionStock.deleteMany({
+          where: { userId }
+        })
+
+        await tx.pinnedStock.deleteMany({
+          where: { userId }
+        })
+
+        await tx.user.delete({
+          where: { id: userId }
+        })
+      })
+
+      console.log('User and all related data deleted from Trading DB')
+    } catch (err: any) {
+      if (err.code !== 'P2025') {
+        console.error('Trading DB deletion error:', err.message)
+      }
+    }
+
     await prisma.user.delete({
       where: { id: userId }
     })
-
-    // Try to delete from trading DB (may not exist)
-    try {
-      await prismaApp.user.delete({
-        where: { id: userId }
-      })
-    } catch (err) {
-      // User may not exist in trading DB, ignore error
-      console.log('User not found in trading DB')
-    }
 
     return NextResponse.json({
       message: 'User deleted successfully'
     })
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Delete user error:', error)
     return NextResponse.json(
       { error: 'Failed to delete user' },

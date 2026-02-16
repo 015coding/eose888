@@ -1,4 +1,3 @@
-// components/SidebarAdmin.tsx
 'use client'
 
 import { useState } from 'react'
@@ -33,7 +32,6 @@ import HistoryIcon from '@mui/icons-material/History'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import LoginIcon from '@mui/icons-material/Login'
-import PersonAddIcon from '@mui/icons-material/PersonAdd'
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz'
 
 const drawerWidth = 260
@@ -57,14 +55,14 @@ export default function Sidebar({ children, session }: SidebarProps) {
     setLogsOpen(!logsOpen)
   }
 
-  // รายการเมนูหลัก
+  // manu
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin/dashboard' },
     { text: 'Users', icon: <PeopleIcon />, path: '/admin/users' },
     { text: 'Settings', icon: <SettingsIcon />, path: '/admin/settings' },
   ]
 
-  // ✅ Logs submenu
+  //Logs submenu
   const logMenuItems = [
     { text: 'Login & Register', icon: <LoginIcon />, path: '/admin/log/auth' },
     { text: 'Transactions', icon: <SwapHorizIcon />, path: '/admin/log/transactions' },
@@ -77,7 +75,7 @@ export default function Sidebar({ children, session }: SidebarProps) {
         <Typography 
           variant="h5" 
           className="font-bold text-emerald-500 cursor-pointer"
-          onClick={() => router.push('/admin')}
+          onClick={() => router.push('/')}
         >
           eose888
         </Typography>
@@ -145,7 +143,7 @@ export default function Sidebar({ children, session }: SidebarProps) {
           )
         })}
 
-        {/* ✅ Logs Menu with Submenu */}
+        {/* Logs Menu with Submenu */}
         <ListItem disablePadding>
           <ListItemButton
             onClick={handleLogsClick}
@@ -167,7 +165,7 @@ export default function Sidebar({ children, session }: SidebarProps) {
           </ListItemButton>
         </ListItem>
 
-        {/* ✅ Logs Submenu Items */}
+        {/*Logs Submenu Items */}
         <Collapse in={logsOpen} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
             {logMenuItems.map((item) => {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-
+import { Skeleton } from '@mui/material'
 
 
 interface LoginLog {
@@ -75,7 +75,18 @@ export default function AdminLogsClient() {
         <h1 className="text-3xl font-bold mb-6">Login Logs Dashboard</h1>
 
         {/* Stats Cards */}
-        {stats && (
+        {!stats ? (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+
+            {[1, 2, 3, 4].map((item) => (
+              <div key={item} className="bg-white p-6 rounded-lg shadow">
+                <Skeleton variant="text" width="50%" sx={{ mb: 1 }} />
+                <Skeleton variant="rectangular" height={40} width="40%" sx={{ borderRadius: 1 }} />
+                <Skeleton variant="text" width="80%" sx={{ mt: 1 }} />
+              </div>
+            ))}
+          </div>
+        ) : (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-white p-6 rounded-lg shadow">
               <div className="text-gray-500 text-sm">Total Logins</div>
