@@ -10,6 +10,7 @@ import {
   CartesianGrid,
   ResponsiveContainer
 } from "recharts";
+import Navbar from "@/app/components/Navbar";
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload?.length) {
@@ -40,7 +41,9 @@ export default function StockPage() {
   }, []);
 
   return (
-    <div style={{ background: "grey", minHeight: "100vh", padding: 20 }}>
+    <div style={{ background: "#ebebeb", minHeight: "100vh", padding: 20 }}>
+
+      <Navbar />
 
       {Object.entries(stocks).map(([symbol, data]) => {
 
@@ -61,14 +64,22 @@ export default function StockPage() {
         return (
           <div key={symbol} style={{ marginBottom: 40 }}>
 
-            <h2 style={{ color: "#00e676" }}>
+            <h2 style={{
+                color: "#1e2520",
+                background: "#b3b3b3",
+                padding: "8px 16px",
+                borderRadius: 8,
+                fontSize: "14px",
+                fontWeight: "800",
+                display: "inline-block"
+                }}>
               {symbol} Chart
             </h2>
 
             <div style={{
-              width: "100%",
-              height: 400,
-              background: "white",
+              width: "50%",
+              height: 300,
+              background: "#e0e0e0",
               border: "2px solid black"
             }}>
               {data.length > 0 && (
