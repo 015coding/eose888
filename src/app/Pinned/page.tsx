@@ -10,7 +10,7 @@ import {
   CartesianGrid,
   ResponsiveContainer
 } from "recharts";
-import Navbar from "@/app/components/Navbar";
+import Navbar from "@/components/components/Navbar";
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload?.length) {
