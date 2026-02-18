@@ -158,3 +158,16 @@ model PinnedStock {
 
   @@unique([userId, stockId])
 }
+
+/////////////////////////////////////////////////
+// Stock Price History
+//////////////////////////////////////////////////
+
+model StockHistory {
+  id     BigInt   @id @default(autoincrement())
+  symbol String
+  price  Float
+  time   DateTime
+
+  @@unique([symbol, time])
+}
