@@ -36,6 +36,8 @@ export const getAllBalances = async (currency : Currency) => {
 }
 
 
+
+
 export const findUserBalance = async (userId: string) => {
     const balance = await prisma_yok.bankAccount.findMany({
         where: {

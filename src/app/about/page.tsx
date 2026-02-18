@@ -57,11 +57,11 @@ export default function AboutPage() {
               </Typography>
               <Typography variant="h2" sx={{ fontWeight: 300, mb: 4, fontSize: { xs: '2.8rem', md: '4rem' }, lineHeight: 1.1 }}>
                 We believe in <br />
-                <span style={{ fontWeight: 700, fontStyle: 'italic' }}>transparency</span> <br /> 
+                <span style={{ fontWeight: 700, fontStyle: 'italic' }}>Transparency and Uncle EOSE</span> <br /> 
                 above all else.
               </Typography>
               <Typography sx={{ color: THEME.textMuted, fontSize: '1.1rem', lineHeight: 1.8, maxWidth: '500px', mb: 4 }}>
-                Eose888 ไม่ได้ถูกสร้างมาเพื่อเป็นแค่แพลตฟอร์มเทรด แต่เราสร้างมาเพื่อแก้ปัญหาความเหลื่อมล้ำของข้อมูล เราทำให้ข้อมูลระดับสถาบันการเงิน เข้าถึงได้โดยทุกคน
+                Eose888 ไม่ได้ถูกสร้างมาเพื่อเป็นแค่แพลตฟอร์มเทรด แต่เราสร้างมาเพื่อ <b>ผู้ศรัทธา</b> ข้อมูล Fundamental ไม่สำคัญเท่า "ใจ" ที่นิ่งสงบดั่งภูผา
               </Typography>
 
               {/* Slider Controls for Desktop (Placed under text) */}

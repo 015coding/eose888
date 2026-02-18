@@ -2,7 +2,7 @@
 
 import { Box, Container, Typography } from '@mui/material'
 import { motion, useInView, useSpring, useTransform } from 'framer-motion'
-import { use, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 // --- ตัวเลขวิ่ง (Counter) ---
 function Counter({ to, prefix = '', suffix = '', decimals = 0 }: any) {
