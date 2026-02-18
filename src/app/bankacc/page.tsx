@@ -1,4 +1,4 @@
-import Navbar from '@/components/components/Navbar'
+import Navbar from '@/components/Navbar'
 import AccountCards from './AccountCards'
 
 export default function BankAcc_Page() {
