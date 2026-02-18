@@ -44,7 +44,7 @@ export default function Footer() {
 
         <Box sx={{ mt: 6, pt: 4, borderTop: '1px solid #e5e7eb', textAlign: 'center' }}>
           <Typography variant="body2" sx={{ color: '#6b7280' }}>
-            © 2024 eose888. All rights reserved.
+            © 2026 eose888. All rights reserved.
           </Typography>
         </Box>
       </Container>

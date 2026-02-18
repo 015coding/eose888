@@ -2,14 +2,7 @@
 
 import { Box, Container, Typography } from '@mui/material'
 import { motion, useInView, useSpring, useTransform } from 'framer-motion'
-import { useEffect, useRef } from 'react'
-
-const STATS = [
-  { value: 10000, suffix: '+', label: 'Active Traders' },
-  { prefix: '$', value: 500, suffix: 'M+', label: 'Trading Volume' },
-  { value: 99.9, suffix: '%', label: 'Uptime', decimals: 1 },
-  { value: 50, suffix: '+', label: 'Assets Available' },
-]
+import { useEffect, useRef, useState } from 'react'
 
 // --- ตัวเลขวิ่ง (Counter) ---
 function Counter({ to, prefix = '', suffix = '', decimals = 0 }: any) {
@@ -36,7 +29,49 @@ function Counter({ to, prefix = '', suffix = '', decimals = 0 }: any) {
   return <motion.span ref={ref}>{displayValue}</motion.span>
 }
 
+function AllBalance() {
+  const [USD , setUSD] = useState(0);
+  const [THB , setTHB] = useState(0);
+
+  useEffect(() => {
+    fetch('/api/users/getAllBalance')
+      .then(res => res.json())
+      .then(data => {
+        console.log("Fetched balances:", data);
+        setUSD(parseFloat(data.USD) || 0);
+        setTHB(parseFloat(data.THB) || 0);
+      })
+  },[])
+  return {USD, THB}
+}
+
+function CountUsers() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    fetch('/api/users/countUsers')
+      .then(res => res.json())
+      .then(data => setCount(data.count))
+  }, [])
+
+  return count;
+}
+
+
+
 export default function StatsSection() {
+
+  const {USD , THB} = AllBalance();
+  const userCount = CountUsers();
+  const STATS = [
+  { value: userCount, suffix: '+', label: 'Active Traders' },
+  { prefix: '$', value: USD, suffix: 'M+', label: 'Trading Volume' },
+  { value: 99.9, suffix: '%', label: 'Uptime', decimals: 1 },
+  { value: 50, suffix: '+', label: 'Assets Available' },
+  ]
+
+
+
   return (
     <Box sx={{ py: 8, background: 'linear-gradient(to right, #10b981, #14b8a6)' }}>
       <Container maxWidth="lg">
