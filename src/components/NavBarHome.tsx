@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 const NAV_ITEMS = [
   { label: 'Features', path: '#features' },
   { label: 'Markets', path: '#markets' },
-  { label: 'About', path: '#about' }
+  { label: 'About', path: '/about' }
 ]
 
 const THEME = {
@@ -70,6 +70,7 @@ export default function Navbar() {
                   key={item.label}
                   component={motion.button}
                   whileHover={{ y: -2 }}
+                  onClick={() => {router.push(item.path)}}
                   sx={{ 
                     color: THEME.textMain, 
                     px: 2,
