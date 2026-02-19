@@ -53,6 +53,11 @@ export type PinnedStock = $Result.DefaultSelection<Prisma.$PinnedStockPayload>
  * 
  */
 export type StockHistory = $Result.DefaultSelection<Prisma.$StockHistoryPayload>
+/**
+ * Model StockHistoryDaily
+ * 
+ */
+export type StockHistoryDaily = $Result.DefaultSelection<Prisma.$StockHistoryDailyPayload>
 
 /**
  * Enums
@@ -313,6 +318,16 @@ export class PrismaClient<
     * ```
     */
   get stockHistory(): Prisma.StockHistoryDelegate<ExtArgs>;
+
+  /**
+   * `prisma.stockHistoryDaily`: Exposes CRUD operations for the **StockHistoryDaily** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more StockHistoryDailies
+    * const stockHistoryDailies = await prisma.stockHistoryDaily.findMany()
+    * ```
+    */
+  get stockHistoryDaily(): Prisma.StockHistoryDailyDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -761,7 +776,8 @@ export namespace Prisma {
     Holding: 'Holding',
     TransactionStock: 'TransactionStock',
     PinnedStock: 'PinnedStock',
-    StockHistory: 'StockHistory'
+    StockHistory: 'StockHistory',
+    StockHistoryDaily: 'StockHistoryDaily'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -777,7 +793,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "bankAccount" | "transferTransaction" | "accountLog" | "holding" | "transactionStock" | "pinnedStock" | "stockHistory"
+      modelProps: "user" | "bankAccount" | "transferTransaction" | "accountLog" | "holding" | "transactionStock" | "pinnedStock" | "stockHistory" | "stockHistoryDaily"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1306,6 +1322,72 @@ export namespace Prisma {
           count: {
             args: Prisma.StockHistoryCountArgs<ExtArgs>
             result: $Utils.Optional<StockHistoryCountAggregateOutputType> | number
+          }
+        }
+      }
+      StockHistoryDaily: {
+        payload: Prisma.$StockHistoryDailyPayload<ExtArgs>
+        fields: Prisma.StockHistoryDailyFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.StockHistoryDailyFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StockHistoryDailyPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.StockHistoryDailyFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StockHistoryDailyPayload>
+          }
+          findFirst: {
+            args: Prisma.StockHistoryDailyFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StockHistoryDailyPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.StockHistoryDailyFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StockHistoryDailyPayload>
+          }
+          findMany: {
+            args: Prisma.StockHistoryDailyFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StockHistoryDailyPayload>[]
+          }
+          create: {
+            args: Prisma.StockHistoryDailyCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StockHistoryDailyPayload>
+          }
+          createMany: {
+            args: Prisma.StockHistoryDailyCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.StockHistoryDailyDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StockHistoryDailyPayload>
+          }
+          update: {
+            args: Prisma.StockHistoryDailyUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StockHistoryDailyPayload>
+          }
+          deleteMany: {
+            args: Prisma.StockHistoryDailyDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.StockHistoryDailyUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.StockHistoryDailyUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StockHistoryDailyPayload>
+          }
+          aggregate: {
+            args: Prisma.StockHistoryDailyAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateStockHistoryDaily>
+          }
+          groupBy: {
+            args: Prisma.StockHistoryDailyGroupByArgs<ExtArgs>
+            result: $Utils.Optional<StockHistoryDailyGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.StockHistoryDailyCountArgs<ExtArgs>
+            result: $Utils.Optional<StockHistoryDailyCountAggregateOutputType> | number
           }
         }
       }
@@ -9117,6 +9199,865 @@ export namespace Prisma {
 
 
   /**
+   * Model StockHistoryDaily
+   */
+
+  export type AggregateStockHistoryDaily = {
+    _count: StockHistoryDailyCountAggregateOutputType | null
+    _avg: StockHistoryDailyAvgAggregateOutputType | null
+    _sum: StockHistoryDailySumAggregateOutputType | null
+    _min: StockHistoryDailyMinAggregateOutputType | null
+    _max: StockHistoryDailyMaxAggregateOutputType | null
+  }
+
+  export type StockHistoryDailyAvgAggregateOutputType = {
+    id: number | null
+    price: number | null
+  }
+
+  export type StockHistoryDailySumAggregateOutputType = {
+    id: bigint | null
+    price: number | null
+  }
+
+  export type StockHistoryDailyMinAggregateOutputType = {
+    id: bigint | null
+    symbol: string | null
+    price: number | null
+    time: Date | null
+  }
+
+  export type StockHistoryDailyMaxAggregateOutputType = {
+    id: bigint | null
+    symbol: string | null
+    price: number | null
+    time: Date | null
+  }
+
+  export type StockHistoryDailyCountAggregateOutputType = {
+    id: number
+    symbol: number
+    price: number
+    time: number
+    _all: number
+  }
+
+
+  export type StockHistoryDailyAvgAggregateInputType = {
+    id?: true
+    price?: true
+  }
+
+  export type StockHistoryDailySumAggregateInputType = {
+    id?: true
+    price?: true
+  }
+
+  export type StockHistoryDailyMinAggregateInputType = {
+    id?: true
+    symbol?: true
+    price?: true
+    time?: true
+  }
+
+  export type StockHistoryDailyMaxAggregateInputType = {
+    id?: true
+    symbol?: true
+    price?: true
+    time?: true
+  }
+
+  export type StockHistoryDailyCountAggregateInputType = {
+    id?: true
+    symbol?: true
+    price?: true
+    time?: true
+    _all?: true
+  }
+
+  export type StockHistoryDailyAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which StockHistoryDaily to aggregate.
+     */
+    where?: StockHistoryDailyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of StockHistoryDailies to fetch.
+     */
+    orderBy?: StockHistoryDailyOrderByWithRelationInput | StockHistoryDailyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: StockHistoryDailyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` StockHistoryDailies from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` StockHistoryDailies.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned StockHistoryDailies
+    **/
+    _count?: true | StockHistoryDailyCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: StockHistoryDailyAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: StockHistoryDailySumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: StockHistoryDailyMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: StockHistoryDailyMaxAggregateInputType
+  }
+
+  export type GetStockHistoryDailyAggregateType<T extends StockHistoryDailyAggregateArgs> = {
+        [P in keyof T & keyof AggregateStockHistoryDaily]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateStockHistoryDaily[P]>
+      : GetScalarType<T[P], AggregateStockHistoryDaily[P]>
+  }
+
+
+
+
+  export type StockHistoryDailyGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: StockHistoryDailyWhereInput
+    orderBy?: StockHistoryDailyOrderByWithAggregationInput | StockHistoryDailyOrderByWithAggregationInput[]
+    by: StockHistoryDailyScalarFieldEnum[] | StockHistoryDailyScalarFieldEnum
+    having?: StockHistoryDailyScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: StockHistoryDailyCountAggregateInputType | true
+    _avg?: StockHistoryDailyAvgAggregateInputType
+    _sum?: StockHistoryDailySumAggregateInputType
+    _min?: StockHistoryDailyMinAggregateInputType
+    _max?: StockHistoryDailyMaxAggregateInputType
+  }
+
+  export type StockHistoryDailyGroupByOutputType = {
+    id: bigint
+    symbol: string
+    price: number
+    time: Date
+    _count: StockHistoryDailyCountAggregateOutputType | null
+    _avg: StockHistoryDailyAvgAggregateOutputType | null
+    _sum: StockHistoryDailySumAggregateOutputType | null
+    _min: StockHistoryDailyMinAggregateOutputType | null
+    _max: StockHistoryDailyMaxAggregateOutputType | null
+  }
+
+  type GetStockHistoryDailyGroupByPayload<T extends StockHistoryDailyGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<StockHistoryDailyGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof StockHistoryDailyGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], StockHistoryDailyGroupByOutputType[P]>
+            : GetScalarType<T[P], StockHistoryDailyGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type StockHistoryDailySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    symbol?: boolean
+    price?: boolean
+    time?: boolean
+  }, ExtArgs["result"]["stockHistoryDaily"]>
+
+
+  export type StockHistoryDailySelectScalar = {
+    id?: boolean
+    symbol?: boolean
+    price?: boolean
+    time?: boolean
+  }
+
+
+  export type $StockHistoryDailyPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "StockHistoryDaily"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: bigint
+      symbol: string
+      price: number
+      time: Date
+    }, ExtArgs["result"]["stockHistoryDaily"]>
+    composites: {}
+  }
+
+  type StockHistoryDailyGetPayload<S extends boolean | null | undefined | StockHistoryDailyDefaultArgs> = $Result.GetResult<Prisma.$StockHistoryDailyPayload, S>
+
+  type StockHistoryDailyCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<StockHistoryDailyFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: StockHistoryDailyCountAggregateInputType | true
+    }
+
+  export interface StockHistoryDailyDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['StockHistoryDaily'], meta: { name: 'StockHistoryDaily' } }
+    /**
+     * Find zero or one StockHistoryDaily that matches the filter.
+     * @param {StockHistoryDailyFindUniqueArgs} args - Arguments to find a StockHistoryDaily
+     * @example
+     * // Get one StockHistoryDaily
+     * const stockHistoryDaily = await prisma.stockHistoryDaily.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends StockHistoryDailyFindUniqueArgs>(args: SelectSubset<T, StockHistoryDailyFindUniqueArgs<ExtArgs>>): Prisma__StockHistoryDailyClient<$Result.GetResult<Prisma.$StockHistoryDailyPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one StockHistoryDaily that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {StockHistoryDailyFindUniqueOrThrowArgs} args - Arguments to find a StockHistoryDaily
+     * @example
+     * // Get one StockHistoryDaily
+     * const stockHistoryDaily = await prisma.stockHistoryDaily.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends StockHistoryDailyFindUniqueOrThrowArgs>(args: SelectSubset<T, StockHistoryDailyFindUniqueOrThrowArgs<ExtArgs>>): Prisma__StockHistoryDailyClient<$Result.GetResult<Prisma.$StockHistoryDailyPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first StockHistoryDaily that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StockHistoryDailyFindFirstArgs} args - Arguments to find a StockHistoryDaily
+     * @example
+     * // Get one StockHistoryDaily
+     * const stockHistoryDaily = await prisma.stockHistoryDaily.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends StockHistoryDailyFindFirstArgs>(args?: SelectSubset<T, StockHistoryDailyFindFirstArgs<ExtArgs>>): Prisma__StockHistoryDailyClient<$Result.GetResult<Prisma.$StockHistoryDailyPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first StockHistoryDaily that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StockHistoryDailyFindFirstOrThrowArgs} args - Arguments to find a StockHistoryDaily
+     * @example
+     * // Get one StockHistoryDaily
+     * const stockHistoryDaily = await prisma.stockHistoryDaily.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends StockHistoryDailyFindFirstOrThrowArgs>(args?: SelectSubset<T, StockHistoryDailyFindFirstOrThrowArgs<ExtArgs>>): Prisma__StockHistoryDailyClient<$Result.GetResult<Prisma.$StockHistoryDailyPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more StockHistoryDailies that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StockHistoryDailyFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all StockHistoryDailies
+     * const stockHistoryDailies = await prisma.stockHistoryDaily.findMany()
+     * 
+     * // Get first 10 StockHistoryDailies
+     * const stockHistoryDailies = await prisma.stockHistoryDaily.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const stockHistoryDailyWithIdOnly = await prisma.stockHistoryDaily.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends StockHistoryDailyFindManyArgs>(args?: SelectSubset<T, StockHistoryDailyFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StockHistoryDailyPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a StockHistoryDaily.
+     * @param {StockHistoryDailyCreateArgs} args - Arguments to create a StockHistoryDaily.
+     * @example
+     * // Create one StockHistoryDaily
+     * const StockHistoryDaily = await prisma.stockHistoryDaily.create({
+     *   data: {
+     *     // ... data to create a StockHistoryDaily
+     *   }
+     * })
+     * 
+     */
+    create<T extends StockHistoryDailyCreateArgs>(args: SelectSubset<T, StockHistoryDailyCreateArgs<ExtArgs>>): Prisma__StockHistoryDailyClient<$Result.GetResult<Prisma.$StockHistoryDailyPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many StockHistoryDailies.
+     * @param {StockHistoryDailyCreateManyArgs} args - Arguments to create many StockHistoryDailies.
+     * @example
+     * // Create many StockHistoryDailies
+     * const stockHistoryDaily = await prisma.stockHistoryDaily.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends StockHistoryDailyCreateManyArgs>(args?: SelectSubset<T, StockHistoryDailyCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a StockHistoryDaily.
+     * @param {StockHistoryDailyDeleteArgs} args - Arguments to delete one StockHistoryDaily.
+     * @example
+     * // Delete one StockHistoryDaily
+     * const StockHistoryDaily = await prisma.stockHistoryDaily.delete({
+     *   where: {
+     *     // ... filter to delete one StockHistoryDaily
+     *   }
+     * })
+     * 
+     */
+    delete<T extends StockHistoryDailyDeleteArgs>(args: SelectSubset<T, StockHistoryDailyDeleteArgs<ExtArgs>>): Prisma__StockHistoryDailyClient<$Result.GetResult<Prisma.$StockHistoryDailyPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one StockHistoryDaily.
+     * @param {StockHistoryDailyUpdateArgs} args - Arguments to update one StockHistoryDaily.
+     * @example
+     * // Update one StockHistoryDaily
+     * const stockHistoryDaily = await prisma.stockHistoryDaily.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends StockHistoryDailyUpdateArgs>(args: SelectSubset<T, StockHistoryDailyUpdateArgs<ExtArgs>>): Prisma__StockHistoryDailyClient<$Result.GetResult<Prisma.$StockHistoryDailyPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more StockHistoryDailies.
+     * @param {StockHistoryDailyDeleteManyArgs} args - Arguments to filter StockHistoryDailies to delete.
+     * @example
+     * // Delete a few StockHistoryDailies
+     * const { count } = await prisma.stockHistoryDaily.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends StockHistoryDailyDeleteManyArgs>(args?: SelectSubset<T, StockHistoryDailyDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more StockHistoryDailies.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StockHistoryDailyUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many StockHistoryDailies
+     * const stockHistoryDaily = await prisma.stockHistoryDaily.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends StockHistoryDailyUpdateManyArgs>(args: SelectSubset<T, StockHistoryDailyUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one StockHistoryDaily.
+     * @param {StockHistoryDailyUpsertArgs} args - Arguments to update or create a StockHistoryDaily.
+     * @example
+     * // Update or create a StockHistoryDaily
+     * const stockHistoryDaily = await prisma.stockHistoryDaily.upsert({
+     *   create: {
+     *     // ... data to create a StockHistoryDaily
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the StockHistoryDaily we want to update
+     *   }
+     * })
+     */
+    upsert<T extends StockHistoryDailyUpsertArgs>(args: SelectSubset<T, StockHistoryDailyUpsertArgs<ExtArgs>>): Prisma__StockHistoryDailyClient<$Result.GetResult<Prisma.$StockHistoryDailyPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of StockHistoryDailies.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StockHistoryDailyCountArgs} args - Arguments to filter StockHistoryDailies to count.
+     * @example
+     * // Count the number of StockHistoryDailies
+     * const count = await prisma.stockHistoryDaily.count({
+     *   where: {
+     *     // ... the filter for the StockHistoryDailies we want to count
+     *   }
+     * })
+    **/
+    count<T extends StockHistoryDailyCountArgs>(
+      args?: Subset<T, StockHistoryDailyCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], StockHistoryDailyCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a StockHistoryDaily.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StockHistoryDailyAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends StockHistoryDailyAggregateArgs>(args: Subset<T, StockHistoryDailyAggregateArgs>): Prisma.PrismaPromise<GetStockHistoryDailyAggregateType<T>>
+
+    /**
+     * Group by StockHistoryDaily.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StockHistoryDailyGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends StockHistoryDailyGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: StockHistoryDailyGroupByArgs['orderBy'] }
+        : { orderBy?: StockHistoryDailyGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, StockHistoryDailyGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetStockHistoryDailyGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the StockHistoryDaily model
+   */
+  readonly fields: StockHistoryDailyFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for StockHistoryDaily.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__StockHistoryDailyClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the StockHistoryDaily model
+   */ 
+  interface StockHistoryDailyFieldRefs {
+    readonly id: FieldRef<"StockHistoryDaily", 'BigInt'>
+    readonly symbol: FieldRef<"StockHistoryDaily", 'String'>
+    readonly price: FieldRef<"StockHistoryDaily", 'Float'>
+    readonly time: FieldRef<"StockHistoryDaily", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * StockHistoryDaily findUnique
+   */
+  export type StockHistoryDailyFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockHistoryDaily
+     */
+    select?: StockHistoryDailySelect<ExtArgs> | null
+    /**
+     * Filter, which StockHistoryDaily to fetch.
+     */
+    where: StockHistoryDailyWhereUniqueInput
+  }
+
+  /**
+   * StockHistoryDaily findUniqueOrThrow
+   */
+  export type StockHistoryDailyFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockHistoryDaily
+     */
+    select?: StockHistoryDailySelect<ExtArgs> | null
+    /**
+     * Filter, which StockHistoryDaily to fetch.
+     */
+    where: StockHistoryDailyWhereUniqueInput
+  }
+
+  /**
+   * StockHistoryDaily findFirst
+   */
+  export type StockHistoryDailyFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockHistoryDaily
+     */
+    select?: StockHistoryDailySelect<ExtArgs> | null
+    /**
+     * Filter, which StockHistoryDaily to fetch.
+     */
+    where?: StockHistoryDailyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of StockHistoryDailies to fetch.
+     */
+    orderBy?: StockHistoryDailyOrderByWithRelationInput | StockHistoryDailyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for StockHistoryDailies.
+     */
+    cursor?: StockHistoryDailyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` StockHistoryDailies from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` StockHistoryDailies.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of StockHistoryDailies.
+     */
+    distinct?: StockHistoryDailyScalarFieldEnum | StockHistoryDailyScalarFieldEnum[]
+  }
+
+  /**
+   * StockHistoryDaily findFirstOrThrow
+   */
+  export type StockHistoryDailyFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockHistoryDaily
+     */
+    select?: StockHistoryDailySelect<ExtArgs> | null
+    /**
+     * Filter, which StockHistoryDaily to fetch.
+     */
+    where?: StockHistoryDailyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of StockHistoryDailies to fetch.
+     */
+    orderBy?: StockHistoryDailyOrderByWithRelationInput | StockHistoryDailyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for StockHistoryDailies.
+     */
+    cursor?: StockHistoryDailyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` StockHistoryDailies from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` StockHistoryDailies.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of StockHistoryDailies.
+     */
+    distinct?: StockHistoryDailyScalarFieldEnum | StockHistoryDailyScalarFieldEnum[]
+  }
+
+  /**
+   * StockHistoryDaily findMany
+   */
+  export type StockHistoryDailyFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockHistoryDaily
+     */
+    select?: StockHistoryDailySelect<ExtArgs> | null
+    /**
+     * Filter, which StockHistoryDailies to fetch.
+     */
+    where?: StockHistoryDailyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of StockHistoryDailies to fetch.
+     */
+    orderBy?: StockHistoryDailyOrderByWithRelationInput | StockHistoryDailyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing StockHistoryDailies.
+     */
+    cursor?: StockHistoryDailyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` StockHistoryDailies from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` StockHistoryDailies.
+     */
+    skip?: number
+    distinct?: StockHistoryDailyScalarFieldEnum | StockHistoryDailyScalarFieldEnum[]
+  }
+
+  /**
+   * StockHistoryDaily create
+   */
+  export type StockHistoryDailyCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockHistoryDaily
+     */
+    select?: StockHistoryDailySelect<ExtArgs> | null
+    /**
+     * The data needed to create a StockHistoryDaily.
+     */
+    data: XOR<StockHistoryDailyCreateInput, StockHistoryDailyUncheckedCreateInput>
+  }
+
+  /**
+   * StockHistoryDaily createMany
+   */
+  export type StockHistoryDailyCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many StockHistoryDailies.
+     */
+    data: StockHistoryDailyCreateManyInput | StockHistoryDailyCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * StockHistoryDaily update
+   */
+  export type StockHistoryDailyUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockHistoryDaily
+     */
+    select?: StockHistoryDailySelect<ExtArgs> | null
+    /**
+     * The data needed to update a StockHistoryDaily.
+     */
+    data: XOR<StockHistoryDailyUpdateInput, StockHistoryDailyUncheckedUpdateInput>
+    /**
+     * Choose, which StockHistoryDaily to update.
+     */
+    where: StockHistoryDailyWhereUniqueInput
+  }
+
+  /**
+   * StockHistoryDaily updateMany
+   */
+  export type StockHistoryDailyUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update StockHistoryDailies.
+     */
+    data: XOR<StockHistoryDailyUpdateManyMutationInput, StockHistoryDailyUncheckedUpdateManyInput>
+    /**
+     * Filter which StockHistoryDailies to update
+     */
+    where?: StockHistoryDailyWhereInput
+  }
+
+  /**
+   * StockHistoryDaily upsert
+   */
+  export type StockHistoryDailyUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockHistoryDaily
+     */
+    select?: StockHistoryDailySelect<ExtArgs> | null
+    /**
+     * The filter to search for the StockHistoryDaily to update in case it exists.
+     */
+    where: StockHistoryDailyWhereUniqueInput
+    /**
+     * In case the StockHistoryDaily found by the `where` argument doesn't exist, create a new StockHistoryDaily with this data.
+     */
+    create: XOR<StockHistoryDailyCreateInput, StockHistoryDailyUncheckedCreateInput>
+    /**
+     * In case the StockHistoryDaily was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<StockHistoryDailyUpdateInput, StockHistoryDailyUncheckedUpdateInput>
+  }
+
+  /**
+   * StockHistoryDaily delete
+   */
+  export type StockHistoryDailyDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockHistoryDaily
+     */
+    select?: StockHistoryDailySelect<ExtArgs> | null
+    /**
+     * Filter which StockHistoryDaily to delete.
+     */
+    where: StockHistoryDailyWhereUniqueInput
+  }
+
+  /**
+   * StockHistoryDaily deleteMany
+   */
+  export type StockHistoryDailyDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which StockHistoryDailies to delete
+     */
+    where?: StockHistoryDailyWhereInput
+  }
+
+  /**
+   * StockHistoryDaily without action
+   */
+  export type StockHistoryDailyDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockHistoryDaily
+     */
+    select?: StockHistoryDailySelect<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -9219,6 +10160,16 @@ export namespace Prisma {
   };
 
   export type StockHistoryScalarFieldEnum = (typeof StockHistoryScalarFieldEnum)[keyof typeof StockHistoryScalarFieldEnum]
+
+
+  export const StockHistoryDailyScalarFieldEnum: {
+    id: 'id',
+    symbol: 'symbol',
+    price: 'price',
+    time: 'time'
+  };
+
+  export type StockHistoryDailyScalarFieldEnum = (typeof StockHistoryDailyScalarFieldEnum)[keyof typeof StockHistoryDailyScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -9812,6 +10763,56 @@ export namespace Prisma {
     time?: DateTimeWithAggregatesFilter<"StockHistory"> | Date | string
   }
 
+  export type StockHistoryDailyWhereInput = {
+    AND?: StockHistoryDailyWhereInput | StockHistoryDailyWhereInput[]
+    OR?: StockHistoryDailyWhereInput[]
+    NOT?: StockHistoryDailyWhereInput | StockHistoryDailyWhereInput[]
+    id?: BigIntFilter<"StockHistoryDaily"> | bigint | number
+    symbol?: StringFilter<"StockHistoryDaily"> | string
+    price?: FloatFilter<"StockHistoryDaily"> | number
+    time?: DateTimeFilter<"StockHistoryDaily"> | Date | string
+  }
+
+  export type StockHistoryDailyOrderByWithRelationInput = {
+    id?: SortOrder
+    symbol?: SortOrder
+    price?: SortOrder
+    time?: SortOrder
+  }
+
+  export type StockHistoryDailyWhereUniqueInput = Prisma.AtLeast<{
+    id?: bigint | number
+    symbol_time?: StockHistoryDailySymbolTimeCompoundUniqueInput
+    AND?: StockHistoryDailyWhereInput | StockHistoryDailyWhereInput[]
+    OR?: StockHistoryDailyWhereInput[]
+    NOT?: StockHistoryDailyWhereInput | StockHistoryDailyWhereInput[]
+    symbol?: StringFilter<"StockHistoryDaily"> | string
+    price?: FloatFilter<"StockHistoryDaily"> | number
+    time?: DateTimeFilter<"StockHistoryDaily"> | Date | string
+  }, "id" | "symbol_time">
+
+  export type StockHistoryDailyOrderByWithAggregationInput = {
+    id?: SortOrder
+    symbol?: SortOrder
+    price?: SortOrder
+    time?: SortOrder
+    _count?: StockHistoryDailyCountOrderByAggregateInput
+    _avg?: StockHistoryDailyAvgOrderByAggregateInput
+    _max?: StockHistoryDailyMaxOrderByAggregateInput
+    _min?: StockHistoryDailyMinOrderByAggregateInput
+    _sum?: StockHistoryDailySumOrderByAggregateInput
+  }
+
+  export type StockHistoryDailyScalarWhereWithAggregatesInput = {
+    AND?: StockHistoryDailyScalarWhereWithAggregatesInput | StockHistoryDailyScalarWhereWithAggregatesInput[]
+    OR?: StockHistoryDailyScalarWhereWithAggregatesInput[]
+    NOT?: StockHistoryDailyScalarWhereWithAggregatesInput | StockHistoryDailyScalarWhereWithAggregatesInput[]
+    id?: BigIntWithAggregatesFilter<"StockHistoryDaily"> | bigint | number
+    symbol?: StringWithAggregatesFilter<"StockHistoryDaily"> | string
+    price?: FloatWithAggregatesFilter<"StockHistoryDaily"> | number
+    time?: DateTimeWithAggregatesFilter<"StockHistoryDaily"> | Date | string
+  }
+
   export type UserCreateInput = {
     id: string
     firstName: string
@@ -10299,6 +11300,55 @@ export namespace Prisma {
   }
 
   export type StockHistoryUncheckedUpdateManyInput = {
+    id?: BigIntFieldUpdateOperationsInput | bigint | number
+    symbol?: StringFieldUpdateOperationsInput | string
+    price?: FloatFieldUpdateOperationsInput | number
+    time?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type StockHistoryDailyCreateInput = {
+    id?: bigint | number
+    symbol: string
+    price: number
+    time: Date | string
+  }
+
+  export type StockHistoryDailyUncheckedCreateInput = {
+    id?: bigint | number
+    symbol: string
+    price: number
+    time: Date | string
+  }
+
+  export type StockHistoryDailyUpdateInput = {
+    id?: BigIntFieldUpdateOperationsInput | bigint | number
+    symbol?: StringFieldUpdateOperationsInput | string
+    price?: FloatFieldUpdateOperationsInput | number
+    time?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type StockHistoryDailyUncheckedUpdateInput = {
+    id?: BigIntFieldUpdateOperationsInput | bigint | number
+    symbol?: StringFieldUpdateOperationsInput | string
+    price?: FloatFieldUpdateOperationsInput | number
+    time?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type StockHistoryDailyCreateManyInput = {
+    id?: bigint | number
+    symbol: string
+    price: number
+    time: Date | string
+  }
+
+  export type StockHistoryDailyUpdateManyMutationInput = {
+    id?: BigIntFieldUpdateOperationsInput | bigint | number
+    symbol?: StringFieldUpdateOperationsInput | string
+    price?: FloatFieldUpdateOperationsInput | number
+    time?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type StockHistoryDailyUncheckedUpdateManyInput = {
     id?: BigIntFieldUpdateOperationsInput | bigint | number
     symbol?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
@@ -10911,6 +11961,42 @@ export namespace Prisma {
     _sum?: NestedFloatFilter<$PrismaModel>
     _min?: NestedFloatFilter<$PrismaModel>
     _max?: NestedFloatFilter<$PrismaModel>
+  }
+
+  export type StockHistoryDailySymbolTimeCompoundUniqueInput = {
+    symbol: string
+    time: Date | string
+  }
+
+  export type StockHistoryDailyCountOrderByAggregateInput = {
+    id?: SortOrder
+    symbol?: SortOrder
+    price?: SortOrder
+    time?: SortOrder
+  }
+
+  export type StockHistoryDailyAvgOrderByAggregateInput = {
+    id?: SortOrder
+    price?: SortOrder
+  }
+
+  export type StockHistoryDailyMaxOrderByAggregateInput = {
+    id?: SortOrder
+    symbol?: SortOrder
+    price?: SortOrder
+    time?: SortOrder
+  }
+
+  export type StockHistoryDailyMinOrderByAggregateInput = {
+    id?: SortOrder
+    symbol?: SortOrder
+    price?: SortOrder
+    time?: SortOrder
+  }
+
+  export type StockHistoryDailySumOrderByAggregateInput = {
+    id?: SortOrder
+    price?: SortOrder
   }
 
   export type BankAccountCreateNestedManyWithoutUserInput = {
@@ -12886,6 +13972,10 @@ export namespace Prisma {
      * @deprecated Use StockHistoryDefaultArgs instead
      */
     export type StockHistoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = StockHistoryDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use StockHistoryDailyDefaultArgs instead
+     */
+    export type StockHistoryDailyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = StockHistoryDailyDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

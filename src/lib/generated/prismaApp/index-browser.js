@@ -189,6 +189,13 @@ exports.Prisma.StockHistoryScalarFieldEnum = {
   time: 'time'
 };
 
+exports.Prisma.StockHistoryDailyScalarFieldEnum = {
+  id: 'id',
+  symbol: 'symbol',
+  price: 'price',
+  time: 'time'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -230,7 +237,8 @@ exports.Prisma.ModelName = {
   Holding: 'Holding',
   TransactionStock: 'TransactionStock',
   PinnedStock: 'PinnedStock',
-  StockHistory: 'StockHistory'
+  StockHistory: 'StockHistory',
+  StockHistoryDaily: 'StockHistoryDaily'
 };
 
 /**

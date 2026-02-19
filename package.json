@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "tsx scripts/syncStocks.ts && next dev",
+    "dev": "concurrently -n syncStocks,dailyStocks,next -c blue,yellow,green \"tsx scripts/syncStocks.ts\" \"tsx scripts/dailyStocks.ts\" \"next dev\"",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
