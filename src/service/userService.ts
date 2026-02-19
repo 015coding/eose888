@@ -51,7 +51,21 @@ export const findUserBalance = async (userId: string) => {
 }
 
 
-
+export const getAllBalancesByDate = async (Currency : Currency) => {
+    const balances = await prisma_yok.bankAccount.groupBy({
+        by: ['createdAt'],
+        where: {
+            currency: Currency,
+        },
+        _sum: {
+            balance: true,
+        },
+        orderBy: {
+            createdAt: 'asc',
+        },
+    });
+    return balances;
+}
 
 
 
