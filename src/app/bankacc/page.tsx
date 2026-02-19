@@ -14,11 +14,17 @@ export default async function BankAcc_Page() {
     where: { userId: session.user.id },
   })
 
+  const serializedAccounts = accounts.map((acc) => ({
+    ...acc,
+    balance: Number(acc.balance),
+    createdAt: acc.createdAt.toISOString(),
+  }))
+
   return (
     <>
       <Navbar />
       <div className="min-h-screen bg-white">
-        <AccountCards accounts={accounts} />
+        <AccountCards accounts={serializedAccounts} />
       </div>
     </>
   )

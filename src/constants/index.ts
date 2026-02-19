@@ -66,3 +66,5 @@ export const COLORS = {
     muted: 'rgba(255, 255, 255, 0.6)',
   },
 } as const
+
+export const THB_PER_USD = 30 as const
