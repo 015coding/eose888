@@ -1,45 +1,35 @@
 'use client'
 
-import { Box, Card, CardContent, Typography } from '@mui/material'
+import { Box, Card, CardContent, Typography } from "@mui/material"
+import { Prisma } from '@/lib/generated/prismaApp'
 
-export default function AccountCards() {
+type BankAccount = Prisma.BankAccountGetPayload<object>
+type Props = {
+  accounts: BankAccount[]
+}
+
+export default function AccountCards({ accounts }: Props) {
   return (
     <Box
-      sx={{
-        display: 'flex',
-        gap: 3,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 4,
-        flexWrap: 'wrap'
-      }}
+      display="flex-col"
+      justifyContent="center"
+      minHeight="100vh"
     >
-      <Card sx={{ width: 250 }}>
-        <CardContent>
-          <Typography variant="h6">Savings Account</Typography>
-          <Typography variant="h4" color="primary">
-            $12,500
-          </Typography>
-        </CardContent>
-      </Card>
-
-      <Card sx={{ width: 250 }}>
-        <CardContent>
-          <Typography variant="h6">Checking Account</Typography>
-          <Typography variant="h4" color="primary">
-            $3,200
-          </Typography>
-        </CardContent>
-      </Card>
-
-      <Card sx={{ width: 250 }}>
-        <CardContent>
-          <Typography variant="h6">Investment</Typography>
-          <Typography variant="h4" color="primary">
-            $27,800
-          </Typography>
-        </CardContent>
-      </Card>
+      <Box display="flex" gap={2} flexWrap="wrap" justifyContent="center">
+        {accounts.map((account) => (
+          <Card key={account.id} sx={{ minWidth: 200 }}>
+            <CardContent>
+              <Typography variant="h6">{account.currency}</Typography>
+              <Typography variant="body1">
+                ${Number(account.balance).toLocaleString()}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {account.country}
+              </Typography>
+            </CardContent>
+          </Card>
+        ))}
+      </Box>
     </Box>
   )
 }

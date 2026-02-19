@@ -22,6 +22,7 @@ export default async function Dashboard() {
         <p className="text-lg">Welcome, {session.user?.name || session.user?.email}!</p>
         <p className="text-sm text-gray-600">Email: {session.user?.email}</p>
         <p className="text-sm text-gray-600">Role: {session.user?.role}</p>
+        <p className="text-sm text-gray-600">Uid: {session.user?.id}</p>
       </div>
       <LogoutButton />
     </div>
