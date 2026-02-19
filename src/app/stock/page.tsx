@@ -11,6 +11,7 @@ import {
   ResponsiveContainer
 } from "recharts";
 import Navbar from "@/components/Navbar";
+import { pinStock } from "@/app/action/pinStock";
 
 interface StockData {
   time: string;
@@ -27,13 +28,11 @@ const formatDate = (dateStr: string): string => {
 
 const formatTime = (dateStr: string): string => {
   const d = new Date(dateStr);
-  // Convert UTC to Bangkok (UTC+7)
   const bangkokHours = (d.getUTCHours() + 7) % 24;
   const bangkokMinutes = d.getUTCMinutes();
   return `${bangkokHours.toString().padStart(2, "0")}:${bangkokMinutes.toString().padStart(2, "0")}`;
 };
 
-// Returns true only for timestamps that fall exactly on a 3-hour mark (Bangkok time)
 const isEvery3Hours = (dateStr: string): boolean => {
   const d = new Date(dateStr);
   const bangkokHours = (d.getUTCHours() + 7) % 24;
@@ -51,6 +50,49 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     );
   }
   return null;
+};
+
+const PinButton = ({ symbol }: { symbol: string }) => {
+  const [pinned, setPinned] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handlePin = async () => {
+    setLoading(true);
+    try {
+      const result = await pinStock(symbol);
+      setPinned(result.pinned);
+    } catch (e) {
+      console.error("Failed to pin:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handlePin}
+      disabled={loading}
+      title={pinned ? "Unpin stock" : "Pin stock"}
+      style={{
+        position: "absolute",
+        bottom: 8,
+        right: 8,
+        width: 36,
+        height: 36,
+        background: pinned ? "#00c853" : "#ccc",
+        border: "2px solid #999",
+        borderRadius: 6,
+        cursor: loading ? "wait" : "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: 18,
+        transition: "background 0.2s",
+      }}
+    >
+      {loading ? "…" : pinned ? "📌" : "📍"}
+    </button>
+  );
 };
 
 export default function StockPage() {
@@ -101,11 +143,9 @@ export default function StockPage() {
               ? stocksDaily[symbol] ?? []
               : stocksMonthly[symbol] ?? [];
 
-          // For daily view, keep original time strings for tick filtering,
-          // then format separately for display
           const formattedData = rawData.map(d => ({
             ...d,
-            originalTime: d.time, // keep raw for tick filtering
+            originalTime: d.time,
             time: currentRange === "1" ? formatTime(d.time) : formatDate(d.time)
           }));
 
@@ -114,7 +154,6 @@ export default function StockPage() {
               ? formattedData.slice(-7)
               : formattedData;
 
-          // For daily view: only show ticks on 3-hour marks
           const dailyTicks = currentRange === "1"
             ? chartData
                 .filter(d => isEvery3Hours(d.originalTime))
@@ -144,7 +183,9 @@ export default function StockPage() {
                 {symbol} Chart
               </h2>
 
+              {/* Chart wrapper needs position: relative for the pin button */}
               <div style={{
+                position: "relative",
                 width: "50%",
                 height: 300,
                 background: "#e0e0e0",
@@ -160,7 +201,7 @@ export default function StockPage() {
                         interval={currentRange === "1" ? 0 : 4}
                         tickFormatter={
                           currentRange === "1"
-                            ? (val: string) => val.slice(0, 2) + ":00" // strip minutes, show hour only
+                            ? (val: string) => val.slice(0, 2) + ":00"
                             : undefined
                         }
                       />
@@ -180,6 +221,8 @@ export default function StockPage() {
                 ) : (
                   <p style={{ padding: 20, color: "#666" }}>Loading...</p>
                 )}
+
+                <PinButton symbol={symbol} />
               </div>
 
               <div style={{ marginTop: 10 }}>
