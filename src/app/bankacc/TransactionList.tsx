@@ -2,12 +2,11 @@
 
 import { useState } from 'react'
 import {
-  Box, Typography, Tabs, Tab, Chip, Divider, Avatar, Pagination, Stack
+  Box, Typography, Tabs, Tab, Chip, Divider
 } from '@mui/material'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz'
-import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
 
 type Account = {
   id: string
@@ -18,7 +17,7 @@ type Account = {
 type TransactionLog = {
   id: string
   accountId: string
-  type: 'DEPOSIT' | 'WITHDRAW' | 'TRANSFER'
+  type: 'DEPOSIT' | 'WITHDRAW' | 'TRANSFER_OUT' | 'TRANSFER_IN'
   amount: number
   balanceBefore: number
   balanceAfter: number
@@ -36,10 +35,8 @@ type Props = {
 
 const themeColor = {
   primary: '#10b981',
-  secondary: '#f8fafc',
-  textMain: '#1e293b',
-  textSecondary: '#64748b',
-  border: '#e2e8f0',
+  secondary: '#d1fae5',
+  text: '#065f46',
 }
 
 function formatMoney(amount: number, currency: string) {
@@ -54,86 +51,42 @@ function formatDate(dateStr: string) {
 }
 
 const TYPE_CONFIG = {
-  DEPOSIT: { label: 'เงินฝาก', color: '#10b981', bg: '#ecfdf5', icon: <ArrowDownwardIcon fontSize="small" /> },
-  WITHDRAW: { label: 'ถอนเงิน', color: '#ef4444', bg: '#fef2f2', icon: <ArrowUpwardIcon fontSize="small" /> },
-  TRANSFER: { label: 'โอนเงิน', color: '#3b82f6', bg: '#eff6ff', icon: <SwapHorizIcon fontSize="small" /> },
+  DEPOSIT:      { label: 'ฝากเงิน',  color: '#10b981', bg: '#d1fae5', icon: <ArrowDownwardIcon fontSize="small" /> },
+  WITHDRAW:     { label: 'ถอนเงิน',  color: '#ef4444', bg: '#fee2e2', icon: <ArrowUpwardIcon fontSize="small" /> },
+  TRANSFER_OUT: { label: 'โอนออก',   color: '#f59e0b', bg: '#fef3c7', icon: <ArrowUpwardIcon fontSize="small" /> },
+  TRANSFER_IN:  { label: 'รับโอน',   color: '#3b82f6', bg: '#dbeafe', icon: <ArrowDownwardIcon fontSize="small" /> },
 }
 
 export default function TransactionList({ accounts, logs }: Props) {
   const [selectedAccountId, setSelectedAccountId] = useState(accounts[0]?.id ?? '')
-  const [page, setPage] = useState(1)
-  const ITEMS_PER_PAGE = 8 // จำนวนรายการต่อ 1 หน้า
 
   const selectedAccount = accounts.find(a => a.id === selectedAccountId)
-  
-  // กรอง เรียงลำดับ และเตรียมข้อมูลสำหรับ Pagination
-  const allFilteredLogs = logs
-    .filter(l => l.accountId === selectedAccountId)
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  const filteredLogs = logs.filter(l => l.accountId === selectedAccountId)
 
-  const totalPages = Math.ceil(allFilteredLogs.length / ITEMS_PER_PAGE)
-  const pagedLogs = allFilteredLogs.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
-
-  const handleTabChange = (_: any, val: string) => {
-    setSelectedAccountId(val)
-    setPage(1) // รีเซ็ตหน้าเมื่อเปลี่ยนแท็บ
-  }
-
-  const handlePageChange = (_: any, value: number) => {
-    setPage(value)
-    // เลื่อนขึ้นเบาๆ เมื่อเปลี่ยนหน้า
-    window.scrollTo({ top: 450, behavior: 'smooth' })
-  }
-
-  const getTransferDirection = (log: TransactionLog) => {
-    if (!log.transfer || !selectedAccount) return null
-    const isFrom = log.transfer.fromAccountId === selectedAccountId
-    const otherAccountId = isFrom ? log.transfer.toAccountId : log.transfer.fromAccountId
-    const otherAccount = accounts.find(a => a.id === otherAccountId)
-    return {
-      isFrom,
-      otherLabel: otherAccount ? `${otherAccount.currency} — ${otherAccount.country}` : 'บัญชีอื่น'
-    }
+  const getTransferCounterpart = (log: TransactionLog) => {
+    if (!log.transfer) return null
+    const otherAccountId = log.type === 'TRANSFER_OUT'
+      ? log.transfer.toAccountId
+      : log.transfer.fromAccountId
+    const other = accounts.find(a => a.id === otherAccountId)
+    return other ? `${other.currency} — ${other.country}` : 'บัญชีอื่น'
   }
 
   return (
-    <Box sx={{ width: '100%', maxWidth: '1000px', mx: 'auto', px: 2, mt: 6, pb: 10 }}>
-      {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
-        <Avatar sx={{ bgcolor: themeColor.textMain, width: 36, height: 36 }}>
-          <ReceiptLongIcon sx={{ fontSize: 20 }} />
-        </Avatar>
-        <Typography variant="h5" fontWeight={800} sx={{ color: themeColor.textMain, letterSpacing: '-0.5px' }}>
-          Transaction History
-        </Typography>
-      </Box>
+    <Box sx={{ width: '100%', maxWidth: '1100px', px: 2, mt: 4 }}>
+      <Typography variant="h6" fontWeight={700} color="#1e293b" mb={2}>
+        ประวัติธุรกรรม
+      </Typography>
 
-      {/* Account Tabs (Pill Style) */}
+      {/* Account Tabs */}
       <Tabs
         value={selectedAccountId}
-        onChange={handleTabChange}
-        variant="scrollable"
-        scrollButtons="auto"
+        onChange={(_, val) => setSelectedAccountId(val)}
         sx={{
-          mb: 4,
-          '& .MuiTabs-indicator': { display: 'none' },
-          '& .MuiTabs-flexContainer': { gap: 1.5 },
-          '& .MuiTab-root': {
-            textTransform: 'none',
-            fontWeight: 700,
-            borderRadius: 4,
-            minHeight: '40px',
-            color: themeColor.textSecondary,
-            border: `1px solid ${themeColor.border}`,
-            bgcolor: '#fff',
-            transition: '0.2s',
-            '&.Mui-selected': {
-              color: '#fff',
-              bgcolor: themeColor.textMain,
-              borderColor: themeColor.textMain,
-            },
-            '&:hover': { bgcolor: '#f1f5f9' },
-          },
+          mb: 3,
+          '& .MuiTab-root': { textTransform: 'none', fontWeight: 600, borderRadius: 2 },
+          '& .Mui-selected': { color: themeColor.primary },
+          '& .MuiTabs-indicator': { bgcolor: themeColor.primary },
         }}
       >
         {accounts.map(acc => (
@@ -141,100 +94,61 @@ export default function TransactionList({ accounts, logs }: Props) {
         ))}
       </Tabs>
 
-      {/* Transaction Table Container */}
-      <Box sx={{ 
-        bgcolor: 'white', 
-        borderRadius: 6, 
-        boxShadow: '0 10px 30px -10px rgba(0,0,0,0.04)', 
-        border: `1px solid ${themeColor.border}`,
-        overflow: 'hidden' 
-      }}>
-        {pagedLogs.length === 0 ? (
-          <Box sx={{ py: 10, textAlign: 'center' }}>
-            <Typography variant="h6" fontWeight={700} color={themeColor.textSecondary}>
-              No transactions yet
-            </Typography>
+      {/* Transaction Rows */}
+      <Box sx={{ bgcolor: 'white', borderRadius: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+        {filteredLogs.length === 0 ? (
+          <Box sx={{ p: 4, textAlign: 'center' }}>
+            <Typography color="text.secondary">ยังไม่มีธุรกรรม</Typography>
           </Box>
         ) : (
-          <>
-            {pagedLogs.map((log, index) => {
-              const config = TYPE_CONFIG[log.type]
-              const direction = getTransferDirection(log)
-              const isDebit = log.type === 'WITHDRAW' || (log.type === 'TRANSFER' && direction?.isFrom)
+          filteredLogs.map((log, index) => {
+            const config = TYPE_CONFIG[log.type]
+            const counterpart = getTransferCounterpart(log)
+            const isDebit = log.type === 'WITHDRAW' || log.type === 'TRANSFER_OUT'
 
-              return (
-                <Box key={log.id} sx={{ transition: '0.2s', '&:hover': { bgcolor: '#f8fafc' } }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', px: { xs: 2, sm: 4 }, py: 3, gap: 3 }}>
-                    <Box sx={{
-                      width: 48, height: 48, borderRadius: 4,
-                      bgcolor: config.bg, color: config.color,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-                    }}>
-                      {config.icon}
-                    </Box>
-
-                    <Box flex={1}>
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <Typography variant="body1" fontWeight={800} color={themeColor.textMain}>
-                          {config.label}
-                        </Typography>
-                        {direction && (
-                          <Chip 
-                            label={direction.isFrom ? `To: ${direction.otherLabel}` : `From: ${direction.otherLabel}`} 
-                            size="small" 
-                            sx={{ fontSize: '0.65rem', fontWeight: 700, height: 20 }} 
-                          />
-                        )}
-                      </Box>
-                      <Typography variant="caption" sx={{ color: themeColor.textSecondary, fontWeight: 500 }}>
-                        {formatDate(log.createdAt)} • ID: {log.id.slice(-6).toUpperCase()}
-                      </Typography>
-                    </Box>
-
-                    <Box textAlign="right">
-                      <Typography variant="h6" fontWeight={900} sx={{ color: isDebit ? '#ef4444' : '#10b981' }}>
-                        {isDebit ? '-' : '+'}{formatMoney(log.amount, selectedAccount?.currency ?? '')}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: themeColor.textSecondary, fontWeight: 600 }}>
-                        Balance: {formatMoney(log.balanceAfter, selectedAccount?.currency ?? '')}
-                      </Typography>
-                    </Box>
+            return (
+              <Box key={log.id}>
+                <Box sx={{ display: 'flex', alignItems: 'center', px: 3, py: 2, gap: 2 }}>
+                  {/* Icon */}
+                  <Box sx={{
+                    width: 40, height: 40, borderRadius: '50%',
+                    bgcolor: config.bg, color: config.color,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                  }}>
+                    {config.icon}
                   </Box>
-                  {index < pagedLogs.length - 1 && <Divider sx={{ mx: 4 }} />}
-                </Box>
-              )
-            })}
 
-            {/* Pagination Section */}
-            {totalPages > 1 && (
-              <Stack 
-                direction="column"
-                alignItems="center"
-                spacing={1}
-                sx={{ py: 4, bgcolor: '#f8fafc', borderTop: `1px solid ${themeColor.border}` }}
-              >
-                <Pagination 
-                  count={totalPages} 
-                  page={page} 
-                  onChange={handlePageChange} 
-                  shape="rounded"
-                  sx={{
-                    '& .MuiPaginationItem-root': {
-                      fontWeight: 800,
-                      '&.Mui-selected': {
-                        bgcolor: themeColor.textMain,
-                        color: 'white',
-                        '&:hover': { bgcolor: '#000' }
-                      }
-                    }
-                  }}
-                />
-                <Typography variant="caption" fontWeight={600} color="text.secondary">
-                  Page {page} of {totalPages} ({allFilteredLogs.length} Transactions)
-                </Typography>
-              </Stack>
-            )}
-          </>
+                  {/* Info */}
+                  <Box flex={1}>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Chip label={config.label} size="small"
+                        sx={{ bgcolor: config.bg, color: config.color, fontWeight: 600, fontSize: '0.7rem' }} />
+                      {counterpart && (
+                        <Typography variant="caption" color="text.secondary">
+                          {log.type === 'TRANSFER_OUT' ? `→ ${counterpart}` : `← ${counterpart}`}
+                        </Typography>
+                      )}
+                    </Box>
+                    <Typography variant="caption" color="text.secondary" mt={0.5} display="block">
+                      {formatDate(log.createdAt)}
+                    </Typography>
+                  </Box>
+
+                  {/* Amount */}
+                  <Box textAlign="right">
+                    <Typography fontWeight={700} sx={{ color: isDebit ? '#ef4444' : '#10b981' }}>
+                      {isDebit ? '-' : '+'}{formatMoney(log.amount, selectedAccount?.currency ?? '')}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      คงเหลือ {formatMoney(log.balanceAfter, selectedAccount?.currency ?? '')}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {index < filteredLogs.length - 1 && <Divider />}
+              </Box>
+            )
+          })
         )}
       </Box>
     </Box>

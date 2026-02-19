@@ -77,7 +77,8 @@ export type Currency = (typeof Currency)[keyof typeof Currency]
 export const TransactionType: {
   DEPOSIT: 'DEPOSIT',
   WITHDRAW: 'WITHDRAW',
-  TRANSFER: 'TRANSFER'
+  TRANSFER_OUT: 'TRANSFER_OUT',
+  TRANSFER_IN: 'TRANSFER_IN'
 };
 
 export type TransactionType = (typeof TransactionType)[keyof typeof TransactionType]
@@ -85,7 +86,9 @@ export type TransactionType = (typeof TransactionType)[keyof typeof TransactionT
 
 export const TradeType: {
   BUY: 'BUY',
-  SELL: 'SELL'
+  SELL: 'SELL',
+  PENDING: 'PENDING',
+  CANCELLED: 'CANCELLED'
 };
 
 export type TradeType = (typeof TradeType)[keyof typeof TradeType]

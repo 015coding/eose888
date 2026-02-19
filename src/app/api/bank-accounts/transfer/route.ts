@@ -63,7 +63,7 @@ export async function POST(req: Request) {
           {
             accountId: fromAccountId,
             transferId: transfer.id,
-            type: TransactionType.TRANSFER,
+            type: TransactionType.TRANSFER_OUT,
             amount: deductAmount,
             balanceBefore: Number(fromAccount.balance),
             balanceAfter: newFromBalance,
@@ -71,7 +71,7 @@ export async function POST(req: Request) {
           {
             accountId: toAccountId,
             transferId: transfer.id,
-            type: TransactionType.TRANSFER,
+            type: TransactionType.TRANSFER_IN,
             amount: creditAmount,
             balanceBefore: Number(toAccount.balance),
             balanceAfter: newToBalance,

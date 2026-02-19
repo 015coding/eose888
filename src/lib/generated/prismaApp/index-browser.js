@@ -211,12 +211,15 @@ exports.Currency = exports.$Enums.Currency = {
 exports.TransactionType = exports.$Enums.TransactionType = {
   DEPOSIT: 'DEPOSIT',
   WITHDRAW: 'WITHDRAW',
-  TRANSFER: 'TRANSFER'
+  TRANSFER_OUT: 'TRANSFER_OUT',
+  TRANSFER_IN: 'TRANSFER_IN'
 };
 
 exports.TradeType = exports.$Enums.TradeType = {
   BUY: 'BUY',
-  SELL: 'SELL'
+  SELL: 'SELL',
+  PENDING: 'PENDING',
+  CANCELLED: 'CANCELLED'
 };
 
 exports.Prisma.ModelName = {

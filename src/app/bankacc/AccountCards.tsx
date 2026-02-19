@@ -9,7 +9,10 @@ import {
 } from "@mui/material"
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import CloseIcon from '@mui/icons-material/Close'
+import DepositWithdrawDialog from './DepositWithdrawDialog'
 
 type BankAccount = {
   id: string
@@ -22,9 +25,8 @@ type BankAccount = {
 
 type Props = { accounts: BankAccount[] }
 
-// ธีมสีสไตล์ EOSE/Fintech: เขียว Emerald + Slate Dark
 const themeColor = {
-  primary: '#10b981', // เขียวหุ้น
+  primary: '#10b981',
   primaryDark: '#059669',
   bgGradient: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
   cardBg: '#ffffff',
@@ -34,6 +36,8 @@ const themeColor = {
 
 export default function AccountCards({ accounts }: Props) {
   const router = useRouter()
+
+  // Transfer state
   const [open, setOpen] = useState(false)
   const [fromId, setFromId] = useState('')
   const [toId, setToId] = useState('')
@@ -41,6 +45,11 @@ export default function AccountCards({ accounts }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+
+  // Deposit/Withdraw state
+  const [dwOpen, setDwOpen] = useState(false)
+  const [dwAccountId, setDwAccountId] = useState('')
+  const [dwMode, setDwMode] = useState<'DEPOSIT' | 'WITHDRAW'>('DEPOSIT')
 
   const fromAccount = accounts.find(a => a.id === fromId)
   const maxAmount = fromAccount ? fromAccount.balance : 0
@@ -59,6 +68,12 @@ export default function AccountCards({ accounts }: Props) {
     setOpen(false)
   }
 
+  const handleOpenDW = (accountId: string, mode: 'DEPOSIT' | 'WITHDRAW') => {
+    setDwAccountId(accountId)
+    setDwMode(mode)
+    setDwOpen(true)
+  }
+
   const handleTransfer = async () => {
     setError('')
     const amountNum = parseFloat(amount)
@@ -68,7 +83,7 @@ export default function AccountCards({ accounts }: Props) {
 
     setLoading(true)
     try {
-      const res = await fetch('/api/bank-accounts', {
+      const res = await fetch('/api/bank-accounts/transfer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fromAccountId: fromId, toAccountId: toId, amount: amountNum }),
@@ -86,14 +101,11 @@ export default function AccountCards({ accounts }: Props) {
     }
   }
 
+  const dwAccount = accounts.find(a => a.id === dwAccountId)
+
   return (
-    <Box sx={{ 
-      minHeight: '100vh', 
-      background: themeColor.bgGradient,
-      pt: 8, pb: 8, px: 2 
-    }}>
+    <Box sx={{ minHeight: '100vh', background: themeColor.bgGradient, pt: 8, pb: 8, px: 2 }}>
       <Box sx={{ maxWidth: '1100px', mx: 'auto' }}>
-        {/* Account Cards */}
         <Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' }} gap={3}>
           {accounts.map((account) => (
             <Card key={account.id} sx={{
@@ -103,7 +115,7 @@ export default function AccountCards({ accounts }: Props) {
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               '&:hover': {
                 transform: 'translateY(-10px)',
-                boxShadow: `0 20px 40px -10px rgba(16, 185, 129, 0.25)`,
+                boxShadow: '0 20px 40px -10px rgba(16, 185, 129, 0.25)',
                 borderColor: themeColor.primary,
               }
             }}>
@@ -112,17 +124,14 @@ export default function AccountCards({ accounts }: Props) {
                   <Box sx={{ bgcolor: 'rgba(16, 185, 129, 0.1)', p: 1.5, borderRadius: 4 }}>
                     <AccountBalanceWalletIcon sx={{ color: themeColor.primary }} />
                   </Box>
-                  <Chip 
-                    label={account.country} 
-                    size="small" 
-                    sx={{ fontWeight: 800, borderRadius: 2, fontSize: '0.65rem', bgcolor: '#f1f5f9' }} 
-                  />
+                  <Chip label={account.country} size="small"
+                    sx={{ fontWeight: 800, borderRadius: 2, fontSize: '0.65rem', bgcolor: '#f1f5f9' }} />
                 </Box>
 
                 <Typography variant="subtitle2" sx={{ color: themeColor.textSecondary, fontWeight: 600, mb: 0.5, textTransform: 'uppercase', fontSize: '0.7rem' }}>
                   Total Balance ({account.currency})
                 </Typography>
-                
+
                 <Box display="flex" alignItems="baseline" gap={1}>
                   <Typography variant="h3" sx={{ fontWeight: 800, color: themeColor.textMain, letterSpacing: '-1.5px' }}>
                     {account.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -134,42 +143,68 @@ export default function AccountCards({ accounts }: Props) {
 
                 <Divider sx={{ my: 3, opacity: 0.5 }} />
 
+                {/* ปุ่มโอนเงิน */}
                 <Button
-                  fullWidth
-                  variant="contained"
+                  fullWidth variant="contained"
                   endIcon={<ArrowForwardIosIcon sx={{ fontSize: '10px !important' }} />}
                   onClick={() => handleOpen(account.id)}
                   disabled={accounts.length < 2}
                   sx={{
-                    py: 1.8,
-                    borderRadius: 4,
-                    textTransform: 'none',
-                    fontWeight: 800,
-                    bgcolor: themeColor.textMain,
-                    boxShadow: 'none',
+                    py: 1.8, borderRadius: 4, textTransform: 'none', fontWeight: 800,
+                    bgcolor: themeColor.textMain, boxShadow: 'none',
                     '&:hover': { bgcolor: '#000', boxShadow: '0 10px 20px rgba(0,0,0,0.1)' },
                   }}
                 >
                   ทำรายการโอนเงิน
                 </Button>
+
+                {/* ปุ่มฝาก/ถอน เฉพาะ THB */}
+                {account.currency === 'THB' && (
+                  <Box display="flex" gap={1.5} mt={1.5}>
+                    <Button
+                      fullWidth variant="outlined"
+                      startIcon={<ArrowDownwardIcon sx={{ fontSize: '14px !important' }} />}
+                      onClick={() => handleOpenDW(account.id, 'DEPOSIT')}
+                      sx={{
+                        py: 1.5, borderRadius: 4, textTransform: 'none', fontWeight: 700,
+                        borderColor: themeColor.primary, color: themeColor.primary,
+                        '&:hover': { bgcolor: '#d1fae5', borderColor: themeColor.primaryDark },
+                      }}
+                    >
+                      ฝาก
+                    </Button>
+                    <Button
+                      fullWidth variant="outlined"
+                      startIcon={<ArrowUpwardIcon sx={{ fontSize: '14px !important' }} />}
+                      onClick={() => handleOpenDW(account.id, 'WITHDRAW')}
+                      sx={{
+                        py: 1.5, borderRadius: 4, textTransform: 'none', fontWeight: 700,
+                        borderColor: '#ef4444', color: '#ef4444',
+                        '&:hover': { bgcolor: '#fee2e2', borderColor: '#dc2626' },
+                      }}
+                    >
+                      ถอน
+                    </Button>
+                  </Box>
+                )}
               </CardContent>
             </Card>
           ))}
         </Box>
       </Box>
 
-      {/* Transfer Dialog - Fixed Hydration Error */}
-      <Dialog 
-        open={open} 
-        onClose={handleClose} 
+      {/* Transfer Dialog */}
+      <Dialog
+        open={open} onClose={handleClose}
         PaperProps={{ sx: { borderRadius: 8, width: '100%', maxWidth: 450, p: 1, boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' } }}
       >
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: 3, pt: 3 }}>
-          {/* แก้ไขบรรทัดนี้: เปลี่ยน h6 เป็น span เพื่อไม่ให้ซ้อน h2 ของ DialogTitle */}
           <Typography variant="h6" component="span" sx={{ fontWeight: 800, color: themeColor.textMain }}>
             โอนเงินระหว่างบัญชี
           </Typography>
-          <IconButton onClick={handleClose} size="small" sx={{ bgcolor: '#f1f5f9' }}><CloseIcon sx={{ fontSize: 20 }} /></IconButton>
+          <IconButton onClick={handleClose} size="small" sx={{ bgcolor: '#f1f5f9' }}>
+            <CloseIcon sx={{ fontSize: 20 }} />
+          </IconButton>
         </DialogTitle>
 
         <DialogContent sx={{ px: 3 }}>
@@ -177,10 +212,7 @@ export default function AccountCards({ accounts }: Props) {
             <Typography variant="caption" sx={{ fontWeight: 800, color: themeColor.textSecondary, ml: 1, textTransform: 'uppercase' }}>
               ต้นทาง
             </Typography>
-            <Box sx={{ 
-              p: 2.5, mt: 0.5, mb: 3, borderRadius: 5, bgcolor: '#f8fafc', 
-              border: '2px solid #f1f5f9' 
-            }}>
+            <Box sx={{ p: 2.5, mt: 0.5, mb: 3, borderRadius: 5, bgcolor: '#f8fafc', border: '2px solid #f1f5f9' }}>
               <Typography variant="body2" sx={{ fontWeight: 700, color: themeColor.textSecondary }}>
                 บัญชีเงินฝาก {fromAccount?.currency}
               </Typography>
@@ -193,15 +225,9 @@ export default function AccountCards({ accounts }: Props) {
               บัญชีปลายทาง
             </Typography>
             <TextField
-              select
-              fullWidth
-              margin="dense"
-              value={toId}
+              select fullWidth margin="dense" value={toId}
               onChange={(e) => setToId(e.target.value)}
-              sx={{ 
-                '& .MuiOutlinedInput-root': { borderRadius: 5, bgcolor: '#fff', mt: 0.5 },
-                mb: 3
-              }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 5, bgcolor: '#fff', mt: 0.5 }, mb: 3 }}
             >
               {accounts.filter(a => a.id !== fromId).map(a => (
                 <MenuItem key={a.id} value={a.id} sx={{ py: 2, borderRadius: 2, mx: 1 }}>
@@ -217,12 +243,8 @@ export default function AccountCards({ accounts }: Props) {
               ระบุจำนวนเงิน
             </Typography>
             <TextField
-              placeholder="0.00"
-              type="number"
-              fullWidth
-              margin="dense"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              placeholder="0.00" type="number" fullWidth margin="dense"
+              value={amount} onChange={(e) => setAmount(e.target.value)}
               InputProps={{
                 startAdornment: <Typography sx={{ mr: 1.5, fontWeight: 800, color: themeColor.textSecondary }}>{fromAccount?.currency}</Typography>
               }}
@@ -236,26 +258,29 @@ export default function AccountCards({ accounts }: Props) {
 
         <DialogActions sx={{ p: 3 }}>
           <Button
-            fullWidth
-            variant="contained"
-            onClick={handleTransfer}
+            fullWidth variant="contained" onClick={handleTransfer}
             disabled={loading || success}
             sx={{
-              py: 2.2,
-              borderRadius: 5,
-              textTransform: 'none',
-              fontWeight: 900,
-              fontSize: '1.1rem',
-              bgcolor: themeColor.primary,
-              '&:hover': { bgcolor: themeColor.primaryDark },
-              boxShadow: `0 12px 24px -6px rgba(16, 185, 129, 0.4)`,
-              transition: 'all 0.2s'
+              py: 2.2, borderRadius: 5, textTransform: 'none', fontWeight: 900, fontSize: '1.1rem',
+              bgcolor: themeColor.primary, '&:hover': { bgcolor: themeColor.primaryDark },
+              boxShadow: '0 12px 24px -6px rgba(16, 185, 129, 0.4)',
             }}
           >
             {loading ? <CircularProgress size={26} color="inherit" /> : 'ยืนยันการทำรายการ'}
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Deposit/Withdraw Dialog */}
+      {dwAccount && (
+        <DepositWithdrawDialog
+          open={dwOpen}
+          onClose={() => setDwOpen(false)}
+          accountId={dwAccountId}
+          balance={dwAccount.balance}
+          mode={dwMode}
+        />
+      )}
     </Box>
   )
 }
