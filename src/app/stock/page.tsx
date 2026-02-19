@@ -12,18 +12,23 @@ import {
 } from "recharts";
 import Navbar from "@/components/Navbar";
 
-const formatDate = (dateStr) => {
-  const d = new Date(dateStr);
+interface StockData {
+    time: string;
+    price: number | string;
+}
 
-  const day = d.getDate();
-  const month = d.toLocaleString("en", { month: "short" });
-  const year = d.getFullYear().toString().slice(-2);
+const formatDate = (dateStr: string): string => {
+    const d = new Date(dateStr);
 
-  return `${day} ${month} '${year}`;
+    const day = d.getDate();
+    const month = d.toLocaleString("en", { month: "short" });
+    const year = d.getFullYear().toString().slice(-2);
+
+    return `${day} ${month} '${year}`;
 };
 
 
-const CustomTooltip = ({ active, payload, label }) => {
+const CustomTooltip = ({ active, payload, label }: { active: boolean; payload: Array<{ value: number }>; label: string }) => {
   if (active && payload?.length) {
     return (
       <div style={{ background: "green", padding: 12, borderRadius: 8 }}>
@@ -36,7 +41,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export default function StockPage() {
-  const [stocks, setStocks] = useState({});
+  const [stocks, setStocks] = useState<Record<string, StockData[]>>({});
 
   useEffect(() => {
     const fetchData = () => {
@@ -70,7 +75,7 @@ export default function StockPage() {
                 .map(d => Number(d.price))
                 .filter(v => !isNaN(v));
 
-                let domain = ["auto", "auto"];
+                let domain: [number, number] = [0, 0];
 
                 if (validPrices.length > 0) {
                 const min = Math.min(...validPrices);
@@ -79,6 +84,8 @@ export default function StockPage() {
                 const padding = (max - min) * 0.2 || 10;
 
                 domain = [min - padding, max + padding];
+            } else {
+                domain = ["auto", "auto"] as any;
             }
 
             return (
@@ -111,7 +118,7 @@ export default function StockPage() {
                         domain={domain}
                         tickFormatter={v => Math.round(v).toLocaleString()}
                         />
-                        <Tooltip content={<CustomTooltip />} />
+                        <Tooltip content={<CustomTooltip active={false} payload={[]} label={""} />} />
                         <Line
                         dataKey="price"
                         stroke="#00c853"
