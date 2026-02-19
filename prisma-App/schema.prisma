@@ -171,3 +171,16 @@ model StockHistory {
 
   @@unique([symbol, time])
 }
+
+/////////////////////////////////////////////////
+// Stock Price History(dayly)
+//////////////////////////////////////////////////
+
+model StockHistoryDaily {
+  id        BigInt @id @default(autoincrement())
+  symbol    String
+  price     Float
+  time      DateTime
+
+  @@unique([symbol, time])
+}
