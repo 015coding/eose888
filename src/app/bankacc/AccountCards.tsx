@@ -7,11 +7,9 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   MenuItem, TextField, Alert, CircularProgress, IconButton, Divider
 } from "@mui/material"
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz'
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import CloseIcon from '@mui/icons-material/Close'
-import TrendingUpIcon from '@mui/icons-material/TrendingUp'
 
 type BankAccount = {
   id: string
@@ -95,19 +93,6 @@ export default function AccountCards({ accounts }: Props) {
       pt: 8, pb: 8, px: 2 
     }}>
       <Box sx={{ maxWidth: '1100px', mx: 'auto' }}>
-        {/* Header */}
-        <Box sx={{ mb: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-          <Box>
-            <Typography variant="h4" sx={{ fontWeight: 800, color: themeColor.textMain, mb: 1, letterSpacing: '-1px' }}>
-              EOSE Wealth
-            </Typography>
-            <Typography variant="body1" sx={{ color: themeColor.textSecondary, fontWeight: 500 }}>
-              Dashboard บัญชีและพอร์ตการลงทุนของคุณ
-            </Typography>
-          </Box>
-          <TrendingUpIcon sx={{ color: themeColor.primary, fontSize: 40, opacity: 0.8 }} />
-        </Box>
-
         {/* Account Cards */}
         <Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' }} gap={3}>
           {accounts.map((account) => (
