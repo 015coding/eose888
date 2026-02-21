@@ -50,7 +50,7 @@ export default function Sidebar({ children, session }: SidebarProps) {
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardRoundedIcon  sx={{ fontSize: 20 }} />, path: '/admin/dashboard' },
     { text: 'Users',     icon: <PeopleRoundedIcon     sx={{ fontSize: 20 }} />, path: '/admin/users'     },
-    { text: 'Settings',  icon: <SettingsRoundedIcon   sx={{ fontSize: 20 }} />, path: '/admin/settings'  },
+    { text: 'Setting',  icon: <SettingsRoundedIcon   sx={{ fontSize: 20 }} />, path: '/admin/setting'  },
   ]
 
   const logItems = [
