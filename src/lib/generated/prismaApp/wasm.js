@@ -189,6 +189,13 @@ exports.Prisma.StockHistoryScalarFieldEnum = {
   time: 'time'
 };
 
+exports.Prisma.StockHistoryDailyScalarFieldEnum = {
+  id: 'id',
+  symbol: 'symbol',
+  price: 'price',
+  time: 'time'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -211,12 +218,15 @@ exports.Currency = exports.$Enums.Currency = {
 exports.TransactionType = exports.$Enums.TransactionType = {
   DEPOSIT: 'DEPOSIT',
   WITHDRAW: 'WITHDRAW',
-  TRANSFER: 'TRANSFER'
+  TRANSFER_OUT: 'TRANSFER_OUT',
+  TRANSFER_IN: 'TRANSFER_IN'
 };
 
 exports.TradeType = exports.$Enums.TradeType = {
   BUY: 'BUY',
-  SELL: 'SELL'
+  SELL: 'SELL',
+  PENDING: 'PENDING',
+  CANCELLED: 'CANCELLED'
 };
 
 exports.Prisma.ModelName = {
@@ -227,7 +237,8 @@ exports.Prisma.ModelName = {
   Holding: 'Holding',
   TransactionStock: 'TransactionStock',
   PinnedStock: 'PinnedStock',
-  StockHistory: 'StockHistory'
+  StockHistory: 'StockHistory',
+  StockHistoryDaily: 'StockHistoryDaily'
 };
 
 /**
