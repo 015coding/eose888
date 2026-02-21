@@ -1,362 +1,327 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import {
-  Box,
-  Paper,
-  Typography,
-  Card,
-  CardContent,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Chip,
-  Skeleton,
-} from '@mui/material'
-import {
-  AccountBalance,
-  SwapHoriz,
-  People,
-} from '@mui/icons-material'
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from 'recharts'
+import { Box, Typography, Paper, Grid, CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, LinearProgress, Stack } from '@mui/material'
+import { People, Receipt, AccountBalanceWallet, Dns, Speed, Memory } from '@mui/icons-material'
 
-// Types
-interface DashboardStats {
-  totalUsers: number
-  totalTransactions: number
-  totalPortfolioValue: number
+const THEME = {
+    bg: '#0b0e11', // Darker background for monitor feel
+    cardBg: '#1E222D',
+    grid: '#2A2E39',
+    textMain: '#D1D4DC',
+    textMuted: '#787B86',
+    up: '#089981',
+    down: '#EF5350',
+    accent: '#2962FF',
+    warning: '#F57C00',
+    success: '#089981',
 }
 
-interface ChartData {
-  name: string
-  value: number
+interface DashboardData {
+    stats: {
+        totalUsers: number
+        totalTransactions: number
+        totalPortfolioValue: number
+    }
+    transactionTrend: { date: string; count: number }[]
+    topStocks: { name: string; value: number }[]
+    recentTransactions: {
+        id: string
+        userName: string
+        stockId: string
+        type: string
+        quantity: number
+        price: number
+        tradeDate: string
+    }[]
 }
-
-interface TransactionTrend {
-  date: string
-  count: number
-}
-
-interface RecentTransaction {
-  id: string
-  userName: string
-  stockId: string
-  type: 'BUY' | 'SELL'
-  quantity: number
-  price: number
-  tradeDate: string
-}
-
-const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
 
 export default function AdminDashboard() {
-  const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState<DashboardStats>({
-    totalUsers: 0,
-    totalTransactions: 0,
-    totalPortfolioValue: 0,
-  })
-  const [transactionTrend, setTransactionTrend] = useState<TransactionTrend[]>([])
-  const [topStocks, setTopStocks] = useState<ChartData[]>([])
-  const [recentTransactions, setRecentTransactions] = useState<RecentTransaction[]>([])
+    const [data, setData] = useState<DashboardData | null>(null)
+    const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchDashboardData()
-  }, [])
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const res = await fetch('/api/admin/dashboard')
+                if (res.ok) {
+                    const json = await res.json()
+                    setData(json)
+                }
+            } catch (error) {
+                console.error('Failed to fetch dashboard data', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchData()
+    }, [])
 
-  const fetchDashboardData = async () => {
-    try {
-      const response = await fetch('/api/admin/dashboard')
-      const data = await response.json()
-      
-      setStats(data.stats)
-      setTransactionTrend(data.transactionTrend || [])
-      setTopStocks(data.topStocks || [])
-      setRecentTransactions(data.recentTransactions || [])
-    } catch (error) {
-      console.error('Failed to fetch dashboard data:', error)
-    } finally {
-      setLoading(false)
+    if (loading) {
+        return (
+            <Box sx={{ minHeight: '100vh', bgcolor: THEME.bg, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <CircularProgress sx={{ color: THEME.accent }} />
+            </Box>
+        )
     }
-  }
 
-  const StatCardSkeleton = () => (
-    <Card className="h-full">
-      <CardContent>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Box className="flex-1">
-            <Skeleton variant="text" width="60%" height={24} />
-            <Skeleton variant="text" width="80%" height={48} sx={{ my: 1 }} />
-            <Skeleton variant="text" width="40%" height={20} />
-          </Box>
-          <Skeleton variant="circular" width={64} height={64} />
+    if (!data) return null
+
+    return (
+        <Box sx={{ minHeight: '100vh', bgcolor: THEME.bg, color: THEME.textMain, p: 3 }}>
+            {/* Header & System Status */}
+            <Box sx={{ mb: 4, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'start', md: 'center' }, gap: 2 }}>
+                <Box>
+                    <Typography variant="h5" fontWeight="800" sx={{ letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: THEME.success, boxShadow: `0 0 10px ${THEME.success}` }} />
+                        SYSTEM MONITOR <span style={{ color: THEME.textMuted, fontWeight: 400 }}>// ADMIN</span>
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: THEME.textMuted, fontFamily: 'monospace' }}>
+                        LAST UPDATED: {new Date().toISOString()}
+                    </Typography>
+                </Box>
+                
+            </Box>
+
+            {/* Stats Cards */}
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+                <Grid size={{ xs: 12, sm: 4 }}>
+                    <StatCard 
+                        title="TOTAL USERS" 
+                        value={data.stats.totalUsers} 
+                        icon={<People />} 
+                        color={THEME.accent} 
+                    />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 4 }}>
+                    <StatCard 
+                        title="TRANSACTIONS" 
+                        value={data.stats.totalTransactions} 
+                        icon={<Receipt />} 
+                        color={THEME.accent} 
+                    />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 4 }}>
+                    <StatCard 
+                        title="ASSETS UNDER MGMT" 
+                        value={`$${data.stats.totalPortfolioValue.toLocaleString()}`} 
+                        icon={<AccountBalanceWallet />} 
+                        color={THEME.warning} 
+                    />
+                </Grid>
+            </Grid>
+
+            {/* Transaction Trend Chart */}
+            <Box sx={{ mb: 4 }}>
+                <TrendChart data={data.transactionTrend} />
+            </Box>
+
+            <Grid container spacing={3}>
+                {/* Live Transaction Feed */}
+                <Grid size={{ xs: 12, md: 8 }}>
+                    <Paper sx={{ bgcolor: THEME.cardBg, p: 3, borderRadius: 2, border: `1px solid ${THEME.grid}` }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                            <Typography variant="h6" fontWeight="700" sx={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' , color: THEME.textMain }}>
+                                Live Transaction Feed
+                            </Typography>
+                            <Chip 
+                                label="REAL-TIME" 
+                                size="small" 
+                                sx={{ 
+                                    bgcolor: `${THEME.success}15`, 
+                                    color: THEME.success, 
+                                    fontWeight: 'bold', 
+                                    border: `1px solid ${THEME.success}30`,
+                                    fontSize: '0.7rem'
+                                }} 
+                            />
+                        </Box>
+                        <TableContainer>
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell sx={{ color: THEME.textMuted, borderBottom: `1px solid ${THEME.grid}`, fontSize: '0.75rem' }}>USER</TableCell>
+                                        <TableCell sx={{ color: THEME.textMuted, borderBottom: `1px solid ${THEME.grid}`, fontSize: '0.75rem' }}>SYMBOL</TableCell>
+                                        <TableCell sx={{ color: THEME.textMuted, borderBottom: `1px solid ${THEME.grid}`, fontSize: '0.75rem' }}>SIDE</TableCell>
+                                        <TableCell align="right" sx={{ color: THEME.textMuted, borderBottom: `1px solid ${THEME.grid}`, fontSize: '0.75rem' }}>VALUE</TableCell>
+                                        <TableCell align="right" sx={{ color: THEME.textMuted, borderBottom: `1px solid ${THEME.grid}`, fontSize: '0.75rem' }}>TIME</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {data.recentTransactions.map((row) => (
+                                        <TableRow key={row.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 }, '&:hover': { bgcolor: `${THEME.grid}40` } }}>
+                                            <TableCell sx={{ color: THEME.textMain, borderBottom: `1px solid ${THEME.grid}`, fontWeight: 500 }}>
+                                                {row.userName}
+                                            </TableCell>
+                                            <TableCell sx={{ borderBottom: `1px solid ${THEME.grid}` }}>
+                                                <span style={{ color: THEME.accent, fontWeight: 'bold', fontFamily: 'monospace' }}>{row.stockId}</span>
+                                            </TableCell>
+                                            <TableCell sx={{ borderBottom: `1px solid ${THEME.grid}` }}>
+                                                <Typography sx={{ color: row.type === 'BUY' ? THEME.up : THEME.down, fontWeight: 700, fontSize: '0.75rem' }}>
+                                                    {row.type}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell align="right" sx={{ color: THEME.textMain, borderBottom: `1px solid ${THEME.grid}`, fontFamily: 'monospace', fontWeight: 500 }}>
+                                                ${(row.price * row.quantity).toLocaleString()}
+                                            </TableCell>
+                                            <TableCell align="right" sx={{ color: THEME.textMuted, borderBottom: `1px solid ${THEME.grid}`, fontFamily: 'monospace', fontSize: '0.75rem' }}>
+                                                {new Date(row.tradeDate).toLocaleTimeString()}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Paper>
+                </Grid>
+
+                {/* Market Exposure */}
+                <Grid size={{ xs: 12, md: 4 }}>
+                    <Paper sx={{ bgcolor: THEME.cardBg, p: 3, borderRadius: 2, border: `1px solid ${THEME.grid}`, height: '100%' }}>
+                        <Typography variant="h6" fontWeight="700" sx={{ mb: 3, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' , color: THEME.textMain }}>
+                            Market Exposure
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            {data.topStocks.map((stock, index) => (
+                                <Box 
+                                    key={stock.name} 
+                                    sx={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'space-between', 
+                                        p: 2, 
+                                        bgcolor: `${THEME.bg}80`, 
+                                        borderRadius: 2,
+                                        border: `1px solid ${THEME.grid}`,
+                                        transition: 'all 0.2s',
+                                        '&:hover': { borderColor: THEME.accent, transform: 'translateX(4px)' }
+                                    }}
+                                >
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                        <Box 
+                                            sx={{ 
+                                                width: 24, 
+                                                height: 24, 
+                                                borderRadius: '50%', 
+                                                bgcolor: index < 3 ? THEME.accent : THEME.grid, 
+                                                color: 'white',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: '0.75rem',
+                                                fontWeight: 'bold'
+                                            }}
+                                        >
+                                            {index + 1}
+                                        </Box>
+                                        <Typography fontWeight="700" sx={{ fontFamily: 'monospace' }}>{stock.name}</Typography>
+                                    </Box>
+                                    <Box sx={{ textAlign: 'right' }}>
+                                        <Typography sx={{ color: THEME.textMain, fontWeight: 'bold' }}>{stock.value}</Typography>
+                                        <Typography variant="caption" sx={{ color: THEME.textMuted, fontSize: '0.65rem' }}>VOL</Typography>
+                                    </Box>
+                                </Box>
+                            ))}
+                        </Box>
+                    </Paper>
+                </Grid>
+            </Grid>
         </Box>
-      </CardContent>
-    </Card>
-  )
+    )
+}
 
-  const ChartSkeleton = () => (
-    <Paper className="p-4">
-      <Skeleton variant="text" width="30%" height={32} sx={{ mb: 2 }} />
-      <Skeleton variant="rectangular" width="100%" height={300} />
-    </Paper>
-  )
+function SystemStatus({ label, value, icon }: { label: string, value: number, icon: React.ReactNode }) {
+    return (
+        <Box sx={{ bgcolor: THEME.cardBg, p: 1, px: 2, borderRadius: 1, border: `1px solid ${THEME.grid}`, minWidth: 100 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                <Box sx={{ color: THEME.textMuted }}>{icon}</Box>
+                <Typography variant="caption" fontWeight="bold" sx={{ color: THEME.textMuted }}>{label}</Typography>
+            </Box>
+            <LinearProgress variant="determinate" value={value} sx={{ bgcolor: THEME.grid, '& .MuiLinearProgress-bar': { bgcolor: THEME.accent }, height: 4, borderRadius: 2 }} />
+        </Box>
+    )
+}
 
-  const TableSkeleton = () => (
-    <Paper className="p-4">
-      <Skeleton variant="text" width="40%" height={32} sx={{ mb: 2 }} />
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <TableCell key={i}>
-                  <Skeleton variant="text" width="100%" />
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {[1, 2, 3, 4, 5].map((row) => (
-              <TableRow key={row}>
-                {[1, 2, 3, 4, 5, 6].map((col) => (
-                  <TableCell key={col}>
-                    <Skeleton variant="text" width="100%" />
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Paper>
-  )
-
-  const renderCustomLabel = (entry: any) => {
-    return `${entry.name} ${(entry.percent * 100).toFixed(0)}%`
-  }
-
-  return (
-    <Box>
-      {/* Header */}
-      <Typography variant="h4" className="font-bold text-gray-800 mb-6">
-        Dashboard
-      </Typography>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        {/* Total Users */}
-        <div>
-          {loading ? (
-            <StatCardSkeleton />
-          ) : (
-            <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white h-full">
-              <CardContent>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Box>
-                    <Typography variant="body2" className="opacity-90 mb-1">
-                      Total Users
-                    </Typography>
-                    <Typography variant="h3" className="font-bold">
-                      {stats.totalUsers.toLocaleString()}
-                    </Typography>
-                    <Typography variant="caption" className="opacity-75 mt-2">
-                      Registered users
-                    </Typography>
-                  </Box>
-                  <People sx={{ fontSize: 64, opacity: 0.3 }} />
-                </Box>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Total Transactions */}
-        <div>
-          {loading ? (
-            <StatCardSkeleton />
-          ) : (
-            <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white h-full">
-              <CardContent>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Box>
-                    <Typography variant="body2" className="opacity-90 mb-1">
-                      Total Transactions
-                    </Typography>
-                    <Typography variant="h3" className="font-bold">
-                      {stats.totalTransactions.toLocaleString()}
-                    </Typography>
-                    <Typography variant="caption" className="opacity-75 mt-2">
-                      All-time trades
-                    </Typography>
-                  </Box>
-                  <SwapHoriz sx={{ fontSize: 64, opacity: 0.3 }} />
-                </Box>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Total Portfolio Value */}
-        <div>
-          {loading ? (
-            <StatCardSkeleton />
-          ) : (
-            <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white h-full">
-              <CardContent>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Box>
-                    <Typography variant="body2" className="opacity-90 mb-1">
-                      Total Portfolio Value
-                    </Typography>
-                    <Typography variant="h3" className="font-bold">
-                      ${stats.totalPortfolioValue.toLocaleString()}
-                    </Typography>
-                    <Typography variant="caption" className="opacity-75 mt-2">
-                      All users combined
-                    </Typography>
-                  </Box>
-                  <AccountBalance sx={{ fontSize: 64, opacity: 0.3 }} />
-                </Box>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      </div>
-
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        {/* Transaction Trend Chart */}
-        <div className="lg:col-span-2">
-          {loading ? (
-            <ChartSkeleton />
-          ) : (
-            <Paper className="p-4">
-              <Typography variant="h6" className="font-semibold mb-4 text-gray-700">
-                Transaction Trend (Last 7 Days)
-              </Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={transactionTrend}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="count" 
-                    stroke="#10b981" 
-                    strokeWidth={2}
-                    name="Transactions"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </Paper>
-          )}
-        </div>
-
-        {/* Top Stocks Pie Chart */}
-        <div>
-          {loading ? (
-            <ChartSkeleton />
-          ) : (
-            <Paper className="p-4">
-              <Typography variant="h6" className="font-semibold mb-4 text-gray-700">
-                Top Traded Stocks
-              </Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={topStocks}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={renderCustomLabel}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {topStocks.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </Paper>
-          )}
-        </div>
-      </div>
-
-      {/* Recent Transactions Table */}
-      <div>
-        {loading ? (
-          <TableSkeleton />
-        ) : (
-          <Paper className="p-4">
-            <Typography variant="h6" className="font-semibold mb-4 text-gray-700">
-              Recent Transactions
+function TrendChart({ data }: { data: { date: string; count: number }[] }) {
+    const max = Math.max(...data.map(d => d.count), 1)
+    
+    return (
+        <Paper sx={{ p: 3, bgcolor: THEME.cardBg, borderRadius: 2, border: `1px solid ${THEME.grid}` }}>
+            <Typography variant="h6" fontWeight="700" sx={{ mb: 3, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' , color: THEME.textMain }}>
+                Transaction Volume (7D)
             </Typography>
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell className="font-semibold">User</TableCell>
-                    <TableCell className="font-semibold">Stock</TableCell>
-                    <TableCell className="font-semibold">Type</TableCell>
-                    <TableCell className="font-semibold" align="right">Quantity</TableCell>
-                    <TableCell className="font-semibold" align="right">Price</TableCell>
-                    <TableCell className="font-semibold">Date</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {recentTransactions.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} align="center" className="text-gray-500 py-8">
-                        No transactions yet
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    recentTransactions.map((transaction) => (
-                      <TableRow key={transaction.id} hover>
-                        <TableCell className="font-medium">{transaction.userName}</TableCell>
-                        <TableCell className="font-mono text-sm">{transaction.stockId}</TableCell>
-                        <TableCell>
-                          <Chip
-                            label={transaction.type}
-                            size="small"
-                            color={transaction.type === 'BUY' ? 'success' : 'error'}
-                          />
-                        </TableCell>
-                        <TableCell align="right">{transaction.quantity.toLocaleString()}</TableCell>
-                        <TableCell align="right">${transaction.price.toFixed(2)}</TableCell>
-                        <TableCell className="text-sm">
-                          {new Date(transaction.tradeDate).toLocaleDateString()}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Paper>
-        )}
-      </div>
-    </Box>
-  )
+            <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 200, pt: 2 }}>
+                {data.map((d) => (
+                    <Box key={d.date} sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, height: '100%' }}>
+                        <Box sx={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end' }}>
+                            <Box 
+                                sx={{ 
+                                    width: '100%', 
+                                    bgcolor: THEME.accent, 
+                                    borderRadius: '4px 4px 0 0',
+                                    height: `${(d.count / max) * 100}%`,
+                                    minHeight: 4,
+                                    transition: 'all 0.3s ease',
+                                    opacity: 0.7,
+                                    '&:hover': { opacity: 1, transform: 'scaleY(1.02)' },
+                                    position: 'relative',
+                                    cursor: 'pointer'
+                                }} 
+                            >
+                                <Box 
+                                    sx={{ 
+                                        position: 'absolute', 
+                                        top: -25, 
+                                        left: '50%', 
+                                        transform: 'translateX(-50%)', 
+                                        fontSize: '0.75rem', 
+                                        fontWeight: 'bold',
+                                        color: THEME.textMain,
+                                        opacity: 0,
+                                        transition: 'opacity 0.2s',
+                                        '.MuiBox-root:hover &': { opacity: 1 }
+                                    }}
+                                >
+                                    {d.count}
+                                </Box>
+                            </Box>
+                        </Box>
+                        <Typography variant="caption" sx={{ color: THEME.textMuted, fontSize: '0.7rem', whiteSpace: 'nowrap' }}>
+                            {d.date}
+                        </Typography>
+                    </Box>
+                ))}
+            </Box>
+        </Paper>
+    )
+}
+
+function StatCard({ title, value, icon, color }: { title: string, value: string | number, icon: React.ReactNode, color: string }) {
+    return (
+        <Paper 
+            sx={{ 
+                bgcolor: THEME.cardBg, 
+                p: 3, 
+                borderRadius: 2, 
+                border: `1px solid ${THEME.grid}`,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
+                transition: 'all 0.2s',
+                '&:hover': {
+                    transform: 'translateY(-2px)',
+                    borderColor: color,
+                    boxShadow: `0 4px 20px ${color}15`
+                }}
+            }
+        >
+            <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: `${color}10`, color: color, display: 'flex' }}>
+                {icon}
+            </Box>
+            <Box>
+                <Typography variant="caption" fontWeight="bold" sx={{ color: THEME.textMuted, letterSpacing: '0.5px' }}>{title}</Typography>
+                <Typography variant="h5" fontWeight="800" sx={{ color: THEME.textMain, fontFamily: 'monospace' }}>{value}</Typography>
+            </Box>
+        </Paper>
+    )
 }

@@ -9,7 +9,7 @@ export const countUsers = async () => {
 }
 
 
-export const getAllBalances = async (currency : Currency) => {
+export const getAllBalances = async () => {
     const [USD , THB] = await Promise.all([
         prisma_yok.bankAccount.aggregate({
             where: {
@@ -29,8 +29,8 @@ export const getAllBalances = async (currency : Currency) => {
         }),
     ])
     return {
-        USD: USD._sum.balance,
-        THB: THB._sum.balance,
+        USD: USD._sum.balance ?? 0,
+        THB: THB._sum.balance ?? 0,
     }
 
 }
@@ -51,11 +51,11 @@ export const findUserBalance = async (userId: string) => {
 }
 
 
-export const getAllBalancesByDate = async (Currency : Currency) => {
+export const getAllBalancesByDate = async (currency : Currency) => {
     const balances = await prisma_yok.bankAccount.groupBy({
         by: ['createdAt'],
         where: {
-            currency: Currency,
+            currency: currency,
         },
         _sum: {
             balance: true,
@@ -66,6 +66,3 @@ export const getAllBalancesByDate = async (Currency : Currency) => {
     });
     return balances;
 }
-
-
-
