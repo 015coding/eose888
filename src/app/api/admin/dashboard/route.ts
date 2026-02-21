@@ -65,7 +65,6 @@ export async function GET() {
       count
     }))
 
-    // ✅ 5. Top Stocks (5 อันดับแรก)
     const stockTransactions = await prismaApp.transactionStock.groupBy({
       by: ['stockId'],
       _count: {
@@ -109,6 +108,20 @@ export async function GET() {
       tradeDate: t.tradeDate.toISOString(),
     }))
 
+    const logsData = await prismaApp.accountLog.findMany({
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
+    const logs = logsData.map(log => ({
+      ...log,
+      id: log.id.toString(),
+      transferId: log.transferId?.toString(),
+      amount: Number(log.amount),
+      balanceBefore: Number(log.balanceBefore),
+      balanceAfter: Number(log.balanceAfter),
+    }))
+
     return NextResponse.json({
       stats: {
         totalUsers,
@@ -118,6 +131,7 @@ export async function GET() {
       transactionTrend,
       topStocks,
       recentTransactions,
+      logs,
     })
 
   } catch (error) {
