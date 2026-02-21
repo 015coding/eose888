@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import {
   Box, Typography, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, IconButton, TextField, Button,
   Dialog, DialogTitle, DialogContent, DialogActions,
   Select, MenuItem, FormControl, InputLabel, Skeleton,
-  Alert, Snackbar, InputAdornment
+  Alert, Snackbar, InputAdornment, TablePagination
 } from '@mui/material'
 import {
   EditRounded as EditIcon,
@@ -31,7 +31,6 @@ const T = {
 
   emerald:     '#10B981',
   emeraldBg:   'rgba(16,185,129,0.10)',
-  emeraldGlow: 'rgba(16,185,129,0.25)',
 
   blue:        '#3B82F6',
   blueBg:      'rgba(59,130,246,0.10)',
@@ -44,7 +43,7 @@ const T = {
 }
 
 // ── Shared ────────────────────────────────────────────────────────────────────
-function GlassCard({ children, sx = {}, hover = false }: { children: React.ReactNode; sx?: object; hover?: boolean }) {
+function GlassCard({ children, sx = {} }: { children: React.ReactNode; sx?: object }) {
   return (
     <Box sx={{
       bgcolor: T.glass,
@@ -53,8 +52,6 @@ function GlassCard({ children, sx = {}, hover = false }: { children: React.React
       borderRadius: '20px',
       boxShadow: T.shadow,
       overflow: 'hidden',
-      transition: hover ? 'all 0.2s ease' : undefined,
-      ...(hover ? { '&:hover': { boxShadow: T.shadowHov, transform: 'translateY(-2px)' } } : {}),
       ...sx,
     }}>
       {children}
@@ -84,6 +81,11 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   
+  // Pagination state
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [totalUsers, setTotalUsers] = useState(0)
+
   // Dialog states
   const [openAddDialog, setOpenAddDialog] = useState(false)
   const [openEditDialog, setOpenEditDialog] = useState(false)
@@ -97,7 +99,26 @@ export default function UsersPage() {
   // Snackbar
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' })
 
-  useEffect(() => { fetchUsers() }, [])
+  const fetchUsers = useCallback(async () => {
+    setLoading(true)
+    try {
+      const response = await fetch(`/api/admin/users?page=${page + 1}&limit=${rowsPerPage}`)
+      const data = await response.json()
+      setUsers(data.users || [])
+      setFilteredUsers(data.users || [])
+      setTotalUsers(data.totalUsers || 0)
+    } catch (error) {
+      console.error('Failed to fetch users:', error)
+      showSnackbar('Failed to fetch users', 'error')
+      setUsers([])
+      setFilteredUsers([])
+      setTotalUsers(0)
+    } finally {
+      setLoading(false)
+    }
+  }, [page, rowsPerPage])
+
+  useEffect(() => { fetchUsers() }, [fetchUsers])
 
   useEffect(() => {
     const filtered = users.filter(user => 
@@ -106,20 +127,6 @@ export default function UsersPage() {
     )
     setFilteredUsers(filtered)
   }, [searchTerm, users])
-
-  const fetchUsers = async () => {
-    try {
-      const response = await fetch('/api/admin/users')
-      const data = await response.json()
-      setUsers(data.users)
-      setFilteredUsers(data.users)
-    } catch (error) {
-      console.error('Failed to fetch users:', error)
-      showSnackbar('Failed to fetch users', 'error')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const handleAddUser = async () => {
     try {
@@ -177,9 +184,18 @@ export default function UsersPage() {
   const showSnackbar = (message: string, severity: 'success' | 'error') => setSnackbar({ open: true, message, severity })
   const handleCloseSnackbar = () => setSnackbar({ ...snackbar, open: false })
 
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage)
+  }
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10))
+    setPage(0)
+  }
+
   const TableSkeleton = () => (
     <>
-      {[1, 2, 3, 4, 5].map((row) => (
+      {[...Array(rowsPerPage)].map((_, row) => (
         <TableRow key={row}>
           {[1, 2, 3, 4, 5].map((col) => (
             <TableCell key={col} sx={{ py: 2 }}>
@@ -191,22 +207,11 @@ export default function UsersPage() {
     </>
   )
 
-  // Custom Glass Dialog config
-  const dialogPaperProps = {
-    sx: {
-      borderRadius: '24px',
-      bgcolor: 'rgba(255,255,255,0.85)',
-      backdropFilter: 'blur(24px)',
-      boxShadow: T.shadowHov,
-      border: `1px solid ${T.glassBorder}`,
-      backgroundImage: 'none',
-    }
-  }
+  const dialogPaperProps = { sx: { borderRadius: '24px', bgcolor: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(24px)', boxShadow: T.shadowHov, border: `1px solid ${T.glassBorder}`, backgroundImage: 'none' } }
 
   return (
     <Box sx={{ minHeight: '100vh', background: T.wallpaper, p: { xs: 2, md: 3 } }}>
       
-      {/* ── Header ── */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, pb: 2.5, borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
         <Box>
           <Typography sx={{ fontFamily: T.mono, fontSize: '0.58rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: T.textDim, mb: 0.4 }}>
@@ -216,54 +221,22 @@ export default function UsersPage() {
             Users Management
           </Typography>
         </Box>
-        <Button
-          disableElevation
-          variant="contained"
-          startIcon={<PersonAddIcon sx={{ fontSize: '18px !important' }} />}
-          onClick={() => setOpenAddDialog(true)}
-          sx={{
-            bgcolor: T.textBright, color: '#fff',
-            borderRadius: '12px', px: 2, py: 1,
-            fontFamily: T.sans, fontSize: '0.85rem', fontWeight: 600, textTransform: 'none',
-            '&:hover': { bgcolor: '#000', transform: 'translateY(-1px)' },
-            transition: 'all 0.2s ease',
-          }}
-        >
+        <Button disableElevation variant="contained" startIcon={<PersonAddIcon sx={{ fontSize: '18px !important' }} />} onClick={() => setOpenAddDialog(true)} sx={{ bgcolor: T.textBright, color: '#fff', borderRadius: '12px', px: 2, py: 1, fontFamily: T.sans, fontSize: '0.85rem', fontWeight: 600, textTransform: 'none', '&:hover': { bgcolor: '#000', transform: 'translateY(-1px)' }, transition: 'all 0.2s ease' }}>
           Add User
         </Button>
       </Box>
 
-      {/* ── Search Bar ── */}
       <GlassCard sx={{ p: 1, mb: 3 }}>
-        <TextField
-          fullWidth
-          placeholder="Search by name or email..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          variant="outlined"
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon sx={{ color: T.textDim, fontSize: 20 }} />
-              </InputAdornment>
-            ),
-            sx: {
-              fontFamily: T.sans, fontSize: '0.9rem',
-              '& fieldset': { border: 'none' },
-              '& input': { py: 1.5, px: 1 },
-            }
-          }}
-        />
+        <TextField fullWidth placeholder="Search by name or email on the current page..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} variant="outlined" InputProps={{ startAdornment: ( <InputAdornment position="start"> <SearchIcon sx={{ color: T.textDim, fontSize: 20 }} /> </InputAdornment> ), sx: { fontFamily: T.sans, fontSize: '0.9rem', '& fieldset': { border: 'none' }, '& input': { py: 1.5, px: 1 } } }} />
       </GlassCard>
 
-      {/* ── Users Table ── */}
       <GlassCard>
         <Box sx={{ px: 2.5, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
           <Typography sx={{ fontFamily: T.mono, fontSize: '0.58rem', letterSpacing: '0.13em', textTransform: 'uppercase', color: T.textDim }}>
             Registered Accounts
           </Typography>
           <Typography sx={{ fontFamily: T.mono, fontSize: '0.65rem', color: T.text }}>
-            Total: {filteredUsers.length}
+            Total: {totalUsers}
           </Typography>
         </Box>
 
@@ -272,24 +245,14 @@ export default function UsersPage() {
             <TableHead>
               <TableRow>
                 {['Name', 'Email', 'Role', 'Joined Date', 'Actions'].map((head, i) => (
-                  <TableCell 
-                    key={head} 
-                    align={i === 4 ? 'center' : 'left'}
-                    sx={{ 
-                      fontFamily: T.mono, fontSize: '0.6rem', letterSpacing: '0.1em', 
-                      textTransform: 'uppercase', color: T.textDim, fontWeight: 600, 
-                      borderBottom: '1px solid rgba(0,0,0,0.05)', py: 1.5, bgcolor: 'rgba(0,0,0,0.015)' 
-                    }}
-                  >
+                  <TableCell key={head} align={i === 4 ? 'center' : 'left'} sx={{ fontFamily: T.mono, fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: T.textDim, fontWeight: 600, borderBottom: '1px solid rgba(0,0,0,0.05)', py: 1.5, bgcolor: 'rgba(0,0,0,0.015)' }}>
                     {head}
                   </TableCell>
                 ))}
               </TableRow>
             </TableHead>
             <TableBody>
-              {loading ? (
-                <TableSkeleton />
-              ) : filteredUsers.length === 0 ? (
+              {loading ? ( <TableSkeleton /> ) : filteredUsers.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
                     <Typography sx={{ fontFamily: T.sans, color: T.textDim, fontSize: '0.9rem' }}>No users found</Typography>
@@ -297,71 +260,34 @@ export default function UsersPage() {
                 </TableRow>
               ) : (
                 filteredUsers.map((user, i) => {
-                  const isEven = i % 2 === 0
                   const isAdmin = user.role === 'ADMIN'
                   return (
-                    <TableRow 
-                      key={user.id} 
-                      sx={{
-                        bgcolor: isEven ? 'transparent' : 'rgba(0,0,0,0.012)',
-                        transition: 'background 0.15s',
-                        '&:hover': { bgcolor: 'rgba(255,255,255,0.7)' },
-                        '&:last-child td': { border: 0 },
-                      }}
-                    >
-                      {/* Name */}
+                    <TableRow key={user.id} sx={{ '&:last-child td': { border: 0 }, '&:hover': { bgcolor: 'rgba(255,255,255,0.7)' } }}>
                       <TableCell sx={{ borderBottom: '1px solid rgba(0,0,0,0.04)', py: 1.75, pl: 2.5 }}>
                         <Typography sx={{ fontFamily: T.sans, fontSize: '0.875rem', fontWeight: 600, color: T.textBright, letterSpacing: '-0.02em' }}>
                           {user.name || 'Unnamed User'}
                         </Typography>
                       </TableCell>
-
-                      {/* Email */}
                       <TableCell sx={{ borderBottom: '1px solid rgba(0,0,0,0.04)', py: 1.75 }}>
-                        <Typography sx={{ fontFamily: T.sans, fontSize: '0.85rem', color: T.text }}>
-                          {user.email}
-                        </Typography>
+                        <Typography sx={{ fontFamily: T.sans, fontSize: '0.85rem', color: T.text }}>{user.email}</Typography>
                       </TableCell>
-
-                      {/* Role Pill */}
                       <TableCell sx={{ borderBottom: '1px solid rgba(0,0,0,0.04)', py: 1.75 }}>
-                        <Box sx={{ 
-                          display: 'inline-flex', alignItems: 'center', gap: 0.5,
-                          px: 1, py: 0.35, borderRadius: '8px', 
-                          bgcolor: isAdmin ? T.redBg : T.blueBg, 
-                          border: `1px solid ${isAdmin ? 'rgba(239,68,68,0.2)' : 'rgba(59,130,246,0.2)'}`
-                        }}>
+                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 1, py: 0.35, borderRadius: '8px', bgcolor: isAdmin ? T.redBg : T.blueBg, border: `1px solid ${isAdmin ? 'rgba(239,68,68,0.2)' : 'rgba(59,130,246,0.2)'}` }}>
                           {isAdmin ? <AdminPanelSettingsRounded sx={{ fontSize: 13, color: T.red }} /> : <PersonRounded sx={{ fontSize: 13, color: T.blue }} />}
                           <Typography sx={{ fontFamily: T.mono, fontSize: '0.55rem', letterSpacing: '0.08em', color: isAdmin ? T.red : T.blue, fontWeight: 700 }}>
                             {user.role}
                           </Typography>
                         </Box>
                       </TableCell>
-
-                      {/* Date */}
                       <TableCell sx={{ borderBottom: '1px solid rgba(0,0,0,0.04)', py: 1.75 }}>
                         <Typography sx={{ fontFamily: T.sans, fontSize: '0.8rem', fontWeight: 500, color: T.text }}>
                           {new Date(user.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                         </Typography>
                       </TableCell>
-
-                      {/* Actions */}
                       <TableCell align="center" sx={{ borderBottom: '1px solid rgba(0,0,0,0.04)', py: 1.75 }}>
                         <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                          <IconButton
-                            size="small"
-                            onClick={() => { setSelectedUser(user); setEditRole(user.role); setOpenEditDialog(true); }}
-                            sx={{ color: T.textDim, '&:hover': { color: T.blue, bgcolor: T.blueBg } }}
-                          >
-                            <EditIcon sx={{ fontSize: 18 }} />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => { setSelectedUser(user); setOpenDeleteDialog(true); }}
-                            sx={{ color: T.textDim, '&:hover': { color: T.red, bgcolor: T.redBg } }}
-                          >
-                            <DeleteIcon sx={{ fontSize: 18 }} />
-                          </IconButton>
+                          <IconButton size="small" onClick={() => { setSelectedUser(user); setEditRole(user.role); setOpenEditDialog(true); }} sx={{ color: T.textDim, '&:hover': { color: T.blue, bgcolor: T.blueBg } }} > <EditIcon sx={{ fontSize: 18 }} /> </IconButton>
+                          <IconButton size="small" onClick={() => { setSelectedUser(user); setOpenDeleteDialog(true); }} sx={{ color: T.textDim, '&:hover': { color: T.red, bgcolor: T.redBg } }} > <DeleteIcon sx={{ fontSize: 18 }} /> </IconButton>
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -371,13 +297,21 @@ export default function UsersPage() {
             </TableBody>
           </Table>
         </TableContainer>
+        <TablePagination
+          component="div"
+          count={totalUsers}
+          page={page}
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[5, 10, 25]}
+          sx={{ borderTop: '1px solid rgba(0,0,0,0.05)', color: T.textDim, fontFamily: T.mono, bgcolor: 'rgba(0,0,0,0.015)', '.MuiTablePagination-select': { color: T.text, fontFamily: T.mono }, '.MuiTablePagination-selectIcon': { color: T.textDim }, '.MuiTablePagination-actions button': { color: T.text }, '.MuiTablePagination-displayedRows': { fontFamily: T.mono, fontSize: '0.72rem' }, '.MuiTablePagination-selectLabel': { fontFamily: T.mono, fontSize: '0.72rem' }, }}
+        />
       </GlassCard>
 
-      {/* ── Add User Dialog ── */}
+      {/* Dialogs and Snackbar */}
       <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)} maxWidth="sm" fullWidth PaperProps={dialogPaperProps}>
-        <DialogTitle sx={{ fontFamily: T.sans, fontWeight: 700, fontSize: '1.2rem', pb: 1, color: T.textBright }}>
-          Add New User
-        </DialogTitle>
+        <DialogTitle sx={{ fontFamily: T.sans, fontWeight: 700, fontSize: '1.2rem', pb: 1, color: T.textBright }}>Add New User</DialogTitle>
         <DialogContent sx={{ '&::-webkit-scrollbar': { display: 'none' } }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 1 }}>
             <TextField label="Name" fullWidth value={newUser.name} onChange={(e) => setNewUser({ ...newUser, name: e.target.value })} variant="filled" InputProps={{ disableUnderline: true, sx: { borderRadius: '12px', bgcolor: 'rgba(0,0,0,0.03)', '&.Mui-focused': { bgcolor: 'rgba(0,0,0,0.05)' } } }} />
@@ -394,66 +328,20 @@ export default function UsersPage() {
         </DialogContent>
         <DialogActions sx={{ p: 2.5, pt: 1 }}>
           <Button onClick={() => setOpenAddDialog(false)} sx={{ color: T.text, fontFamily: T.sans, textTransform: 'none', fontWeight: 600 }}>Cancel</Button>
-          <Button disableElevation onClick={handleAddUser} variant="contained" sx={{ bgcolor: T.textBright, color: '#fff', borderRadius: '10px', fontFamily: T.sans, textTransform: 'none', fontWeight: 600, '&:hover': { bgcolor: '#000' } }}>
-            Add User
-          </Button>
+          <Button disableElevation onClick={handleAddUser} variant="contained" sx={{ bgcolor: T.textBright, color: '#fff', borderRadius: '10px', fontFamily: T.sans, textTransform: 'none', fontWeight: 600, '&:hover': { bgcolor: '#000' } }}>Add User</Button>
         </DialogActions>
       </Dialog>
-
-      {/* ── Edit Role Dialog ── */}
       <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)} maxWidth="xs" fullWidth PaperProps={dialogPaperProps}>
-        <DialogTitle sx={{ fontFamily: T.sans, fontWeight: 700, fontSize: '1.2rem', pb: 1, color: T.textBright }}>
-          Edit User Role
-        </DialogTitle>
-        <DialogContent>
-          <Box sx={{ mt: 1 }}>
-            <Typography sx={{ fontFamily: T.sans, fontSize: '0.9rem', color: T.text, mb: 3 }}>
-              Change role for <span style={{ fontWeight: 600, color: T.textBright }}>{selectedUser?.email}</span>
-            </Typography>
-            <FormControl fullWidth variant="filled">
-              <InputLabel>Role</InputLabel>
-              <Select value={editRole} onChange={(e) => setEditRole(e.target.value as 'USER' | 'ADMIN')} disableUnderline sx={{ borderRadius: '12px', bgcolor: 'rgba(0,0,0,0.03)', '&.Mui-focused': { bgcolor: 'rgba(0,0,0,0.05)' } }}>
-                <MenuItem value="USER" sx={{ fontFamily: T.sans }}>User</MenuItem>
-                <MenuItem value="ADMIN" sx={{ fontFamily: T.sans }}>Admin</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ p: 2.5, pt: 1 }}>
-          <Button onClick={() => setOpenEditDialog(false)} sx={{ color: T.text, fontFamily: T.sans, textTransform: 'none', fontWeight: 600 }}>Cancel</Button>
-          <Button disableElevation onClick={handleUpdateRole} variant="contained" sx={{ bgcolor: T.blue, color: '#fff', borderRadius: '10px', fontFamily: T.sans, textTransform: 'none', fontWeight: 600 }}>
-            Save Changes
-          </Button>
-        </DialogActions>
+        <DialogTitle sx={{ fontFamily: T.sans, fontWeight: 700, fontSize: '1.2rem', pb: 1, color: T.textBright }}>Edit User Role</DialogTitle>
+        <DialogContent><Box sx={{ mt: 1 }}><Typography sx={{ fontFamily: T.sans, fontSize: '0.9rem', color: T.text, mb: 3 }}>Change role for <span style={{ fontWeight: 600, color: T.textBright }}>{selectedUser?.email}</span></Typography><FormControl fullWidth variant="filled"><InputLabel>Role</InputLabel><Select value={editRole} onChange={(e) => setEditRole(e.target.value as 'USER' | 'ADMIN')} disableUnderline sx={{ borderRadius: '12px', bgcolor: 'rgba(0,0,0,0.03)', '&.Mui-focused': { bgcolor: 'rgba(0,0,0,0.05)' } }}><MenuItem value="USER" sx={{ fontFamily: T.sans }}>User</MenuItem><MenuItem value="ADMIN" sx={{ fontFamily: T.sans }}>Admin</MenuItem></Select></FormControl></Box></DialogContent>
+        <DialogActions sx={{ p: 2.5, pt: 1 }}><Button onClick={() => setOpenEditDialog(false)} sx={{ color: T.text, fontFamily: T.sans, textTransform: 'none', fontWeight: 600 }}>Cancel</Button><Button disableElevation onClick={handleUpdateRole} variant="contained" sx={{ bgcolor: T.blue, color: '#fff', borderRadius: '10px', fontFamily: T.sans, textTransform: 'none', fontWeight: 600 }}>Save Changes</Button></DialogActions>
       </Dialog>
-
-      {/* ── Delete Confirmation Dialog ── */}
       <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)} PaperProps={dialogPaperProps}>
-        <DialogTitle sx={{ fontFamily: T.sans, fontWeight: 700, fontSize: '1.2rem', pb: 1, color: T.textBright }}>
-          Confirm Delete
-        </DialogTitle>
-        <DialogContent>
-          <Typography sx={{ fontFamily: T.sans, fontSize: '0.95rem', color: T.text }}>
-            Are you sure you want to delete <span style={{ fontWeight: 600, color: T.textBright }}>{selectedUser?.email}</span>?
-          </Typography>
-          <Alert severity="error" sx={{ mt: 2, borderRadius: '12px', '& .MuiAlert-message': { fontFamily: T.sans, fontSize: '0.85rem' } }}>
-            This action cannot be undone.
-          </Alert>
-        </DialogContent>
-        <DialogActions sx={{ p: 2.5, pt: 1 }}>
-          <Button onClick={() => setOpenDeleteDialog(false)} sx={{ color: T.text, fontFamily: T.sans, textTransform: 'none', fontWeight: 600 }}>Cancel</Button>
-          <Button disableElevation onClick={handleDeleteUser} variant="contained" sx={{ bgcolor: T.red, color: '#fff', borderRadius: '10px', fontFamily: T.sans, textTransform: 'none', fontWeight: 600, '&:hover': { bgcolor: '#DC2626' } }}>
-            Delete Account
-          </Button>
-        </DialogActions>
+        <DialogTitle sx={{ fontFamily: T.sans, fontWeight: 700, fontSize: '1.2rem', pb: 1, color: T.textBright }}>Confirm Delete</DialogTitle>
+        <DialogContent><Typography sx={{ fontFamily: T.sans, fontSize: '0.95rem', color: T.text }}>Are you sure you want to delete <span style={{ fontWeight: 600, color: T.textBright }}>{selectedUser?.email}</span>?</Typography><Alert severity="error" sx={{ mt: 2, borderRadius: '12px', '& .MuiAlert-message': { fontFamily: T.sans, fontSize: '0.85rem' } }}>This action cannot be undone.</Alert></DialogContent>
+        <DialogActions sx={{ p: 2.5, pt: 1 }}><Button onClick={() => setOpenDeleteDialog(false)} sx={{ color: T.text, fontFamily: T.sans, textTransform: 'none', fontWeight: 600 }}>Cancel</Button><Button disableElevation onClick={handleDeleteUser} variant="contained" sx={{ bgcolor: T.red, color: '#fff', borderRadius: '10px', fontFamily: T.sans, textTransform: 'none', fontWeight: 600, '&:hover': { bgcolor: '#DC2626' } }}>Delete Account</Button></DialogActions>
       </Dialog>
-
-      {/* ── Snackbar ── */}
-      <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={handleCloseSnackbar} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%', borderRadius: '12px', boxShadow: T.shadowHov, fontFamily: T.sans, fontWeight: 500, alignItems: 'center' }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={handleCloseSnackbar} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}><Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%', borderRadius: '12px', boxShadow: T.shadowHov, fontFamily: T.sans, fontWeight: 500, alignItems: 'center' }}>{snackbar.message}</Alert></Snackbar>
     </Box>
   )
 }

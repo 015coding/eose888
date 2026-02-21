@@ -1,10 +1,10 @@
 // app/api/admin/users/route.ts
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import * as userService from '@/service/admin/user.service'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -12,9 +12,13 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const users = await userService.getUsers()
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') || '1', 10)
+    const limit = parseInt(searchParams.get('limit') || '10', 10)
 
-    return NextResponse.json({ users })
+    const { users, totalUsers } = await userService.getUsers(page, limit)
+
+    return NextResponse.json({ users, totalUsers })
   } catch (error) {
     console.error('Get users error:', error)
     return NextResponse.json(

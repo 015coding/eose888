@@ -3,16 +3,26 @@ import { prisma } from '@/lib/prisma'
 import { prismaApp } from '@/lib/prismaApp'
 import bcrypt from 'bcrypt'
 
-export async function getUsers() {
-  const users = await prisma.user.findMany({
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-    },
-  })
-  return users
+export async function getUsers(page: number = 1, limit: number = 10) {
+  const skip = (page - 1) * limit
+  const [users, totalUsers] = await prisma.$transaction([
+    prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      },
+      skip: skip,
+      take: limit,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    }),
+    prisma.user.count(),
+  ])
+  return { users, totalUsers }
 }
 
 export async function createUser(data: any) {
