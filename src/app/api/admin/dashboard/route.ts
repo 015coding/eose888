@@ -4,7 +4,6 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { prisma } from '@/lib/prisma'
 import { prismaApp } from '@/lib/prismaApp'
-import { getAllTransactionsLog } from '@/service/userService'
 
 export async function GET() {
   try {

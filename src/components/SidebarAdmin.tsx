@@ -4,37 +4,41 @@ import { useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import { Session as NextAuthSession } from 'next-auth'
-// MUI Components
-import { 
-  Box, 
-  Drawer, 
-  AppBar, 
-  Toolbar, 
-  List, 
-  Typography, 
-  IconButton, 
-  ListItem, 
-  ListItemButton, 
-  ListItemIcon, 
-  ListItemText,
-  Avatar,
-  Collapse,
+import {
+  Box, Drawer, AppBar, Toolbar, List, Typography, IconButton,
+  ListItem, ListItemButton, ListItemIcon, ListItemText,
+  Avatar, Collapse, Button, Tooltip,
 } from '@mui/material'
 
-// Icons
 import MenuIcon from '@mui/icons-material/Menu'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import PeopleIcon from '@mui/icons-material/People'
 import SettingsIcon from '@mui/icons-material/Settings'
 import LogoutIcon from '@mui/icons-material/Logout'
-import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import HistoryIcon from '@mui/icons-material/History'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import LoginIcon from '@mui/icons-material/Login'
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz'
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'
 
-const drawerWidth = 260
+const drawerWidth = 240
+
+const T = {
+  bg:         '#F5F7FA',
+  sidebar:    '#FFFFFF',
+  border:     '#E8EBF2',
+  text:       '#5A6072',
+  textDim:    '#A0A8BC',
+  textBright: '#0E1118',
+  accent:     '#2962FF',
+  accentBg:   'rgba(41, 98, 255, 0.07)',
+  accentHov:  'rgba(41, 98, 255, 0.12)',
+  hover:      'rgba(0,0,0,0.03)',
+  green:      '#0C9B87',
+  red:        '#EF5350',
+  mono:       '"DM Mono", "JetBrains Mono", monospace',
+}
 
 interface SidebarProps {
   children: React.ReactNode
@@ -43,277 +47,241 @@ interface SidebarProps {
 
 export default function Sidebar({ children, session }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [logsOpen, setLogsOpen] = useState(false) 
+  const [logsOpen, setLogsOpen]     = useState(false)
   const pathname = usePathname()
-  const router = useRouter()
+  const router   = useRouter()
 
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen)
-  }
-
-  const handleLogsClick = () => {
-    setLogsOpen(!logsOpen)
-  }
-
-  // manu
   const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin/dashboard' },
-    { text: 'Users', icon: <PeopleIcon />, path: '/admin/users' },
-    { text: 'Settings', icon: <SettingsIcon />, path: '/admin/settings' },
+    { text: 'Dashboard', icon: <DashboardIcon sx={{ fontSize: 18 }} />, path: '/admin/dashboard' },
+    { text: 'Users',     icon: <PeopleIcon    sx={{ fontSize: 18 }} />, path: '/admin/users'     },
+    { text: 'Settings',  icon: <SettingsIcon  sx={{ fontSize: 18 }} />, path: '/admin/settings'  },
   ]
 
-  //Logs submenu
-  const logMenuItems = [
-    { text: 'Login & Register', icon: <LoginIcon />, path: '/admin/log/auth' },
-    { text: 'Transactions', icon: <SwapHorizIcon />, path: '/admin/log/transactions' },
+  const logItems = [
+    { text: 'Auth',         icon: <LoginIcon     sx={{ fontSize: 16 }} />, path: '/admin/log/auth'         },
+    { text: 'Transactions', icon: <SwapHorizIcon sx={{ fontSize: 16 }} />, path: '/admin/log/transactions' },
   ]
 
-  const drawerContent = (
-    <div className="flex flex-col h-full bg-white">
-      {/* Logo Section */}
-      <div className="h-16 flex items-center px-6 border-b border-gray-100">
-        <Typography 
-          variant="h5" 
-          className="font-bold text-emerald-500 cursor-pointer"
-          onClick={() => router.push('/')}
-        >
-          eose888
-        </Typography>
-      </div>
-
-      {/* User Profile Summary */}
-      <div className="p-4 flex items-center gap-3 bg-gray-50/50 mx-2 mt-2 rounded-lg">
-        <Avatar sx={{ bgcolor: '#49e6b7' }}>
-          <AccountCircleIcon />
-        </Avatar>
-        <div className="overflow-hidden">
-          <p className="text-sm font-semibold text-gray-700 truncate">
-            {session.user?.name || 'Admin User'}
-          </p>
-          <p className="text-xs text-gray-500 truncate">
-            {session.user?.email || 'admin@eose888.com'}
-          </p>
-        </div>
-      </div>
-
-      {/* Menu List */}
-      <List className="flex-1 px-2 mt-2 space-y-1">
-        {/* Main Menu Items */}
-        {menuItems.map((item) => {
-          const isActive = pathname === item.path
-          return (
-            <ListItem key={item.text} disablePadding>
-              <ListItemButton
-                onClick={() => router.push(item.path)}
-                selected={isActive}
-                sx={{
-                  borderRadius: '8px',
-                  '&.Mui-selected': {
-                    backgroundColor: '#ecfdf5',
-                    color: '#059669',
-                    '&:hover': {
-                      backgroundColor: '#d1fae5',
-                    },
-                    '& .MuiListItemIcon-root': {
-                      color: '#059669',
-                    },
-                  },
-                  '&:hover': {
-                    backgroundColor: '#f3f4f6',
-                  },
-                }}
-              >
-                <ListItemIcon 
-                  sx={{ 
-                    minWidth: 40,
-                    color: isActive ? '#059669' : '#9ca3af' 
-                  }}
-                >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText 
-                  primary={item.text} 
-                  primaryTypographyProps={{ 
-                    fontSize: '0.95rem',
-                    fontWeight: isActive ? 600 : 400
-                  }} 
-                />
-              </ListItemButton>
-            </ListItem>
-          )
-        })}
-
-        {/* Logs Menu with Submenu */}
-        <ListItem disablePadding>
+  const NavItem = ({ text, icon, path }: { text: string; icon: React.ReactNode; path: string }) => {
+    const active = pathname === path
+    return (
+      <Tooltip title={text} placement="right" disableHoverListener>
+        <ListItem disablePadding sx={{ mb: 0.5 }}>
           <ListItemButton
-            onClick={handleLogsClick}
+            onClick={() => router.push(path)}
             sx={{
-              borderRadius: '8px',
-              '&:hover': {
-                backgroundColor: '#f3f4f6',
-              },
+              px: 1.5, py: 0.85, borderRadius: '6px', position: 'relative',
+              transition: 'background 0.15s',
+              bgcolor: active ? T.accentBg : 'transparent',
+              '&:hover': { bgcolor: active ? T.accentHov : T.hover },
+              '&::before': active ? {
+                content: '""', position: 'absolute', left: 0, top: '20%',
+                height: '60%', width: '2px', borderRadius: '0 2px 2px 0', bgcolor: T.accent,
+              } : {},
             }}
           >
-            <ListItemIcon sx={{ minWidth: 40, color: '#9ca3af' }}>
-              <HistoryIcon />
+            <ListItemIcon sx={{ minWidth: 34, color: active ? T.accent : T.textDim }}>
+              {icon}
             </ListItemIcon>
-            <ListItemText 
-              primary="Logs" 
-              primaryTypographyProps={{ fontSize: '0.95rem' }} 
+            <ListItemText
+              primary={text}
+              primaryTypographyProps={{
+                fontSize: '0.8125rem', fontWeight: active ? 600 : 400,
+                letterSpacing: '0.01em',
+                color: active ? T.accent : T.text,
+                fontFamily: T.mono,
+              }}
             />
-            {logsOpen ? <ExpandLess /> : <ExpandMore />}
           </ListItemButton>
         </ListItem>
+      </Tooltip>
+    )
+  }
 
-        {/*Logs Submenu Items */}
-        <Collapse in={logsOpen} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            {logMenuItems.map((item) => {
-              const isActive = pathname === item.path
-              return (
-                <ListItem key={item.text} disablePadding>
-                  <ListItemButton
-                    onClick={() => router.push(item.path)}
-                    selected={isActive}
-                    sx={{
-                      pl: 4,
-                      borderRadius: '8px',
-                      '&.Mui-selected': {
-                        backgroundColor: '#ecfdf5',
-                        color: '#059669',
-                        '&:hover': {
-                          backgroundColor: '#d1fae5',
-                        },
-                        '& .MuiListItemIcon-root': {
-                          color: '#059669',
-                        },
-                      },
-                      '&:hover': {
-                        backgroundColor: '#f3f4f6',
-                      },
-                    }}
-                  >
-                    <ListItemIcon 
-                      sx={{ 
-                        minWidth: 36,
-                        color: isActive ? '#059669' : '#9ca3af' 
+  const SectionLabel = ({ label }: { label: string }) => (
+    <Typography sx={{
+      display: 'block', px: 1.5, pt: 2, pb: 0.75,
+      color: T.textDim, fontFamily: T.mono,
+      fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase',
+    }}>
+      {label}
+    </Typography>
+  )
+
+  const drawerContent = (
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: T.sidebar, borderRight: `1px solid ${T.border}` }}>
+      {/* Logo */}
+      <Box
+        sx={{
+          height: 52, display: 'flex', alignItems: 'center', px: 2,
+          borderBottom: `1px solid ${T.border}`, cursor: 'pointer', flexShrink: 0,
+        }}
+        onClick={() => router.push('/')}
+      >
+        <Box sx={{
+          width: 7, height: 7, borderRadius: '50%',
+          bgcolor: T.green, boxShadow: `0 0 8px ${T.green}44`, mr: 1.25, flexShrink: 0,
+        }} />
+        <Typography sx={{
+          fontFamily: T.mono, fontSize: '0.9rem', fontWeight: 700,
+          letterSpacing: '-0.02em', color: T.textBright, userSelect: 'none',
+        }}>
+          Eose<span style={{ color: T.accent }}>888</span>
+        </Typography>
+        <Box sx={{
+          ml: 'auto', px: 0.75, py: 0.2, borderRadius: '4px',
+          bgcolor: 'rgba(12,155,135,0.08)', border: `1px solid rgba(12,155,135,0.2)`,
+        }}>
+          <Typography sx={{
+            fontFamily: T.mono, fontSize: '0.55rem', letterSpacing: '0.08em',
+            color: T.green, fontWeight: 600,
+          }}>
+            ADMIN
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* Nav */}
+      <Box sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', px: 1, py: 1, '&::-webkit-scrollbar': { width: 0 } }}>
+        <SectionLabel label="Main" />
+        <List disablePadding>
+          {menuItems.map(item => <NavItem key={item.path} {...item} />)}
+        </List>
+
+        <SectionLabel label="Logs" />
+        <List disablePadding>
+          <ListItem disablePadding sx={{ mb: 0.5 }}>
+            <ListItemButton
+              onClick={() => setLogsOpen(p => !p)}
+              sx={{ px: 1.5, py: 0.85, borderRadius: '6px', '&:hover': { bgcolor: T.hover } }}
+            >
+              <ListItemIcon sx={{ minWidth: 34, color: T.textDim }}>
+                <HistoryIcon sx={{ fontSize: 18 }} />
+              </ListItemIcon>
+              <ListItemText
+                primary="All Logs"
+                primaryTypographyProps={{ fontSize: '0.8125rem', fontWeight: 400, color: T.text, fontFamily: T.mono }}
+              />
+              {logsOpen
+                ? <ExpandLess sx={{ fontSize: 16, color: T.textDim }} />
+                : <ExpandMore sx={{ fontSize: 16, color: T.textDim }} />}
+            </ListItemButton>
+          </ListItem>
+          <Collapse in={logsOpen} timeout="auto" unmountOnExit>
+            <List disablePadding sx={{ pl: 1 }}>
+              {logItems.map(item => {
+                const active = pathname === item.path
+                return (
+                  <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
+                    <ListItemButton
+                      onClick={() => router.push(item.path)}
+                      sx={{
+                        px: 1.5, py: 0.75, borderRadius: '6px',
+                        bgcolor: active ? T.accentBg : 'transparent',
+                        '&:hover': { bgcolor: active ? T.accentHov : T.hover },
                       }}
                     >
-                      {item.icon}
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary={item.text} 
-                      primaryTypographyProps={{ 
-                        fontSize: '0.9rem',
-                        fontWeight: isActive ? 600 : 400
-                      }} 
-                    />
-                  </ListItemButton>
-                </ListItem>
-              )
-            })}
-          </List>
-        </Collapse>
-      </List>
+                      <ListItemIcon sx={{ minWidth: 30, color: active ? T.accent : T.textDim }}>
+                        {item.icon}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={item.text}
+                        primaryTypographyProps={{
+                          fontSize: '0.775rem', color: active ? T.accent : T.text,
+                          fontWeight: active ? 600 : 400, fontFamily: T.mono,
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                )
+              })}
+            </List>
+          </Collapse>
+        </List>
+      </Box>
 
-      {/* Logout Button */}
-      <div className="p-2 mt-auto border-t border-gray-100">
-        <ListItemButton
+      {/* Footer */}
+      <Box sx={{ borderTop: `1px solid ${T.border}`, p: 1.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mb: 1.25, px: 0.5 }}>
+          <Avatar sx={{ width: 30, height: 30, bgcolor: T.accentBg, border: `1px solid ${T.border}` }}>
+            <AdminPanelSettingsIcon sx={{ fontSize: 15, color: T.accent }} />
+          </Avatar>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography sx={{
+              fontSize: '0.775rem', fontWeight: 600, color: T.textBright,
+              fontFamily: T.mono, letterSpacing: '-0.01em',
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            }}>
+              {session.user?.name || 'Admin'}
+            </Typography>
+            <Typography sx={{
+              fontSize: '0.6rem', color: T.textDim, fontFamily: T.mono,
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            }}>
+              {session.user?.email}
+            </Typography>
+          </Box>
+        </Box>
+        <Button
+          fullWidth size="small"
+          startIcon={<LogoutIcon sx={{ fontSize: '14px !important' }} />}
           onClick={() => signOut({ callbackUrl: '/login' })}
           sx={{
-            borderRadius: '8px',
-            color: '#ef4444',
-            '&:hover': {
-              backgroundColor: '#fef2f2',
-            },
+            justifyContent: 'flex-start', px: 1.5, py: 0.75, borderRadius: '6px',
+            color: T.textDim, fontFamily: T.mono, fontSize: '0.75rem',
+            fontWeight: 500, letterSpacing: '0.02em', textTransform: 'none',
+            transition: 'all 0.15s',
+            '&:hover': { bgcolor: 'rgba(239,83,80,0.07)', color: T.red },
           }}
         >
-          <ListItemIcon sx={{ minWidth: 40, color: '#ef4444' }}>
-            <LogoutIcon />
-          </ListItemIcon>
-          <ListItemText primary="Logout" />
-        </ListItemButton>
-      </div>
-    </div>
+          Sign out
+        </Button>
+      </Box>
+    </Box>
   )
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      
-      {/* Mobile Header (Hamburger) */}
+    <Box sx={{ display: 'flex', bgcolor: T.bg, minHeight: '100vh' }}>
       <AppBar
-        position="fixed"
+        position="fixed" elevation={0}
         sx={{
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
-          bgcolor: 'white',
+          width: { md: `calc(100% - ${drawerWidth}px)` },
+          ml: { md: `${drawerWidth}px` },
+          bgcolor: T.sidebar, borderBottom: `1px solid ${T.border}`,
+          display: { md: 'none' },
           boxShadow: 'none',
-          borderBottom: '1px solid #f3f4f6',
-          display: { sm: 'none' }
         }}
       >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, color: '#4b5563' }}
-          >
-            <MenuIcon />
+        <Toolbar sx={{ minHeight: '52px !important' }}>
+          <IconButton edge="start" onClick={() => setMobileOpen(p => !p)} sx={{ color: T.text, mr: 1 }}>
+            <MenuIcon sx={{ fontSize: 20 }} />
           </IconButton>
-          <Typography variant="h6" noWrap component="div" className="text-emerald-500 font-bold">
-            eose888
+          <Typography sx={{ fontFamily: T.mono, fontSize: '0.875rem', fontWeight: 700, color: T.textBright }}>
+            Eose<span style={{ color: T.accent }}>888</span>
           </Typography>
         </Toolbar>
       </AppBar>
 
-      {/* Sidebar Navigation */}
-      <Box
-        component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-      >
-        {/* Mobile Drawer */}
+      <Box component="nav" sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}>
         <Drawer
-          variant="temporary"
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
+          variant="temporary" open={mobileOpen} onClose={() => setMobileOpen(false)}
           ModalProps={{ keepMounted: true }}
-          sx={{
-            display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth, border: 'none' },
-          }}
+          sx={{ display: { xs: 'block', md: 'none' }, '& .MuiDrawer-paper': { width: drawerWidth, border: 'none' } }}
         >
           {drawerContent}
         </Drawer>
-
-        {/* Desktop Drawer */}
         <Drawer
           variant="permanent"
-          sx={{
-            display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { 
-              boxSizing: 'border-box', 
-              width: drawerWidth, 
-              borderRight: '1px solid #f3f4f6' 
-            },
-          }}
+          sx={{ display: { xs: 'none', md: 'block' }, '& .MuiDrawer-paper': { width: drawerWidth, border: 'none', boxShadow: '1px 0 0 #E8EBF2' } }}
           open
         >
           {drawerContent}
         </Drawer>
       </Box>
 
-      {/* Main Content Area */}
       <Box
         component="main"
-        sx={{
-          flexGrow: 1,
-          p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          minHeight: '100vh',
-          bgcolor: '#f9fafb',
-          mt: { xs: 8, sm: 0 }
-        }}
+        sx={{ flexGrow: 1, width: { md: `calc(100% - ${drawerWidth}px)` }, minHeight: '100vh', bgcolor: T.bg, mt: { xs: '52px', md: 0 } }}
       >
         {children}
       </Box>

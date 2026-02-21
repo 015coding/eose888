@@ -1,5 +1,5 @@
-import { getAllTransactionsLog , countUsers , countTransactions , getAllBalances , getDailyTransactionVolume} from "@/service/userService";
-import { NextResponse } from "next/server";
+import { getAllTransactionsLog , countUsers  , getAllBalances , getDailyTransactionVolume} from "@/service/userService";
+import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
@@ -7,10 +7,9 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') || '10');
 
     try {
-        const [transactions, totalCount , totalTransactions , balances , dailyVolume] = await Promise.all([
+        const [transactions, totalCount  , balances , dailyVolume] = await Promise.all([
             getAllTransactionsLog(page, limit),
             countUsers(),
-            countTransactions(),
             getAllBalances(),
             getDailyTransactionVolume()
         ]);
@@ -23,7 +22,6 @@ export async function GET(request: Request) {
             transactions: transactions,
             Allbalances: totalBalance,
             totalCount: totalCount,
-            totalTransactions: totalTransactions,
             dailyVolume: dailyVolume,
             totalBalance: totalBalance
         });
