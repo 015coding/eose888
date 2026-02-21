@@ -71,15 +71,13 @@ export default function AdminDashboard() {
         <Box sx={{ minHeight: '100vh', bgcolor: THEME.bg, color: THEME.textMain, p: 3 }}>
             {/* Header & System Status */}
             <Box sx={{ mb: 4, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'start', md: 'center' }, gap: 2 }}>
-                <Box>
                     <Typography variant="h5" fontWeight="800" sx={{ letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: THEME.success, boxShadow: `0 0 10px ${THEME.success}` }} />
-                        SYSTEM MONITOR <span style={{ color: THEME.textMuted, fontWeight: 400 }}>// ADMIN</span>
+                        SYSTEM MONITOR <span style={{ color: THEME.textMuted, fontWeight: 400 }}> : ADMIN</span>
                     </Typography>
-                    <Typography variant="caption" sx={{ color: THEME.textMuted, fontFamily: 'monospace' }}>
-                        LAST UPDATED: {new Date().toISOString()}
-                    </Typography>
-                </Box>
+                    
+                    <Clock />
+           
                 
             </Box>
 
@@ -230,6 +228,19 @@ export default function AdminDashboard() {
     )
 }
 
+function Clock() {
+    const [time, setTime] = useState(new Date())
+    useEffect(() => {
+        const timer = setInterval(() => setTime(new Date()), 1000)
+        return () => clearInterval(timer)
+    }, [])
+    return (
+        <Typography variant="caption" sx={{ color: THEME.textMuted, fontFamily: 'monospace', letterSpacing: '1px' }}>
+            SERVER TIME: <span style={{ color: THEME.textMain }}>{time.toISOString().replace('T', ' ').split('.')[0]} : UTC+00</span>
+        </Typography>
+    )
+}
+
 function SystemStatus({ label, value, icon }: { label: string, value: number, icon: React.ReactNode }) {
     return (
         <Box sx={{ bgcolor: THEME.cardBg, p: 1, px: 2, borderRadius: 1, border: `1px solid ${THEME.grid}`, minWidth: 100 }}>
@@ -312,8 +323,8 @@ function StatCard({ title, value, icon, color }: { title: string, value: string 
                     transform: 'translateY(-2px)',
                     borderColor: color,
                     boxShadow: `0 4px 20px ${color}15`
-                }}
-            }
+                }
+            }}
         >
             <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: `${color}10`, color: color, display: 'flex' }}>
                 {icon}
