@@ -56,21 +56,43 @@ export const findUserBalance = async (userId: string) => {
 
 export const getAllTransactionsLog = async (page: number = 1, limit: number = 10) => {
     const offset = (page - 1) * limit;
-    const [transactions, totalCount] = await Promise.all([
+    const [accountLogs, stockLogs, accountLogCount, stockLogCount] = await Promise.all([
         prisma_yok.accountLog.findMany({
-            skip: offset,
-            take: limit,
-            orderBy: {
-                createdAt: 'desc',
-            },
             select: {
                 type: true,
                 amount: true,
                 createdAt: true,
             },
         }),
+        prisma_yok.transactionStock.findMany({
+            select: {
+                type: true,
+                quantity: true,
+                price: true,
+                tradeDate: true,
+            },
+        }),
         prisma_yok.accountLog.count(),
+        prisma_yok.transactionStock.count(),
     ]);
+
+    const normalizedAccountLogs = accountLogs.map((row) => ({
+        type: row.type,
+        amount: row.amount,
+        createdAt: row.createdAt,
+    }));
+
+    const normalizedStockLogs = stockLogs.map((row) => ({
+        type: `STOCK_${row.type}`,
+        amount: Number(row.quantity) * Number(row.price),
+        createdAt: row.tradeDate,
+    }));
+
+    const transactions = [...normalizedAccountLogs, ...normalizedStockLogs]
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .slice(offset, offset + limit);
+
+    const totalCount = accountLogCount + stockLogCount;
 
     return {
         data: transactions,
