@@ -122,11 +122,14 @@ export default function DepositWithdrawDialog({ open, onClose, accountId, balanc
           </Typography>
           <TextField
             placeholder="0.00"
-            type="number"
+            type="text"
             fullWidth
             margin="dense"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value
+              if (/^\d*\.?\d*$/.test(val)) setAmount(val)
+            }}
             InputProps={{
               startAdornment: <Typography sx={{ mr: 1.5, fontWeight: 800, color: themeColor.textSecondary }}>฿</Typography>
             }}

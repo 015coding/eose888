@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Skeleton } from '@mui/material'
+import { Skeleton, TablePagination } from '@mui/material'
 
 
 interface LoginLog {
@@ -26,9 +26,17 @@ interface Stats {
 }
 
 export default function AdminLogsClient() {
+  const DEFAULT_PAGE = 1
+  const DEFAULT_LIMIT = 10
+  const LIMIT_OPTIONS = [5, 10, 25] as const
+
   const [logs, setLogs] = useState<LoginLog[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(DEFAULT_PAGE)
+  const [limit, setLimit] = useState<number>(DEFAULT_LIMIT)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalLogs, setTotalLogs] = useState(0)
   const [filter, setFilter] = useState({
     action: '',
     success: '',
@@ -37,8 +45,11 @@ export default function AdminLogsClient() {
 
   useEffect(() => {
     fetchLogs()
+  }, [filter, page, limit])
+
+  useEffect(() => {
     fetchStats()
-  }, [filter])
+  }, [])
 
   const fetchLogs = async () => {
     setLoading(true)
@@ -46,17 +57,29 @@ export default function AdminLogsClient() {
     if (filter.action) params.set('action', filter.action)
     if (filter.success) params.set('success', filter.success)
     if (filter.email) params.set('email', filter.email)
-    params.set('limit', '100')
+    params.set('page', String(page))
+    params.set('limit', String(limit))
 
     try {
       const res = await fetch(`/api/login-logs?${params}`)
       const data = await res.json()
-      setLogs(data)
+      setLogs(data.logs || [])
+      setLimit(data.limit || limit)
+      setTotalPages(data.totalPages || 1)
+      setTotalLogs(data.totalLogs || 0)
     } catch (error) {
       console.error('Error fetching logs:', error)
+      setLogs([])
+      setTotalPages(1)
+      setTotalLogs(0)
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleFilterChange = (field: 'action' | 'success' | 'email', value: string) => {
+    setFilter((prev) => ({ ...prev, [field]: value }))
+    setPage(DEFAULT_PAGE)
   }
 
   const fetchStats = async () => {
@@ -67,6 +90,15 @@ export default function AdminLogsClient() {
     } catch (error) {
       console.error('Error fetching stats:', error)
     }
+  }
+
+  const handleChangePage = (_event: unknown, newPage: number) => {
+    setPage(newPage + 1)
+  }
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setLimit(Number.parseInt(event.target.value, 10))
+    setPage(DEFAULT_PAGE)
   }
 
   return (
@@ -124,7 +156,7 @@ export default function AdminLogsClient() {
               <label className="block text-sm font-medium mb-1">Action</label>
               <select
                 value={filter.action}
-                onChange={(e) => setFilter({ ...filter, action: e.target.value })}
+                onChange={(e) => handleFilterChange('action', e.target.value)}
                 className="w-full border rounded px-3 py-2"
               >
                 <option value="">All Actions</option>
@@ -137,7 +169,7 @@ export default function AdminLogsClient() {
               <label className="block text-sm font-medium mb-1">Status</label>
               <select
                 value={filter.success}
-                onChange={(e) => setFilter({ ...filter, success: e.target.value })}
+                onChange={(e) => handleFilterChange('success', e.target.value)}
                 className="w-full border rounded px-3 py-2"
               >
                 <option value="">All Status</option>
@@ -150,7 +182,7 @@ export default function AdminLogsClient() {
               <input
                 type="text"
                 value={filter.email}
-                onChange={(e) => setFilter({ ...filter, email: e.target.value })}
+                onChange={(e) => handleFilterChange('email', e.target.value)}
                 placeholder="Search by email..."
                 className="w-full border rounded px-3 py-2"
               />
@@ -232,6 +264,26 @@ export default function AdminLogsClient() {
                 </tbody>
               </table>
             </div>
+
+            <TablePagination
+              component="div"
+              count={totalLogs}
+              page={page - 1}
+              onPageChange={handleChangePage}
+              rowsPerPage={limit}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              rowsPerPageOptions={LIMIT_OPTIONS as unknown as number[]}
+              sx={{
+                borderTop: '1px solid rgba(0,0,0,0.05)',
+                color: '#9CA3AF',
+                bgcolor: 'rgba(0,0,0,0.015)',
+                '.MuiTablePagination-select': { color: '#374151' },
+                '.MuiTablePagination-selectIcon': { color: '#9CA3AF' },
+                '.MuiTablePagination-actions button': { color: '#374151' },
+                '.MuiTablePagination-displayedRows': { fontSize: '0.72rem' },
+                '.MuiTablePagination-selectLabel': { fontSize: '0.72rem' },
+              }}
+            />
           </div>
         )}
 

@@ -79,6 +79,7 @@ export default function AccountCards({ accounts }: Props) {
     const amountNum = parseFloat(amount)
     if (!toId) return setError('กรุณาเลือกบัญชีปลายทาง')
     if (!amount || isNaN(amountNum) || amountNum <= 0) return setError('กรุณาระบุจำนวนเงินที่ถูกต้อง')
+    if (!/^\d+(\.\d+)?$/.test(amount)) return setError('กรุณาระบุจำนวนเงินที่ถูกต้อง')
     if (amountNum > maxAmount) return setError('ยอดเงินไม่เพียงพอ')
 
     setLoading(true)

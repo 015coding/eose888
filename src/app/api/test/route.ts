@@ -1,4 +1,4 @@
-import { getAllTransactionsLog , countUsers  , getAllBalances , getDailyTransactionVolume} from "@/service/userService";
+import { getAllTransactionsLog , countUsers  , getAllBalances , getDailyTransactionVolume} from "@/service/user/user.service";
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
