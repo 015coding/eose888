@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import { getAllBalances } from "@/service/userService";
-import { Currency } from "@/lib/generated/prismaApp";
+import { getAllBalances } from "@/service/user/user.service";
 
 export async function GET() {
     try {
-        const allbalances = await getAllBalances(Currency.USD);
+        const allbalances = await getAllBalances();
         return NextResponse.json(allbalances);
     } catch (error) {
         console.error("Error fetching balances:", error);
