@@ -47,7 +47,9 @@ export default function PinButton({ symbol }: PinButtonProps) {
         color: pinned ? "#00c853" : "#6b7f94",
       }}
     >
-      {loading ? "…" : pinned ? "📌" : "📍"}
+      {loading ? "…" : pinned ? (
+  <span style={{ color: "#00c853", textShadow: "0 0 8px rgba(0,200,83,0.6)", fontSize: 16, fontWeight: 600 }}>★</span>
+        ) :<span style={{ color: "#6b7f94", textShadow: "0 0 8px rgba(0,200,83,0.6)", fontSize: 16, fontWeight: 600 }}>☆</span>}
     </button>
   );
 }

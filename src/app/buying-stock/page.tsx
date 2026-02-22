@@ -25,6 +25,7 @@ export default function StockPage() {
   const [symbol, setSymbol] = useState<string>("");
   const [refreshTx, setRefreshTx] = useState(0);
   const [holding, setHolding] = useState<{ quantity: number; avgCost: number } | null>(null);
+  const [pinnedSymbols, setPinnedSymbols] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     Promise.all([
@@ -66,6 +67,14 @@ export default function StockPage() {
     return () => clearInterval(interval);
   }, []);
 
+  const handlePinChange = (sym: string, isPinned: boolean) => {
+    setPinnedSymbols(prev => {
+      const next = new Set(prev);
+      isPinned ? next.add(sym) : next.delete(sym);
+      return next;
+    });
+  };
+
   const symbols = Object.keys(stocksMonthly);
   const currentPrice = Number(stocksDaily[symbol]?.at(-1)?.price ?? 0);
 
@@ -91,6 +100,8 @@ export default function StockPage() {
               dailyData={stocksDaily[symbol] ?? []}
               range={range}
               onRangeChange={(_, r) => setRange(r)}
+              isPinned={pinnedSymbols.has(symbol)}
+              onPinChange={handlePinChange}
             />
           )}
 
