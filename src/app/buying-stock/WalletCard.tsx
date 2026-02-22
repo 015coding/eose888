@@ -6,11 +6,12 @@ import {
 } from "@mui/material";
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import { THB_PER_USD } from "@/constants";
 
 const themeColor = {
   primary: '#10b981',
-  secondary: '#686a6e',
+  secondary: '#1e293b',
   textSecondary: '#64748b',
 };
 
@@ -21,20 +22,25 @@ type Account = {
   balance: number;
 };
 
-// --- สร้าง Component ย่อยเพื่อแยกสถานะการคลิกสลับเงินของการ์ดแต่ละใบ ---
+// --- Component ย่อยของการ์ดแต่ละใบ ---
 function SingleWalletCard({ account }: { account: Account }) {
   const [showTHB, setShowTHB] = useState(false);
 
-  // คำนวณยอดเงินและสัญลักษณ์ที่จะแสดง
   const displayBalance = showTHB ? account.balance * THB_PER_USD : account.balance;
   const currencySymbol = showTHB ? '฿' : '$';
   const currencyCode = showTHB ? 'THB' : account.currency;
-  const prefix = showTHB ? '≈ ' : ''; // สัญลักษณ์ประมาณค่า
+  const prefix = showTHB ? '≈ ' : '';
+
+  // จำลองเลขบัญชี 4 ตัวท้าย จาก ID
+  const accountLast4 = account.id.slice(-4).padStart(4, '8').toUpperCase();
 
   return (
     <Card 
       onClick={() => setShowTHB(!showTHB)}
       sx={{
+        flex: 1, 
+        display: 'flex',
+        flexDirection: 'column',
         borderRadius: 6,
         border: '1px solid #eef2f6',
         boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
@@ -42,10 +48,10 @@ function SingleWalletCard({ account }: { account: Account }) {
         background: 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)',
         position: 'relative',
         overflow: 'hidden',
-        cursor: 'pointer', // เปลี่ยนเมาส์เป็นรูปนิ้วชี้ให้รู้ว่าคลิกได้
+        cursor: 'pointer',
         '&:hover': {
-          transform: 'translateY(-8px)', // ให้ลอยขึ้นชัดเจน
-          boxShadow: '0 20px 40px -10px rgba(16, 185, 129, 0.20)', // เงาสีเขียวตอน Hover
+          transform: 'translateY(-4px)', 
+          boxShadow: '0 20px 40px -10px rgba(16, 185, 129, 0.20)', 
           borderColor: themeColor.primary,
         }
       }}
@@ -53,26 +59,31 @@ function SingleWalletCard({ account }: { account: Account }) {
       <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', bgcolor: themeColor.primary }} />
 
       <CardContent sx={{ 
-        p: { xs: 3, sm: 4 }, 
-        '&:last-child': { pb: { xs: 4, sm: 5 } } 
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        p: { xs: 2.5, sm: 3 }, 
+        '&:last-child': { pb: { xs: 2.5, sm: 3 } } 
       }}>
-        <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={3}>
-          <Box display="flex" alignItems="center" gap={2}>
+        
+        {/* --- ส่วนบน: หัวการ์ด --- */}
+        <Box display="flex" justifyContent="space-between" alignItems="flex-start">
+          <Box display="flex" alignItems="center" gap={1.5}>
             <Box sx={{ 
               bgcolor: 'rgba(16, 185, 129, 0.1)', 
-              p: 1.5, 
-              borderRadius: 4,
+              p: 1.2, 
+              borderRadius: 3,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              <AccountBalanceWalletIcon sx={{ color: themeColor.primary }} />
+              <AccountBalanceWalletIcon sx={{ color: themeColor.primary, fontSize: 24 }} />
             </Box>
             <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: themeColor.secondary }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: themeColor.secondary, fontSize: '0.85rem' }}>
                 USD Portfolio
               </Typography>
-              <Box display="flex" alignItems="center" gap={0.5} mt={0.5}>
+              <Box display="flex" alignItems="center" gap={0.5} mt={0.2}>
                 <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: themeColor.primary, boxShadow: `0 0 8px ${themeColor.primary}` }} />
                 <Typography variant="caption" sx={{ color: themeColor.primary, fontWeight: 700, fontSize: '0.65rem' }}>
                   ACTIVE
@@ -85,39 +96,75 @@ function SingleWalletCard({ account }: { account: Account }) {
             label={account.country} 
             size="small"
             sx={{ 
-              fontWeight: 800, 
-              borderRadius: 2, 
-              fontSize: '0.65rem', 
-              bgcolor: themeColor.secondary, 
-              color: '#fff',
-              px: 0.5
+              fontWeight: 800, borderRadius: 2, fontSize: '0.7rem', 
+              bgcolor: themeColor.secondary, color: '#fff', px: 0.5, height: 24
             }} 
           />
         </Box>
 
-        <Box sx={{ mt: 0 }}>
-          <Box display="flex" justifyContent="space-between" alignItems="center">
+        {/* --- ส่วนกลาง: ยอดเงิน (ใช้ my: 'auto' เพื่อดันให้กึ่งกลาง) --- */}
+        <Box sx={{ my: 'auto', py: 2 }}>
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
             <Typography variant="caption" sx={{ 
               color: themeColor.textSecondary, 
-              fontWeight: 700, 
+              fontWeight: 800, 
               letterSpacing: 1.2, 
               textTransform: 'uppercase' 
             }}>
               Available Balance
             </Typography>
-            
-            {/* ไอคอนบอกใบ้ว่าสามารถสลับค่าเงินได้ */}
-            <SwapHorizIcon sx={{ color: themeColor.textSecondary, opacity: 0.4, fontSize: 18 }} />
+            <SwapHorizIcon sx={{ color: themeColor.textSecondary, opacity: 0.4, fontSize: 20 }} />
           </Box>
 
-          <Box display="flex" alignItems="baseline" gap={1} mt={0.5}>
-            <Typography variant="h3" sx={{ fontWeight: 900, color: themeColor.secondary, letterSpacing: '-1.5px' }}>
+          <Box display="flex" alignItems="baseline" gap={1}>
+            <Typography 
+              variant="h3" 
+              sx={{ 
+                fontWeight: 900, 
+                color: themeColor.secondary, 
+                letterSpacing: '-1.5px',
+                fontSize: { xs: '1.8rem', sm: '2.2rem' },
+                lineHeight: 1
+              }}
+            >
               {prefix}{currencySymbol}{displayBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </Typography>
-            <Typography variant="subtitle1" sx={{ color: themeColor.primary, fontWeight: 800 }}>
+            <Typography variant="h6" sx={{ color: themeColor.primary, fontWeight: 800 }}>
               {currencyCode}
             </Typography>
           </Box>
+        </Box>
+
+        {/* --- ส่วนล่าง: ข้อมูลบัญชี --- */}
+        <Box>
+          <Stack 
+            direction="row" 
+            justifyContent="space-between" 
+            alignItems="center" 
+            sx={{ 
+              bgcolor: 'rgba(241, 245, 249, 0.5)', 
+              p: 1.5, 
+              borderRadius: 3, 
+              border: '1px dashed rgba(203, 213, 225, 0.8)' 
+            }}
+          >
+            <Box>
+              <Typography variant="caption" sx={{ color: themeColor.textSecondary, fontWeight: 700, display: 'block', mb: 0.2 }}>
+                ACCOUNT NO.
+              </Typography>
+              <Typography variant="body2" sx={{ fontWeight: 800, color: themeColor.secondary, letterSpacing: 2 }}>
+                •••• •••• {accountLast4}
+              </Typography>
+            </Box>
+            <Box textAlign="right">
+              <Typography variant="caption" sx={{ color: themeColor.textSecondary, fontWeight: 700, display: 'block', mb: 0.2 }}>
+                STATUS
+              </Typography>
+              <Typography variant="caption" sx={{ fontWeight: 800, color: themeColor.primary, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <VerifiedUserIcon sx={{ fontSize: 14 }} /> SECURED
+              </Typography>
+            </Box>
+          </Stack>
         </Box>
         
       </CardContent>
@@ -138,7 +185,7 @@ export default function WalletCard() {
   }, []);
 
   if (loading) return (
-    <Box display="flex" justifyContent="center" py={4}>
+    <Box display="flex" justifyContent="center" py={4} sx={{ height: '100%', alignItems: 'center' }}>
       <CircularProgress sx={{ color: themeColor.primary }} />
     </Box>
   );
@@ -150,9 +197,8 @@ export default function WalletCard() {
   );
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={2} sx={{ height: '100%' }}>
       {accounts.map((account) => (
-        // เรียกใช้ Card ย่อยแทนเพื่อจัดการ State รายใบ
         <SingleWalletCard key={account.id} account={account} />
       ))}
     </Stack>
