@@ -4,7 +4,7 @@ import { Currency } from "@/lib/generated/prismaApp";
 
 export async function GET() {
     try {
-        const allbalances = await getAllBalances(Currency.USD);
+        const allbalances = await getAllBalances();
         return NextResponse.json(allbalances);
     } catch (error) {
         console.error("Error fetching balances:", error);

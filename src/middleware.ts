@@ -9,6 +9,10 @@ export async function middleware(request: NextRequest) {
   })
   
   const { pathname } = request.nextUrl
+  const isDynamicUserSettingRoute = /^\/[^/]+\/setting(?:\/.*)?$/.test(pathname)
+  const dynamicRouteUser = isDynamicUserSettingRoute
+    ? pathname.split('/')[1].toLowerCase()
+    : ''
   
   const protectedRoutes = ['/dashboard', '/profile', '/settings', '/admin']
   const authRoutes = ['/login', '/register']
@@ -20,6 +24,21 @@ export async function middleware(request: NextRequest) {
       const url = new URL('/login', request.url)
       url.searchParams.set('callbackUrl', pathname)
       return NextResponse.redirect(url)
+    }
+  }
+
+  if (isDynamicUserSettingRoute) {
+    if (!token) {
+      const url = new URL('/login', request.url)
+      url.searchParams.set('callbackUrl', pathname)
+      return NextResponse.redirect(url)
+    }
+
+    const email = typeof token.email === 'string' ? token.email : ''
+    const slugFromEmail = email.split('@')[0]?.toLowerCase()
+
+    if (token.role !== 'USER' || !slugFromEmail || slugFromEmail !== dynamicRouteUser) {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
     }
   }
   
@@ -56,6 +75,7 @@ export const config = {
     '/dashboard/:path*',
     '/profile/:path*',
     '/settings/:path*',
+    '/:user/setting/:path*',
     '/login',
     '/register',
     '/admin/:path*',
