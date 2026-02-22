@@ -6,6 +6,7 @@ import TradePanel from "./TradePanel";
 import WalletCard from "./WalletCard";
 import HoldingCard from "./Holding-Card";
 import StockChart from "@/components/StockChart";
+import StockTransactionList from "./StockTransactionList";
 import { Box, Grid, MenuItem, Select, FormControl, InputLabel } from "@mui/material";
 
 interface StockData {
@@ -30,10 +31,29 @@ export default function StockPage() {
     ]).then(([monthly, daily]) => {
       setStocksMonthly(monthly);
       setStocksDaily(daily);
-      // เลือก symbol แรกเป็น default
       const firstSymbol = Object.keys(monthly)[0];
       if (firstSymbol) setSymbol(firstSymbol);
     });
+
+    const stockInterval = setInterval(() => {
+      Promise.all([
+        fetch("/api/stockdb").then(r => r.json()),
+        fetch("/api/stockdaily").then(r => r.json()),
+      ]).then(([monthly, daily]) => {
+        setStocksMonthly(monthly);
+        setStocksDaily(daily);
+      });
+    }, 60000);
+
+    return () => clearInterval(stockInterval);
+  }, []);
+
+  // Cron check limit orders ทุก 1 นาที
+  useEffect(() => {
+    const check = () => fetch('/api/buying-stock/check-orders');
+    check();
+    const interval = setInterval(check, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   const symbols = Object.keys(stocksMonthly);
@@ -79,11 +99,17 @@ export default function StockPage() {
                 currentPrice={currentPrice}
               />
             </Grid>
+
             <Grid size={{ xs: 12, md: 7 }}>
               <TradePanel symbol={symbol} currentPrice={currentPrice} />
             </Grid>
+
             <Grid size={{ xs: 12, md: 5 }}>
               <WalletCard />
+            </Grid>
+
+            <Grid size={12}>
+              <StockTransactionList symbol={symbol} />
             </Grid>
           </Grid>
 
