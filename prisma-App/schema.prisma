@@ -122,11 +122,10 @@ model AccountLog {
 model Holding {
   userId    String
   stockId   String
-  quantity  Decimal @db.Decimal(15,4)
-  avgCost   Decimal @db.Decimal(15,4)
+  quantity  Decimal @db.Decimal(18,8)  
+  avgCost   Decimal @db.Decimal(18,8)  
 
   user User @relation(fields: [userId], references: [id])
-
   @@id([userId, stockId])
 }
 
@@ -139,12 +138,11 @@ model TransactionStock {
   userId    String
   stockId   String
   type      TradeType
-  quantity  Decimal  @db.Decimal(15,4)
-  price     Decimal  @db.Decimal(15,4)
+  quantity  Decimal  @db.Decimal(18,8)  
+  price     Decimal  @db.Decimal(18,8)  
   tradeDate DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
-
   @@index([userId])
 }
 

@@ -31,22 +31,25 @@ export default function PinButton({ symbol }: PinButtonProps) {
       title={pinned ? "Unpin stock" : "Pin stock"}
       style={{
         position: "absolute",
-        bottom: 8,
-        right: 8,
-        width: 36,
-        height: 36,
-        background: pinned ? "#00c853" : "#ccc",
-        border: "2px solid #999",
+        top: 12,
+        right: 12,
+        width: 32,
+        height: 32,
+        background: pinned ? "rgba(0, 200, 83, 0.15)" : "rgba(255,255,255,0.05)",
+        border: `1px solid ${pinned ? "#00c853" : "#2a3a4a"}`,
         borderRadius: 6,
         cursor: loading ? "wait" : "pointer",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        fontSize: 18,
-        transition: "background 0.2s",
+        fontSize: 14,
+        transition: "all 0.2s",
+        color: pinned ? "#00c853" : "#6b7f94",
       }}
     >
-      {loading ? "…" : pinned ? "📌" : "📍"}
+      {loading ? "…" : pinned ? (
+  <span style={{ color: "#00c853", textShadow: "0 0 8px rgba(0,200,83,0.6)", fontSize: 16, fontWeight: 600 }}>★</span>
+        ) :<span style={{ color: "#6b7f94", textShadow: "0 0 8px rgba(0,200,83,0.6)", fontSize: 16, fontWeight: 600 }}>☆</span>}
     </button>
   );
 }
