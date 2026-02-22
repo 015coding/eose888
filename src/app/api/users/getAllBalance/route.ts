@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAllBalances } from "@/service/userService";
-import { Currency } from "@/lib/generated/prismaApp";
+import { getAllBalances } from "@/service/user/user.service";
 
 export async function GET() {
     try {

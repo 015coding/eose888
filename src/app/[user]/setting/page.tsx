@@ -42,6 +42,7 @@ export default async function UserSettingPage({ params }: Props) {
   const firstName = profile?.firstName ?? '-'
   const lastName = profile?.lastName ?? '-'
   const username = slugFromEmail
+  const displayEmail = email || '-'
 
   return (
     <>
@@ -70,6 +71,11 @@ export default async function UserSettingPage({ params }: Props) {
               <div className="rounded-lg border border-gray-200 p-4 sm:col-span-2">
                 <p className="text-xs uppercase tracking-wide text-gray-500">Username</p>
                 <p className="mt-1 text-base font-medium text-gray-900">{username}</p>
+              </div>
+
+              <div className="rounded-lg border border-gray-200 p-4 sm:col-span-2">
+                <p className="text-xs uppercase tracking-wide text-gray-500">Email</p>
+                <p className="mt-1 text-base font-medium text-gray-900">{displayEmail}</p>
               </div>
             </div>
           </div>

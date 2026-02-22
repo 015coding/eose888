@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { countUsers } from "@/service/userService";
+import { countUsers } from "@/service/user/user.service";
 
 export async function GET() {
     try {
