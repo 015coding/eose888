@@ -18,13 +18,13 @@ type Range = "30" | "7" | "1";
 
 const themeColor = { background: '#ebebeb' };
 
-
 export default function StockPage() {
   const [stocksMonthly, setStocksMonthly] = useState<Record<string, StockData[]>>({});
   const [stocksDaily, setStocksDaily] = useState<Record<string, StockData[]>>({});
   const [range, setRange] = useState<Range>("30");
   const [symbol, setSymbol] = useState<string>("");
   const [refreshTx, setRefreshTx] = useState(0);
+  const [holding, setHolding] = useState<{ quantity: number; avgCost: number } | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -50,7 +50,15 @@ export default function StockPage() {
     return () => clearInterval(stockInterval);
   }, []);
 
-  // Cron check limit orders ทุก 1 นาที
+  // Fetch holding เมื่อ symbol หรือ refreshTx เปลี่ยน
+  useEffect(() => {
+    if (!symbol) return;
+    fetch(`/api/buying-stock/holding?symbol=${symbol}`)
+      .then(r => r.json())
+      .then(data => setHolding(data));
+  }, [symbol, refreshTx]);
+
+  // Cron check limit orders
   useEffect(() => {
     const check = () => fetch('/api/buying-stock/check-orders');
     check();
@@ -67,21 +75,15 @@ export default function StockPage() {
       <Box style={{ background: themeColor.background, minHeight: "100vh", padding: 20 }}>
         <Box sx={{ maxWidth: '1200px', mx: 'auto' }}>
 
-          {/* Dropdown เลือกหุ้น */}
           <FormControl size="small" sx={{ mb: 3, minWidth: 160, bgcolor: '#fff', borderRadius: 2 }}>
             <InputLabel>เลือกหุ้น</InputLabel>
-            <Select
-              value={symbol}
-              label="เลือกหุ้น"
-              onChange={e => setSymbol(e.target.value)}
-            >
+            <Select value={symbol} label="เลือกหุ้น" onChange={e => setSymbol(e.target.value)}>
               {symbols.map(s => (
                 <MenuItem key={s} value={s}>{s}</MenuItem>
               ))}
             </Select>
           </FormControl>
 
-          {/* Chart จริง */}
           {symbol && (
             <StockChart
               symbol={symbol}
@@ -96,15 +98,18 @@ export default function StockPage() {
             <Grid size={12}>
               <HoldingCard
                 symbol={symbol}
-                shares={120.45}
-                avgCost={145.20}
+                shares={holding?.quantity ?? 0}
+                avgCost={holding?.avgCost ?? 0}
                 currentPrice={currentPrice}
               />
             </Grid>
 
             <Grid size={{ xs: 12, md: 7 }}>
-              // ส่งลง TradePanel
-              <TradePanel symbol={symbol} currentPrice={currentPrice} onTradeSuccess={() => setRefreshTx(v => v + 1)} />
+              <TradePanel
+                symbol={symbol}
+                currentPrice={currentPrice}
+                onTradeSuccess={() => setRefreshTx(v => v + 1)}
+              />
             </Grid>
 
             <Grid size={{ xs: 12, md: 5 }}>
@@ -112,7 +117,6 @@ export default function StockPage() {
             </Grid>
 
             <Grid size={12}>
-              // ส่งลง StockTransactionList
               <StockTransactionList symbol={symbol} refreshKey={refreshTx} />
             </Grid>
           </Grid>

@@ -7,8 +7,8 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 
 const themeColor = {
-  primary: '#10b981', // เขียว (กำไร)
-  danger: '#ef4444',  // แดง (ขาดทุน)
+  primary: '#10b981',
+  danger: '#ef4444',
   secondary: '#1e293b',
   textSecondary: '#64748b',
 };
@@ -21,15 +21,12 @@ interface HoldingCardProps {
 }
 
 export default function HoldingCard({ symbol, shares, avgCost, currentPrice }: HoldingCardProps) {
-  // คำนวณมูลค่ารวม และ กำไร/ขาดทุน
   const totalCost = shares * avgCost;
   const marketValue = shares * currentPrice;
   const totalReturn = marketValue - totalCost;
-  const returnPercentage = (totalReturn / totalCost) * 100;
-
+  const returnPercentage = totalCost > 0 ? (totalReturn / totalCost) * 100 : 0;
   const isProfit = totalReturn >= 0;
 
-  // ถ้าไม่ได้ถือหุ้นตัวนี้เลย ให้แสดงหน้าว่างๆ
   if (shares <= 0) {
     return (
       <Card sx={{ borderRadius: 6, border: '1px solid #eef2f6', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
@@ -41,17 +38,16 @@ export default function HoldingCard({ symbol, shares, avgCost, currentPrice }: H
   }
 
   return (
-    <Card sx={{ 
-      borderRadius: 6, 
-      border: '1px solid #eef2f6', 
+    <Card sx={{
+      borderRadius: 6,
+      border: '1px solid #eef2f6',
       boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
       bgcolor: '#fff',
       overflow: 'hidden'
     }}>
       <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
         <Stack direction={{ xs: 'column', md: 'row' }} alignItems="center" spacing={4} divider={<Divider orientation="vertical" flexItem />}>
-          
-          {/* ส่วนที่ 1: หัวข้อพอร์ต */}
+
           <Box display="flex" alignItems="center" gap={2} minWidth="200px">
             <Box sx={{ bgcolor: 'rgba(30, 41, 59, 0.05)', p: 1.5, borderRadius: 3, display: 'flex' }}>
               <BusinessCenterIcon sx={{ color: themeColor.secondary }} />
@@ -66,35 +62,33 @@ export default function HoldingCard({ symbol, shares, avgCost, currentPrice }: H
             </Box>
           </Box>
 
-          {/* ส่วนที่ 2: ข้อมูลหุ้น (หุ้นที่มี, ทุนเฉลี่ย, ราคาปัจจุบัน) */}
           <Stack direction="row" spacing={4} flex={1} justifyContent="space-around" width="100%">
             <Box textAlign="center">
               <Typography variant="caption" color="text.secondary" fontWeight={600}>Shares Owned</Typography>
               <Typography variant="h6" fontWeight={800} color={themeColor.secondary}>
-                {shares.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                {shares.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 8 })}
               </Typography>
             </Box>
             <Box textAlign="center">
               <Typography variant="caption" color="text.secondary" fontWeight={600}>Average Cost</Typography>
               <Typography variant="h6" fontWeight={800} color={themeColor.secondary}>
-                ${avgCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                ${avgCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </Typography>
             </Box>
             <Box textAlign="center">
               <Typography variant="caption" color="text.secondary" fontWeight={600}>Current Price</Typography>
               <Typography variant="h6" fontWeight={800} color={themeColor.secondary}>
-                ${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                ${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </Typography>
             </Box>
           </Stack>
 
-          {/* ส่วนที่ 3: กำไร / ขาดทุน */}
           <Box minWidth="150px" textAlign={{ xs: 'center', md: 'right' }}>
             <Typography variant="caption" color="text.secondary" fontWeight={600}>Total Return</Typography>
             <Box display="flex" alignItems="center" justifyContent={{ xs: 'center', md: 'flex-end' }} gap={0.5}>
               {isProfit ? <TrendingUpIcon sx={{ color: themeColor.primary }} /> : <TrendingDownIcon sx={{ color: themeColor.danger }} />}
               <Typography variant="h5" fontWeight={900} sx={{ color: isProfit ? themeColor.primary : themeColor.danger }}>
-                {isProfit ? '+' : '-'}${Math.abs(totalReturn).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                {isProfit ? '+' : '-'}${Math.abs(totalReturn).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </Typography>
             </Box>
             <Typography variant="subtitle2" fontWeight={800} sx={{ color: isProfit ? themeColor.primary : themeColor.danger }}>

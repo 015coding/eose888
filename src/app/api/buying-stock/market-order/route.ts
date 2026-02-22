@@ -7,7 +7,7 @@ export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { stockId, quantity, price, type = 'BUY' } = await req.json();
+  const { stockId, quantity, price, type = 'BUY', accountId } = await req.json();
 
   if (!stockId || !quantity || !price || quantity <= 0 || price <= 0) {
     return NextResponse.json({ error: 'ข้อมูลไม่ถูกต้อง' }, { status: 400 });
@@ -16,7 +16,11 @@ export async function POST(req: Request) {
   const totalCost = quantity * price;
 
   const account = await prismaApp.bankAccount.findFirst({
-    where: { userId: session.user.id, currency: 'USD' },
+    where: { 
+      id: accountId,
+      userId: session.user.id,  // ← verify เจ้าของ
+      currency: 'USD' 
+    },
   });
 
   if (!account) return NextResponse.json({ error: 'ไม่พบบัญชี USD' }, { status: 400 });
