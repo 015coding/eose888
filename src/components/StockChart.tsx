@@ -29,8 +29,6 @@ interface StockChartProps {
   dailyData: StockData[];
   range: Range;
   onRangeChange: (symbol: string, range: Range) => void;
-  isPinned: boolean;
-  onPinChange: (symbol: string, isPinned: boolean) => void;
 }
 
 export default function StockChart({
@@ -39,8 +37,6 @@ export default function StockChart({
   dailyData,
   range,
   onRangeChange,
-  isPinned,
-  onPinChange
 }: StockChartProps) {
   const rawData = range === "1" ? dailyData : monthlyData;
 
@@ -75,8 +71,6 @@ export default function StockChart({
     ? (priceChange / firstPrice) * 100
     : null;
   const isPositive = priceChange !== null ? priceChange >= 0 : true;
-
-  
 
   return (
     <div
@@ -162,7 +156,7 @@ export default function StockChart({
           </div>
         )}
 
-        <PinButton symbol={symbol} isPinned={isPinned} onPinChange={onPinChange} />
+        <PinButton symbol={symbol} />
       </div>
 
       {/* Range selector */}
