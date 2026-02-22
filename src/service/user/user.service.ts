@@ -3,6 +3,13 @@ import { prismaApp as prisma_yok } from '@/lib/prismaApp';
 import { Currency } from '@/lib/generated/prismaApp';
 import bcrypt from 'bcrypt';
 
+const toUsernameSlug = (value: string) =>
+    value
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-_]/g, '');
+
 export const countUsers = async () => {
     const count = await prisma_login.user.count();
     return count;
@@ -154,6 +161,78 @@ export const resetPassword = async (
     });
 
     return { message: 'Password updated successfully' };
+};
+
+export const changeUsername = async (
+    userId: string,
+    password: string,
+    newUsername: string
+) => {
+    const user = await prisma_login.user.findUnique({
+        where: { id: userId },
+        select: {
+            id: true,
+            name: true,
+            password: true,
+        },
+    });
+
+    if (!user || !user.password) {
+        throw new Error('User not found');
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
+        throw new Error('Password is incorrect');
+    }
+
+    const trimmedUsername = newUsername.trim();
+    if (trimmedUsername.length < 3) {
+        throw new Error('New username must be at least 3 characters');
+    }
+
+    const newSlug = toUsernameSlug(trimmedUsername);
+    if (!newSlug) {
+        throw new Error('New username is invalid');
+    }
+
+    const currentSlug = toUsernameSlug(user.name ?? '');
+    if (newSlug === currentSlug) {
+        throw new Error('New username must be different from current username');
+    }
+
+    const otherUsers = await prisma_login.user.findMany({
+        where: {
+            NOT: { id: userId },
+        },
+        select: {
+            name: true,
+            email: true,
+        },
+    });
+
+    const isSlugTaken = otherUsers.some((otherUser) => {
+        const slugFromName = toUsernameSlug(otherUser.name ?? '');
+        const slugFromEmail = (otherUser.email ?? '').split('@')[0]?.toLowerCase() ?? '';
+        return slugFromName === newSlug || slugFromEmail === newSlug;
+    });
+
+    if (isSlugTaken) {
+        throw new Error('This username is already taken');
+    }
+
+    await prisma_login.user.update({
+        where: { id: userId },
+        data: {
+            name: trimmedUsername,
+        },
+    });
+
+    return {
+        message: 'Username updated successfully. Please sign out and sign in again.',
+        username: trimmedUsername,
+        usernameSlug: newSlug,
+    };
 };
 
 

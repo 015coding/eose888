@@ -4,6 +4,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import Navbar from '@/components/Navbar'
 import { prismaApp } from '@/lib/prismaApp'
 import ResetPasswordForm from './ResetPasswordForm'
+import ChangeUsernameForm from './ChangeUsernameForm'
 
 
 
@@ -88,11 +89,20 @@ export default async function UserSettingPage({ params }: Props) {
               </div>
             </div>
           </div>
+                    <div className="rounded-xl bg-white p-6 shadow">
+            <h2 className="text-lg font-semibold text-gray-900">Change Username</h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Enter a new username and your password to confirm your identity.
+            </p>
+            <ChangeUsernameForm />
+          </div>
 
           <div className="rounded-xl bg-white p-6 shadow">
             <h2 className="text-lg font-semibold text-gray-900">Change Password</h2>
             <ResetPasswordForm />
           </div>
+
+
         </div>
       </div>
     </>
