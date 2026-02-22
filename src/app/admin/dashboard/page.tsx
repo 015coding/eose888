@@ -65,6 +65,10 @@ const txMeta = (type: string) => {
   if (type === 'DEPOSIT')      return { color: T.emerald, bg: T.emeraldBg, sign: '+', Icon: ArrowDownward, label: 'Deposit'      }
   if (type === 'TRANSFER_IN')  return { color: T.blue,    bg: T.blueBg,    sign: '+', Icon: ArrowDownward, label: 'Transfer In'  }
   if (type === 'TRANSFER_OUT') return { color: T.purple,  bg: T.purpleBg,  sign: '-', Icon: ArrowUpward,   label: 'Transfer Out' }
+  if (type === 'STOCK_BUY')    return { color: T.amber,   bg: T.amberBg,   sign: '-', Icon: SwapHoriz,     label: 'Stock Buy'    }
+  if (type === 'STOCK_SELL')   return { color: T.emerald, bg: T.emeraldBg, sign: '+', Icon: SwapHoriz,     label: 'Stock Sell'   }
+  if (type === 'STOCK_PENDING') return { color: T.blue,   bg: T.blueBg,    sign: '•', Icon: SwapHoriz,     label: 'Stock Pending'}
+  if (type === 'STOCK_CANCELLED') return { color: T.textDim, bg: T.hover,  sign: '•', Icon: SwapHoriz,     label: 'Stock Cancelled'}
   return                              { color: T.red,     bg: T.redBg,     sign: '-', Icon: ArrowUpward,   label: 'Withdraw'     }
 }
 
