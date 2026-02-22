@@ -4,6 +4,17 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import * as userService from '@/service/admin/user.service'
 
+const DEFAULT_PAGE = 1
+const DEFAULT_LIMIT = 10
+const MAX_LIMIT = 100
+
+function parsePositiveInt(value: string | null, fallback: number) {
+  if (!value) return fallback
+  const parsed = Number.parseInt(value, 10)
+  if (Number.isNaN(parsed) || parsed < 1) return fallback
+  return parsed
+}
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -13,12 +24,19 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const page = parseInt(searchParams.get('page') || '1', 10)
-    const limit = parseInt(searchParams.get('limit') || '10', 10)
+    const page = parsePositiveInt(searchParams.get('page'), DEFAULT_PAGE)
+    const parsedLimit = parsePositiveInt(searchParams.get('limit'), DEFAULT_LIMIT)
+    const limit = Math.min(parsedLimit, MAX_LIMIT)
 
     const { users, totalUsers } = await userService.getUsers(page, limit)
 
-    return NextResponse.json({ users, totalUsers })
+    return NextResponse.json({
+      users,
+      totalUsers,
+      page,
+      limit,
+      totalPages: Math.ceil(totalUsers / limit),
+    })
   } catch (error) {
     console.error('Get users error:', error)
     return NextResponse.json(

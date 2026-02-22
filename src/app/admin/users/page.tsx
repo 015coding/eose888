@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import {
   Box, Typography, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, IconButton, TextField, Button,
@@ -75,15 +75,17 @@ interface NewUser {
   role: 'USER' | 'ADMIN'
 }
 
+const DEFAULT_PAGE = 1
+const DEFAULT_LIMIT = 10
+
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([])
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   
   // Pagination state
-  const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [page, setPage] = useState(DEFAULT_PAGE)
+  const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_LIMIT)
   const [totalUsers, setTotalUsers] = useState(0)
 
   // Dialog states
@@ -102,16 +104,15 @@ export default function UsersPage() {
   const fetchUsers = useCallback(async () => {
     setLoading(true)
     try {
-      const response = await fetch(`/api/admin/users?page=${page + 1}&limit=${rowsPerPage}`)
+      const params = new URLSearchParams({ page: String(page), limit: String(rowsPerPage) })
+      const response = await fetch(`/api/admin/users?${params.toString()}`)
       const data = await response.json()
       setUsers(data.users || [])
-      setFilteredUsers(data.users || [])
       setTotalUsers(data.totalUsers || 0)
     } catch (error) {
       console.error('Failed to fetch users:', error)
       showSnackbar('Failed to fetch users', 'error')
       setUsers([])
-      setFilteredUsers([])
       setTotalUsers(0)
     } finally {
       setLoading(false)
@@ -120,13 +121,13 @@ export default function UsersPage() {
 
   useEffect(() => { fetchUsers() }, [fetchUsers])
 
-  useEffect(() => {
-    const filtered = users.filter(user => 
+  const filteredUsers = useMemo(
+    () => users.filter(user =>
       user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    setFilteredUsers(filtered)
-  }, [searchTerm, users])
+    ),
+    [searchTerm, users]
+  )
 
   const handleAddUser = async () => {
     try {
@@ -185,12 +186,12 @@ export default function UsersPage() {
   const handleCloseSnackbar = () => setSnackbar({ ...snackbar, open: false })
 
   const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage)
+    setPage(newPage + 1)
   }
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(parseInt(event.target.value, 10))
-    setPage(0)
+    setPage(DEFAULT_PAGE)
   }
 
   const TableSkeleton = () => (
@@ -300,7 +301,7 @@ export default function UsersPage() {
         <TablePagination
           component="div"
           count={totalUsers}
-          page={page}
+          page={page - 1}
           onPageChange={handleChangePage}
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={handleChangeRowsPerPage}
