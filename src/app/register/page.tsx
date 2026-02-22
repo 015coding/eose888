@@ -11,6 +11,7 @@ const THEME = {
     bg: '#131722',
     cardBg: '#1E222D',
     grid: '#2A2E39',
+    inputBg: '#2A2E39',
     textMain: '#D1D4DC',
     textMuted: '#787B86',
     up: '#089981',
@@ -254,7 +255,7 @@ export default function Register() {
                                         InputLabelProps={{ sx: { color: THEME.textMuted } }}
                                         sx={{
                                             '& .MuiOutlinedInput-root': {
-                                                bgcolor: 'rgba(0,0,0,0.2)',
+                                                bgcolor: THEME.inputBg,
                                                 '& fieldset': { borderColor: THEME.grid, transition: 'all 0.2s' },
                                                 '&:hover fieldset': { borderColor: THEME.textMuted },
                                                 '&.Mui-focused fieldset': { borderColor: THEME.up, borderWidth: '1px' },
@@ -274,7 +275,7 @@ export default function Register() {
                                         InputLabelProps={{ sx: { color: THEME.textMuted } }}
                                         sx={{
                                             '& .MuiOutlinedInput-root': {
-                                                bgcolor: 'rgba(0,0,0,0.2)',
+                                                bgcolor: THEME.inputBg,
                                                 '& fieldset': { borderColor: THEME.grid, transition: 'all 0.2s' },
                                                 '&:hover fieldset': { borderColor: THEME.textMuted },
                                                 '&.Mui-focused fieldset': { borderColor: THEME.up, borderWidth: '1px' },
@@ -296,7 +297,7 @@ export default function Register() {
                                 InputLabelProps={{ sx: { color: THEME.textMuted } }}
                                 sx={{
                                     '& .MuiOutlinedInput-root': {
-                                        bgcolor: 'rgba(0,0,0,0.2)',
+                                        bgcolor: THEME.inputBg,
                                         '& fieldset': { borderColor: THEME.grid, transition: 'all 0.2s' },
                                         '&:hover fieldset': { borderColor: THEME.textMuted },
                                         '&.Mui-focused fieldset': { borderColor: THEME.up, borderWidth: '1px' },
@@ -321,7 +322,7 @@ export default function Register() {
                                 FormHelperTextProps={{ sx: { color: THEME.textMuted } }}
                                 sx={{
                                     '& .MuiOutlinedInput-root': {
-                                        bgcolor: 'rgba(0,0,0,0.2)',
+                                        bgcolor: THEME.inputBg,
                                         '& fieldset': { borderColor: THEME.grid, transition: 'all 0.2s' },
                                         '&:hover fieldset': { borderColor: THEME.textMuted },
                                         '&.Mui-focused fieldset': { borderColor: THEME.up, borderWidth: '1px' },
@@ -341,7 +342,7 @@ export default function Register() {
                                 InputLabelProps={{ sx: { color: THEME.textMuted } }}
                                 sx={{
                                     '& .MuiOutlinedInput-root': {
-                                        bgcolor: 'rgba(0,0,0,0.2)',
+                                        bgcolor: THEME.inputBg,
                                         '& fieldset': { borderColor: THEME.grid, transition: 'all 0.2s' },
                                         '&:hover fieldset': { borderColor: THEME.textMuted },
                                         '&.Mui-focused fieldset': { borderColor: THEME.up, borderWidth: '1px' },
@@ -376,7 +377,7 @@ export default function Register() {
                                 }}
                                 sx={{
                                     '& .MuiOutlinedInput-root': {
-                                        bgcolor: 'rgba(0,0,0,0.2)',
+                                        bgcolor: THEME.inputBg,
                                         '& fieldset': { borderColor: THEME.grid, transition: 'all 0.2s' },
                                         '&:hover fieldset': { borderColor: THEME.textMuted },
                                         '&.Mui-focused fieldset': { borderColor: THEME.up, borderWidth: '1px' },
@@ -412,7 +413,7 @@ export default function Register() {
                                 }}
                                 sx={{
                                     '& .MuiOutlinedInput-root': {
-                                        bgcolor: 'rgba(0,0,0,0.2)',
+                                        bgcolor: THEME.inputBg,
                                         '& fieldset': { borderColor: THEME.grid, transition: 'all 0.2s' },
                                         '&:hover fieldset': { borderColor: THEME.textMuted },
                                         '&.Mui-focused fieldset': { borderColor: THEME.up, borderWidth: '1px' },
@@ -445,10 +446,20 @@ export default function Register() {
                                     },
                                     '&:active': {
                                         transform: 'translateY(0)'
+                                    },
+                                    '&.Mui-disabled': {
+                                        bgcolor: '#067a65',
+                                        color: '#ffffff',
+                                        opacity: 0.8
                                     }
                                 }}
                             >
-                                {loading ? <CircularProgress size={24} color="inherit" /> : 'Create Account'}
+                                {loading ? (
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <CircularProgress size={20} sx={{ color: '#ffffff' }} />
+                                        <span>Creating account...</span>
+                                    </Box>
+                                ) : 'Create Account'}
                             </Button>
 
                             <Box sx={{ textAlign: 'center', mt: 3 }}>

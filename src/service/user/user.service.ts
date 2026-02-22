@@ -122,12 +122,12 @@ export const getDailyTransactionVolume = async (days: number = 7) => {
 };
 
 export const resetPassword = async (
-    email: string,
+    userId: string,
     currentPassword: string,
     newPassword: string
 ) => {
     const user = await prisma_login.user.findUnique({
-        where: { email },
+        where: { id: userId },
     });
 
     if (!user || !user.password) {
@@ -147,7 +147,7 @@ export const resetPassword = async (
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     await prisma_login.user.update({
-        where: { email },
+        where: { id: userId },
         data: {
             password: hashedPassword,
         },

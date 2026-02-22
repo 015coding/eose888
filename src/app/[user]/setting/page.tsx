@@ -20,14 +20,23 @@ export default async function UserSettingPage({ params }: Props) {
 
   const { user } = await params
   const email = session.user.email ?? ''
-  const slugFromEmail = email.split('@')[0]?.toLowerCase()
+  const displayName = session.user.name ?? ''
+  const slugFromName = displayName
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-_]/g, '')
+  const slugFromEmail = email.split('@')[0]?.toLowerCase() ?? ''
+  const usernameSlug = slugFromEmail || slugFromName
   const routeSlug = user.toLowerCase()
 
   if (session.user.role !== 'USER') {
     redirect('/dashboard')
   }
 
-  if (!slugFromEmail || routeSlug !== slugFromEmail) {
+  const allowedSlugs = [slugFromEmail, slugFromName].filter(Boolean)
+
+  if (!allowedSlugs.includes(routeSlug)) {
     redirect('/dashboard')
   }
 
@@ -41,7 +50,7 @@ export default async function UserSettingPage({ params }: Props) {
 
   const firstName = profile?.firstName ?? '-'
   const lastName = profile?.lastName ?? '-'
-  const username = slugFromEmail
+  const username = usernameSlug || '-'
   const displayEmail = email || '-'
 
   return (

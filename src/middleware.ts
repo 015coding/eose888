@@ -35,9 +35,17 @@ export async function middleware(request: NextRequest) {
     }
 
     const email = typeof token.email === 'string' ? token.email : ''
-    const slugFromEmail = email.split('@')[0]?.toLowerCase()
+    const name = typeof token.name === 'string' ? token.name : ''
+    const slugFromEmail = email.split('@')[0]?.toLowerCase() ?? ''
+    const slugFromName = name
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-_]/g, '')
 
-    if (token.role !== 'USER' || !slugFromEmail || slugFromEmail !== dynamicRouteUser) {
+    const allowedSlugs = [slugFromEmail, slugFromName].filter(Boolean)
+
+    if (token.role !== 'USER' || !allowedSlugs.includes(dynamicRouteUser)) {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
   }

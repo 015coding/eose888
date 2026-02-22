@@ -7,7 +7,7 @@ export async function POST(request: Request) {
     try {
         const session = await getServerSession(authOptions);
 
-        if (!session?.user?.email) {
+        if (!session?.user?.id) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
             );
         }
 
-        const result = await resetPassword(session.user.email, currentPassword, newPassword);
+        const result = await resetPassword(session.user.id, currentPassword, newPassword);
 
         return NextResponse.json(result, { status: 200 });
     } catch (error) {
