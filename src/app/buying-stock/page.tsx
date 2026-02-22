@@ -18,11 +18,13 @@ type Range = "30" | "7" | "1";
 
 const themeColor = { background: '#ebebeb' };
 
+
 export default function StockPage() {
   const [stocksMonthly, setStocksMonthly] = useState<Record<string, StockData[]>>({});
   const [stocksDaily, setStocksDaily] = useState<Record<string, StockData[]>>({});
   const [range, setRange] = useState<Range>("30");
   const [symbol, setSymbol] = useState<string>("");
+  const [refreshTx, setRefreshTx] = useState(0);
 
   useEffect(() => {
     Promise.all([
@@ -101,7 +103,8 @@ export default function StockPage() {
             </Grid>
 
             <Grid size={{ xs: 12, md: 7 }}>
-              <TradePanel symbol={symbol} currentPrice={currentPrice} />
+              // ส่งลง TradePanel
+              <TradePanel symbol={symbol} currentPrice={currentPrice} onTradeSuccess={() => setRefreshTx(v => v + 1)} />
             </Grid>
 
             <Grid size={{ xs: 12, md: 5 }}>
@@ -109,7 +112,8 @@ export default function StockPage() {
             </Grid>
 
             <Grid size={12}>
-              <StockTransactionList symbol={symbol} />
+              // ส่งลง StockTransactionList
+              <StockTransactionList symbol={symbol} refreshKey={refreshTx} />
             </Grid>
           </Grid>
 
