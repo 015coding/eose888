@@ -79,6 +79,7 @@ export default function AccountCards({ accounts }: Props) {
     const amountNum = parseFloat(amount)
     if (!toId) return setError('กรุณาเลือกบัญชีปลายทาง')
     if (!amount || isNaN(amountNum) || amountNum <= 0) return setError('กรุณาระบุจำนวนเงินที่ถูกต้อง')
+    if (!/^\d+(\.\d+)?$/.test(amount)) return setError('กรุณาระบุจำนวนเงินที่ถูกต้อง')
     if (amountNum > maxAmount) return setError('ยอดเงินไม่เพียงพอ')
 
     setLoading(true)
@@ -143,7 +144,6 @@ export default function AccountCards({ accounts }: Props) {
 
                 <Divider sx={{ my: 3, opacity: 0.5 }} />
 
-                {/* ปุ่มโอนเงิน */}
                 <Button
                   fullWidth variant="contained"
                   endIcon={<ArrowForwardIosIcon sx={{ fontSize: '10px !important' }} />}
@@ -158,7 +158,6 @@ export default function AccountCards({ accounts }: Props) {
                   ทำรายการโอนเงิน
                 </Button>
 
-                {/* ปุ่มฝาก/ถอน เฉพาะ THB */}
                 {account.currency === 'THB' && (
                   <Box display="flex" gap={1.5} mt={1.5}>
                     <Button
@@ -243,8 +242,15 @@ export default function AccountCards({ accounts }: Props) {
               ระบุจำนวนเงิน
             </Typography>
             <TextField
-              placeholder="0.00" type="number" fullWidth margin="dense"
-              value={amount} onChange={(e) => setAmount(e.target.value)}
+              placeholder="0.00"
+              type="text"
+              fullWidth
+              margin="dense"
+              value={amount}
+              onChange={(e) => {
+                const val = e.target.value
+                if (/^\d*\.?\d*$/.test(val)) setAmount(val)
+              }}
               InputProps={{
                 startAdornment: <Typography sx={{ mr: 1.5, fontWeight: 800, color: themeColor.textSecondary }}>{fromAccount?.currency}</Typography>
               }}
