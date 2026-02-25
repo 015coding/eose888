@@ -102,7 +102,7 @@ export default function TradePanel({ symbol, currentPrice = 0, onTradeSuccess }:
     }
   };
 
-  const handleSell = async () => {
+const handleSell = async () => {
     setError('');
     setSuccess('');
 
@@ -116,17 +116,29 @@ export default function TradePanel({ symbol, currentPrice = 0, onTradeSuccess }:
 
     setLoading(true);
     try {
-      const res = await fetch('/api/buying-stock/market-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stockId: symbol, quantity: shares, price, type: 'SELL', accountId: selectedAccountId }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'ขายไม่สำเร็จ');
+      if (orderType === 'LIMIT') {
+        const res = await fetch('/api/buying-stock/limit-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stockId: symbol, quantity: shares, price, type: 'SELL', accountId: selectedAccountId }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'วาง order ไม่สำเร็จ');
+        setSuccess('วาง Limit Sell Order สำเร็จ! รอราคาถึงเป้าหมาย');
+      } else {
+        const res = await fetch('/api/buying-stock/market-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stockId: symbol, quantity: shares, price, type: 'SELL', accountId: selectedAccountId }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'ขายไม่สำเร็จ');
+        setSuccess('ขายสำเร็จเรียบร้อย!');
+      }
 
-      setSuccess('ขายสำเร็จเรียบร้อย!');
       onTradeSuccess?.();
       setInputValue('');
+      setLimitPrice('');
       fetchAccounts();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาด');

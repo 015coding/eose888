@@ -124,7 +124,7 @@ export default function StockPage() {
             </Grid>
 
             <Grid size={{ xs: 12, md: 5 }}>
-              <WalletCard />
+              <WalletCard refreshKey={refreshTx} />
             </Grid>
 
             <Grid size={12}>
