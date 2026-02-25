@@ -7,7 +7,7 @@ import WalletCard from "./WalletCard";
 import HoldingCard from "./Holding-Card";
 import StockChart from "@/components/StockChart";
 import StockTransactionList from "./StockTransactionList";
-import { Box, Grid, MenuItem, Select, FormControl, InputLabel } from "@mui/material";
+import { Box, Grid } from "@mui/material";
 
 interface StockData {
   time: string;
@@ -21,11 +21,10 @@ const themeColor = { background: '#ebebeb' };
 export default function StockPage() {
   const [stocksMonthly, setStocksMonthly] = useState<Record<string, StockData[]>>({});
   const [stocksDaily, setStocksDaily] = useState<Record<string, StockData[]>>({});
-  const [range, setRange] = useState<Range>("30");
+  const [ranges, setRanges] = useState<Record<string, Range>>({});
   const [symbol, setSymbol] = useState<string>("");
   const [refreshTx, setRefreshTx] = useState(0);
   const [holding, setHolding] = useState<{ quantity: number; avgCost: number } | null>(null);
-  const [pinnedSymbols, setPinnedSymbols] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     Promise.all([
@@ -34,11 +33,16 @@ export default function StockPage() {
     ]).then(([monthly, daily]) => {
       setStocksMonthly(monthly);
       setStocksDaily(daily);
-      const firstSymbol = Object.keys(monthly)[0];
-      if (firstSymbol) setSymbol(firstSymbol);
+      setRanges(prev => {
+        const updated = { ...prev };
+        Object.keys(monthly).forEach(s => { if (!updated[s]) updated[s] = "30"; });
+        return updated;
+      });
+      const first = Object.keys(monthly)[0];
+      if (first) setSymbol(first);
     });
 
-    const stockInterval = setInterval(() => {
+    const interval = setInterval(() => {
       Promise.all([
         fetch("/api/stockdb").then(r => r.json()),
         fetch("/api/stockdaily").then(r => r.json()),
@@ -48,18 +52,16 @@ export default function StockPage() {
       });
     }, 60000);
 
-    return () => clearInterval(stockInterval);
+    return () => clearInterval(interval);
   }, []);
 
-  // Fetch holding เมื่อ symbol หรือ refreshTx เปลี่ยน
   useEffect(() => {
     if (!symbol) return;
     fetch(`/api/buying-stock/holding?symbol=${symbol}`)
       .then(r => r.json())
-      .then(data => setHolding(data));
+      .then(data => setHolding(data ?? { quantity: 0, avgCost: 0 }));
   }, [symbol, refreshTx]);
 
-  // Cron check limit orders
   useEffect(() => {
     const check = () => fetch('/api/buying-stock/check-orders');
     check();
@@ -67,12 +69,8 @@ export default function StockPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const handlePinChange = (sym: string, isPinned: boolean) => {
-    setPinnedSymbols(prev => {
-      const next = new Set(prev);
-      isPinned ? next.add(sym) : next.delete(sym);
-      return next;
-    });
+  const handleRangeChange = (sym: string, range: Range) => {
+    setRanges(prev => ({ ...prev, [sym]: range }));
   };
 
   const symbols = Object.keys(stocksMonthly);
@@ -84,24 +82,34 @@ export default function StockPage() {
       <Box style={{ background: themeColor.background, minHeight: "100vh", padding: 20 }}>
         <Box sx={{ maxWidth: '1200px', mx: 'auto' }}>
 
-          <FormControl size="small" sx={{ mb: 3, minWidth: 160, bgcolor: '#fff', borderRadius: 2 }}>
-            <InputLabel>เลือกหุ้น</InputLabel>
-            <Select value={symbol} label="เลือกหุ้น" onChange={e => setSymbol(e.target.value)}>
-              {symbols.map(s => (
-                <MenuItem key={s} value={s}>{s}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <select
+            value={symbol}
+            onChange={e => setSymbol(e.target.value)}
+            style={{
+              marginBottom: 16,
+              padding: "8px 16px",
+              borderRadius: 8,
+              border: "none",
+              background: "#1e293b",
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: 14,
+              cursor: "pointer",
+              outline: "none",
+            }}
+          >
+            {symbols.map(s => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
 
           {symbol && (
             <StockChart
               symbol={symbol}
               monthlyData={stocksMonthly[symbol] ?? []}
               dailyData={stocksDaily[symbol] ?? []}
-              range={range}
-              onRangeChange={(_, r) => setRange(r)}
-              isPinned={pinnedSymbols.has(symbol)}
-              onPinChange={handlePinChange}
+              range={ranges[symbol] ?? "30"}
+              onRangeChange={handleRangeChange}
             />
           )}
 

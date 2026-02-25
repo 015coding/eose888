@@ -1,16 +1,20 @@
 "use client";
 
 import React from "react";
-import { Card, CardContent, Typography, Box, Stack, Divider } from "@mui/material";
-import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import { Card, Typography, Box, Chip } from "@mui/material";
+import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 
 const themeColor = {
-  primary: '#10b981',
-  danger: '#ef4444',
-  secondary: '#1e293b',
-  textSecondary: '#64748b',
+  primary: "#10b981",
+  primaryBg: "#d1fae5",
+  danger: "#ef4444",
+  dangerBg: "#fee2e2",
+  secondary: "#0f172a",
+  textSecondary: "#64748b",
+  surface: "#f8fafc",
+  border: "#e2e8f0",
 };
 
 interface HoldingCardProps {
@@ -20,7 +24,12 @@ interface HoldingCardProps {
   currentPrice: number;
 }
 
-export default function HoldingCard({ symbol, shares, avgCost, currentPrice }: HoldingCardProps) {
+export default function HoldingCard({
+  symbol,
+  shares,
+  avgCost,
+  currentPrice,
+}: HoldingCardProps) {
   const totalCost = shares * avgCost;
   const marketValue = shares * currentPrice;
   const totalReturn = marketValue - totalCost;
@@ -29,87 +38,164 @@ export default function HoldingCard({ symbol, shares, avgCost, currentPrice }: H
 
   if (shares <= 0) {
     return (
-      <Card sx={{ borderRadius: 6, border: '1px solid #eef2f6', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
-        <CardContent sx={{ p: 3, textAlign: 'center' }}>
-          <Typography color="text.secondary" fontWeight={600}>คุณยังไม่ได้ถือครองหุ้น {symbol}</Typography>
-        </CardContent>
+      <Card
+        sx={{
+          borderRadius: 4,
+          border: `1px solid ${themeColor.border}`,
+          boxShadow: "none",
+          bgcolor: themeColor.surface,
+        }}
+      >
+        <Box sx={{ p: 4, textAlign: "center" }}>
+          <BusinessCenterIcon
+            sx={{ color: themeColor.textSecondary, mb: 1, opacity: 0.5, fontSize: 40 }}
+          />
+          <Typography color={themeColor.textSecondary} fontWeight={600}>
+            คุณยังไม่ได้ถือครองหุ้น {symbol}
+          </Typography>
+        </Box>
       </Card>
     );
   }
 
   return (
-    <Card sx={{
-      borderRadius: 6,
-      border: '1px solid #eef2f6',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
-      bgcolor: '#fff',
-      overflow: 'hidden'
-    }}>
-      <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
-        <Stack direction={{ xs: 'column', md: 'row' }} alignItems="center" spacing={4} divider={<Divider orientation="vertical" flexItem />}>
-
-          <Box display="flex" alignItems="center" gap={2} minWidth="200px">
-            <Box sx={{ bgcolor: 'rgba(30, 41, 59, 0.05)', p: 1.5, borderRadius: 3, display: 'flex' }}>
-              <BusinessCenterIcon sx={{ color: themeColor.secondary }} />
-            </Box>
-            <Box>
-              <Typography variant="caption" sx={{ color: themeColor.textSecondary, fontWeight: 700, letterSpacing: 1 }}>
-                YOUR POSITION
-              </Typography>
-              <Typography variant="h5" sx={{ fontWeight: 900, color: themeColor.secondary }}>
-                {symbol}
-              </Typography>
-            </Box>
+    <Card
+      sx={{
+        borderRadius: 4,
+        border: `1px solid ${themeColor.border}`,
+        boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+        bgcolor: "#fff",
+        overflow: "hidden",
+        transition: "transform 0.2s ease-in-out",
+        "&:hover": {
+          transform: "translateY(-2px)",
+          boxShadow: "0 8px 25px rgba(0,0,0,0.06)",
+        },
+      }}
+    >
+      {/* --- ส่วนบน: หัวข้อ และ มูลค่ารวม --- */}
+      <Box
+        sx={{
+          p: { xs: 2.5, sm: 3 },
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          justifyContent: "space-between",
+          alignItems: { xs: "flex-start", sm: "center" },
+          gap: 2,
+        }}
+      >
+        <Box display="flex" alignItems="center" gap={2}>
+          <Box
+            sx={{
+              bgcolor: themeColor.surface,
+              p: 1.5,
+              borderRadius: 3,
+              display: "flex",
+              border: `1px solid ${themeColor.border}`,
+            }}
+          >
+            <BusinessCenterIcon sx={{ color: themeColor.secondary }} />
           </Box>
+          <Box>
+            <Typography
+              variant="caption"
+              sx={{ color: themeColor.textSecondary, fontWeight: 700, letterSpacing: 1 }}
+            >
+              POSITION
+            </Typography>
+            <Typography variant="h5" sx={{ fontWeight: 900, color: themeColor.secondary }}>
+              {symbol}
+            </Typography>
+          </Box>
+        </Box>
 
-          <Stack direction="row" spacing={4} flex={1} justifyContent="space-around" width="100%">
-            <Box textAlign="center">
-              <Typography variant="caption" color="text.secondary" fontWeight={600}>Shares Owned</Typography>
-              <Typography variant="h6" fontWeight={800} color={themeColor.secondary}>
-                {shares.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 8 })}
-              </Typography>
-            </Box>
-            <Box textAlign="center">
-              <Typography variant="caption" color="text.secondary" fontWeight={600}>Average Cost</Typography>
-              <Typography variant="h6" fontWeight={800} color={themeColor.secondary}>
-                ${avgCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </Typography>
-            </Box>
-            <Box textAlign="center">
-              <Typography variant="caption" color="text.secondary" fontWeight={600}>Current Price</Typography>
-              <Typography variant="h6" fontWeight={800} color={themeColor.secondary}>
-                ${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </Typography>
-            </Box>
-            <Box textAlign="center">
-              <Typography variant="caption" color="text.secondary" fontWeight={600}>Market Value</Typography>
-              <Typography variant="h6" fontWeight={800} color={themeColor.secondary}>
-                ${marketValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </Typography>
-            </Box>
-            <Box textAlign="center">
-              <Typography variant="caption" color="text.secondary" fontWeight={600}>Total Cost</Typography>
-              <Typography variant="h6" fontWeight={800} color={themeColor.secondary}>
-                ${totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </Typography>
-            </Box>
-          </Stack>
+        <Box textAlign={{ xs: "left", sm: "right" }} width={{ xs: "100%", sm: "auto" }}>
+          <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" mb={0.5}>
+            Market Value
+          </Typography>
+          <Typography variant="h4" fontWeight={900} color={themeColor.secondary} sx={{ lineHeight: 1 }}>
+            ${marketValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </Typography>
 
-          <Box minWidth="150px" textAlign={{ xs: 'center', md: 'right' }}>
-            <Typography variant="caption" color="text.secondary" fontWeight={600}>Total Return</Typography>
-            <Box display="flex" alignItems="center" justifyContent={{ xs: 'center', md: 'flex-end' }} gap={0.5}>
-              {isProfit ? <TrendingUpIcon sx={{ color: themeColor.primary }} /> : <TrendingDownIcon sx={{ color: themeColor.danger }} />}
-              <Typography variant="h5" fontWeight={900} sx={{ color: isProfit ? themeColor.primary : themeColor.danger }}>
-                {isProfit ? '+' : '-'}${Math.abs(totalReturn).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </Typography>
-            </Box>
-            <Typography variant="subtitle2" fontWeight={800} sx={{ color: isProfit ? themeColor.primary : themeColor.danger }}>
-              ({isProfit ? '+' : ''}{returnPercentage.toFixed(2)}%)
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent={{ xs: "flex-start", sm: "flex-end" }}
+            mt={1.5}
+          >
+            <Chip
+              icon={isProfit ? <TrendingUpIcon /> : <TrendingDownIcon />}
+              label={`${isProfit ? "+" : "-"}$${Math.abs(totalReturn).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })} (${isProfit ? "+" : ""}${returnPercentage.toFixed(2)}%)`}
+              size="small"
+              sx={{
+                fontWeight: 800,
+                color: isProfit ? themeColor.primary : themeColor.danger,
+                bgcolor: isProfit ? themeColor.primaryBg : themeColor.dangerBg,
+                borderRadius: 2,
+                px: 0.5,
+                "& .MuiChip-icon": {
+                  color: "inherit",
+                },
+              }}
+            />
+          </Box>
+        </Box>
+      </Box>
+
+      {/* --- ส่วนล่าง: รายละเอียดสถิติ (กองไปทางซ้ายด้วย Flex) --- */}
+      <Box
+        sx={{
+          bgcolor: themeColor.surface,
+          p: { xs: 2.5, sm: 3 },
+          borderTop: `1px solid ${themeColor.border}`,
+        }}
+      >
+        <Box
+          display="flex"
+          flexWrap="wrap"
+          columnGap={{ xs: 4, sm: 6, md: 8 }} // กำหนดระยะห่างแนวนอนระหว่างคอลัมน์
+          rowGap={3} // กำหนดระยะห่างแนวตั้งเผื่อจอเล็กแล้วโดนปัดลงบรรทัดใหม่
+        >
+          <Box minWidth={{ xs: "40%", sm: "auto" }}>
+            <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
+              Shares Owned
+            </Typography>
+            <Typography variant="subtitle1" fontWeight={800} color={themeColor.secondary}>
+              {shares.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 8 })}
             </Typography>
           </Box>
 
-        </Stack>
-      </CardContent>
+          <Box minWidth={{ xs: "40%", sm: "auto" }}>
+            <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
+              Average Cost
+            </Typography>
+            <Typography variant="subtitle1" fontWeight={800} color={themeColor.secondary}>
+              ${avgCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </Typography>
+          </Box>
+
+          <Box minWidth={{ xs: "40%", sm: "auto" }}>
+            <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
+              Current Price
+            </Typography>
+            <Typography variant="subtitle1" fontWeight={800} color={themeColor.secondary}>
+              ${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </Typography>
+          </Box>
+
+          <Box minWidth={{ xs: "40%", sm: "auto" }}>
+            <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
+              Total Cost
+            </Typography>
+            <Typography variant="subtitle1" fontWeight={800} color={themeColor.secondary}>
+              ${totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
     </Card>
   );
 }
