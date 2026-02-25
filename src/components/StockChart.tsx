@@ -156,7 +156,9 @@ export default function StockChart({
           </div>
         )}
 
-        <PinButton symbol={symbol} />
+        <PinButton 
+          symbol={symbol} 
+        />
       </div>
 
       {/* Range selector */}

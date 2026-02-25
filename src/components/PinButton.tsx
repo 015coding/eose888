@@ -1,8 +1,9 @@
 // components/PinButton.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { pinStock } from "@/app/action/pinStock";
+import { getPinStatus } from "@/app/action/getPinStatus";
 
 interface PinButtonProps {
   symbol: string;
@@ -11,6 +12,19 @@ interface PinButtonProps {
 export default function PinButton({ symbol }: PinButtonProps) {
   const [pinned, setPinned] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Fetch pin status on mount
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const result = await getPinStatus(symbol);
+        setPinned(result.pinned);
+      } catch (e) {
+        console.error("Failed to fetch pin status:", e);
+      }
+    };
+    fetchStatus();
+  }, [symbol]);
 
   const handlePin = async () => {
     setLoading(true);
@@ -48,8 +62,10 @@ export default function PinButton({ symbol }: PinButtonProps) {
       }}
     >
       {loading ? "…" : pinned ? (
-  <span style={{ color: "#00c853", textShadow: "0 0 8px rgba(0,200,83,0.6)", fontSize: 16, fontWeight: 600 }}>★</span>
-        ) :<span style={{ color: "#6b7f94", textShadow: "0 0 8px rgba(0,200,83,0.6)", fontSize: 16, fontWeight: 600 }}>☆</span>}
+        <span style={{ color: "#00c853", textShadow: "0 0 8px rgba(0,200,83,0.6)", fontSize: 16, fontWeight: 600 }}>★</span>
+      ) : (
+        <span style={{ color: "#6b7f94", textShadow: "0 0 8px rgba(0,200,83,0.6)", fontSize: 16, fontWeight: 600 }}>☆</span>
+      )}
     </button>
   );
 }
