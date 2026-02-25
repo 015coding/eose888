@@ -4,14 +4,7 @@ import { prismaApp } from "@/lib/prismaApp"
 import { redirect } from "next/navigation"
 import Navbar from '@/components/Navbar'
 import AccountCards from './AccountCards'
-import TransactionList from './TransactionList' 
-import FinancialGraph from "./FinancialGraph"
-import {
-  Box, Container, CardContent, Typography, Chip, Button,
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  MenuItem, TextField, Alert, CircularProgress, IconButton, Divider
-} from "@mui/material"
-
+import TransactionList from './TransactionList'
 
 export default async function BankAcc_Page() {
   const session = await getServerSession(authOptions)
@@ -55,23 +48,13 @@ export default async function BankAcc_Page() {
       : null
   }))
 
-return (
+  return (
     <>
       <Navbar />
-      <Box sx={{ 
-        minHeight: '100vh', 
-        background: '#f8fafc',
-        pt: { xs: 12, md: 16 }, // Navbar offset
-        pb: 10
-      }}>
-        <Container maxWidth="lg">
-          <AccountCards accounts={serializedAccounts} />
-
-          <FinancialGraph />
-
-          <TransactionList accounts={serializedAccounts} logs={serializedLogs} />
-        </Container>
-      </Box>
+      <div className="min-h-screen bg-white">
+        <AccountCards accounts={serializedAccounts} />
+        <TransactionList accounts={serializedAccounts} logs={serializedLogs} />
+      </div>
     </>
   )
 }
