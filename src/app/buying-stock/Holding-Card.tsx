@@ -81,6 +81,18 @@ export default function HoldingCard({ symbol, shares, avgCost, currentPrice }: H
                 ${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </Typography>
             </Box>
+            <Box textAlign="center">
+              <Typography variant="caption" color="text.secondary" fontWeight={600}>Market Value</Typography>
+              <Typography variant="h6" fontWeight={800} color={themeColor.secondary}>
+                ${marketValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </Typography>
+            </Box>
+            <Box textAlign="center">
+              <Typography variant="caption" color="text.secondary" fontWeight={600}>Total Cost</Typography>
+              <Typography variant="h6" fontWeight={800} color={themeColor.secondary}>
+                ${totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </Typography>
+            </Box>
           </Stack>
 
           <Box minWidth="150px" textAlign={{ xs: 'center', md: 'right' }}>

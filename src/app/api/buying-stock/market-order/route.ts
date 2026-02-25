@@ -13,20 +13,28 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'ข้อมูลไม่ถูกต้อง' }, { status: 400 });
   }
 
-  const totalCost = quantity * price;
+  // ดึงราคาตลาดล่าสุด
+  const latest = await prismaApp.stockHistoryDaily.findFirst({
+    where: { symbol: stockId },
+    orderBy: { time: 'desc' },
+  });
+  const marketPrice = latest ? latest.price : price; // fallback เป็น price จาก frontend
+  const totalCost = quantity * marketPrice;
 
   const account = await prismaApp.bankAccount.findFirst({
-    where: { 
+    where: {
       id: accountId,
-      userId: session.user.id,  // ← verify เจ้าของ
-      currency: 'USD' 
+      userId: session.user.id,
+      currency: 'USD'
     },
   });
 
   if (!account) return NextResponse.json({ error: 'ไม่พบบัญชี USD' }, { status: 400 });
 
   if (type === 'BUY') {
-    if (Number(account.balance) < totalCost) return NextResponse.json({ error: 'ยอดเงินไม่เพียงพอ' }, { status: 400 });
+    if (Number(account.balance) < totalCost) {
+      return NextResponse.json({ error: 'ยอดเงินไม่เพียงพอ' }, { status: 400 });
+    }
 
     await prismaApp.$transaction(async (tx) => {
       await tx.bankAccount.update({
@@ -35,7 +43,7 @@ export async function POST(req: Request) {
       });
 
       await tx.transactionStock.create({
-        data: { userId: session.user.id, stockId, type: 'BUY', quantity, price },
+        data: { userId: session.user.id, stockId, type: 'BUY', quantity, price: marketPrice },
       });
 
       const holding = await tx.holding.findUnique({
@@ -44,14 +52,14 @@ export async function POST(req: Request) {
 
       if (holding) {
         const newQty = Number(holding.quantity) + quantity;
-        const newAvg = (Number(holding.avgCost) * Number(holding.quantity) + price * quantity) / newQty;
+        const newAvg = (Number(holding.avgCost) * Number(holding.quantity) + marketPrice * quantity) / newQty;
         await tx.holding.update({
           where: { userId_stockId: { userId: session.user.id, stockId } },
           data: { quantity: newQty, avgCost: newAvg },
         });
       } else {
         await tx.holding.create({
-          data: { userId: session.user.id, stockId, quantity, avgCost: price },
+          data: { userId: session.user.id, stockId, quantity, avgCost: marketPrice },
         });
       }
     });
@@ -73,7 +81,7 @@ export async function POST(req: Request) {
       });
 
       await tx.transactionStock.create({
-        data: { userId: session.user.id, stockId, type: 'SELL', quantity, price },
+        data: { userId: session.user.id, stockId, type: 'SELL', quantity, price: marketPrice },
       });
 
       const newQty = Number(holding.quantity) - quantity;
@@ -90,5 +98,5 @@ export async function POST(req: Request) {
     });
   }
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, executedPrice: marketPrice });
 }

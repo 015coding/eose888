@@ -26,46 +26,74 @@ export async function GET() {
     const targetPrice = Number(order.price);
 
     if (!currentPrice) continue;
-    if (currentPrice > targetPrice) continue;
+
+    // BUY: execute ถ้าราคาตลาด <= ราคาเป้า
+    // SELL: execute ถ้าราคาตลาด >= ราคาเป้า
+    // แยกด้วยการเช็ค holding — ถ้าหุ้นถูก lock ไปแล้ว = SELL pending
+    const holding = await prismaApp.holding.findUnique({
+      where: { userId_stockId: { userId: order.userId, stockId: order.stockId } },
+    });
+
+    const isSellPending = holding
+      ? Number(holding.quantity) < Number(order.quantity)
+      : true; // ไม่มี holding เลย = หุ้นถูก lock ทั้งหมด = SELL
+
+    const shouldExecute = isSellPending
+      ? currentPrice >= targetPrice   // SELL: ราคาตลาด >= เป้า
+      : currentPrice <= targetPrice;  // BUY: ราคาตลาด <= เป้า
+
+    if (!shouldExecute) continue;
 
     await prismaApp.$transaction(async (tx) => {
-      // อัพเดท order เป็น BUY
       await tx.transactionStock.update({
         where: { id: order.id },
-        data: { type: 'BUY', price: currentPrice },
-      });
-
-      // อัพเดท Holding
-      const holding = await tx.holding.findUnique({
-        where: { userId_stockId: { userId: order.userId, stockId: order.stockId } },
+        data: { type: isSellPending ? 'SELL' : 'BUY', price: currentPrice },
       });
 
       const qty = Number(order.quantity);
 
-      if (holding) {
-        const newQty = Number(holding.quantity) + qty;
-        const newAvg = (Number(holding.avgCost) * Number(holding.quantity) + currentPrice * qty) / newQty;
-        await tx.holding.update({
-          where: { userId_stockId: { userId: order.userId, stockId: order.stockId } },
-          data: { quantity: newQty, avgCost: newAvg },
-        });
-      } else {
-        await tx.holding.create({
-          data: { userId: order.userId, stockId: order.stockId, quantity: qty, avgCost: currentPrice },
-        });
-      }
-
-      // คืนส่วนต่างถ้าซื้อได้ถูกกว่า target
-      const diff = (targetPrice - currentPrice) * qty;
-      if (diff > 0) {
+      if (isSellPending) {
+        // SELL execute → รับเงิน
         const account = await tx.bankAccount.findFirst({
           where: { userId: order.userId, currency: 'USD' },
         });
         if (account) {
           await tx.bankAccount.update({
             where: { id: account.id },
-            data: { balance: { increment: diff } },
+            data: { balance: { increment: currentPrice * qty } },
           });
+        }
+      } else {
+        // BUY execute → อัพเดท holding + คืนส่วนต่าง
+        const currentHolding = await tx.holding.findUnique({
+          where: { userId_stockId: { userId: order.userId, stockId: order.stockId } },
+        });
+
+        if (currentHolding) {
+          const newQty = Number(currentHolding.quantity) + qty;
+          const newAvg = (Number(currentHolding.avgCost) * Number(currentHolding.quantity) + currentPrice * qty) / newQty;
+          await tx.holding.update({
+            where: { userId_stockId: { userId: order.userId, stockId: order.stockId } },
+            data: { quantity: newQty, avgCost: newAvg },
+          });
+        } else {
+          await tx.holding.create({
+            data: { userId: order.userId, stockId: order.stockId, quantity: qty, avgCost: currentPrice },
+          });
+        }
+
+        // คืนส่วนต่างถ้าซื้อถูกกว่า target
+        const diff = (targetPrice - currentPrice) * qty;
+        if (diff > 0) {
+          const account = await tx.bankAccount.findFirst({
+            where: { userId: order.userId, currency: 'USD' },
+          });
+          if (account) {
+            await tx.bankAccount.update({
+              where: { id: account.id },
+              data: { balance: { increment: diff } },
+            });
+          }
         }
       }
     });
