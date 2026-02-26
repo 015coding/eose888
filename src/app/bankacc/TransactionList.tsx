@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import {
-  Box, Typography, Tabs, Tab, Chip, Divider , Paper
+  Box, Typography, Tabs, Tab, Chip, Divider
 } from '@mui/material'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
@@ -56,13 +56,6 @@ const TYPE_CONFIG = {
   TRANSFER_OUT: { label: 'โอนออก',   color: '#f59e0b', bg: '#fef3c7', icon: <ArrowUpwardIcon fontSize="small" /> },
   TRANSFER_IN:  { label: 'รับโอน',   color: '#3b82f6', bg: '#dbeafe', icon: <ArrowDownwardIcon fontSize="small" /> },
 }
-
-// const TYPE_CONFIG = {
-//   DEPOSIT:      { label: 'Deposit',  color: '#49e6b7', bg: 'rgba(73, 230, 183, 0.1)', icon: <ArrowDownwardIcon sx={{ fontSize: 18 }} /> },
-//   WITHDRAW:     { label: 'Withdraw',  color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)', icon: <ArrowUpwardIcon sx={{ fontSize: 18 }} /> },
-//   TRANSFER_OUT: { label: 'Transfer Out',   color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)', icon: <ArrowUpwardIcon sx={{ fontSize: 18 }} /> },
-//   TRANSFER_IN:  { label: 'Transfer In',   color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)', icon: <ArrowDownwardIcon sx={{ fontSize: 18 }} /> },
-// }
 
 export default function TransactionList({ accounts, logs }: Props) {
   const [selectedAccountId, setSelectedAccountId] = useState(accounts[0]?.id ?? '')

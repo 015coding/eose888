@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { 
-  Box, Typography, Button, Paper, Grid, Stack, TextField, 
+  Box, Typography, Button, Paper, Stack, TextField, 
   InputAdornment, Alert, CircularProgress, Select, MenuItem, FormControl
 } from "@mui/material";
 
@@ -62,8 +62,6 @@ export default function TradePanel({ symbol, currentPrice = 0, onTradeSuccess }:
     return 0;
   };
 
-  const selectedAccount = usdAccounts.find(a => a.id === selectedAccountId);
-
   const handleBuy = async () => {
     setError('');
     setSuccess('');
@@ -116,17 +114,29 @@ export default function TradePanel({ symbol, currentPrice = 0, onTradeSuccess }:
 
     setLoading(true);
     try {
-      const res = await fetch('/api/buying-stock/market-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stockId: symbol, quantity: shares, price, type: 'SELL', accountId: selectedAccountId }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'ขายไม่สำเร็จ');
+      if (orderType === 'LIMIT') {
+        const res = await fetch('/api/buying-stock/limit-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stockId: symbol, quantity: shares, price, type: 'SELL', accountId: selectedAccountId }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'วาง order ไม่สำเร็จ');
+        setSuccess('วาง Limit Sell Order สำเร็จ! รอราคาถึงเป้าหมาย');
+      } else {
+        const res = await fetch('/api/buying-stock/market-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stockId: symbol, quantity: shares, price, type: 'SELL', accountId: selectedAccountId }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'ขายไม่สำเร็จ');
+        setSuccess('ขายสำเร็จเรียบร้อย!');
+      }
 
-      setSuccess('ขายสำเร็จเรียบร้อย!');
       onTradeSuccess?.();
       setInputValue('');
+      setLimitPrice('');
       fetchAccounts();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาด');
@@ -149,7 +159,7 @@ export default function TradePanel({ symbol, currentPrice = 0, onTradeSuccess }:
   };
 
   return (
-    <Paper sx={{ p: 4, borderRadius: 6, bgcolor: themeColor.secondary, color: '#fff', height: '100%' }}>
+    <Paper sx={{ p: 4, borderRadius: 6, bgcolor: themeColor.secondary, color: '#fff', height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>
         Trade {symbol}
       </Typography>
@@ -168,17 +178,30 @@ export default function TradePanel({ symbol, currentPrice = 0, onTradeSuccess }:
         ))}
       </Stack>
 
-      <Stack spacing={2.5} sx={{ mb: 3 }}>
+      <Stack spacing={3} sx={{ mb: 'auto' }}> 
 
         {/* เลือกบัญชี USD */}
         <Box>
-          <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', fontWeight: 600, mb: 0.5, display: 'block' }}>
+          <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', fontWeight: 600, mb: 1, display: 'block' }}>
             บัญชี USD ที่ใช้ซื้อขาย
           </Typography>
           <FormControl fullWidth>
             <Select
               value={selectedAccountId}
               onChange={e => setSelectedAccountId(e.target.value)}
+              displayEmpty
+              renderValue={(selected) => {
+                if (!selected) return <Typography sx={{ color: 'rgba(255,255,255,0.5)' }}>กำลังโหลดบัญชี...</Typography>;
+                const account = usdAccounts.find(a => a.id === selected);
+                return account ? (
+                  <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Typography fontWeight={700}>{account.country}</Typography>
+                    <Typography fontWeight={600} sx={{ color: themeColor.primary }}>
+                      ${account.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    </Typography>
+                  </Stack>
+                ) : null;
+              }}
               sx={{
                 color: 'white', borderRadius: 3,
                 bgcolor: 'rgba(255,255,255,0.05)',
@@ -189,21 +212,16 @@ export default function TradePanel({ symbol, currentPrice = 0, onTradeSuccess }:
             >
               {usdAccounts.map(a => (
                 <MenuItem key={a.id} value={a.id}>
-                  <Box>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" width="100%">
                     <Typography variant="body2" fontWeight={800}>{a.country}</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      คงเหลือ: ${a.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    <Typography variant="caption" sx={{ color: themeColor.primary, fontWeight: 700 }}>
+                      ${a.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </Typography>
-                  </Box>
+                  </Stack>
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
-          {selectedAccount && (
-            <Typography variant="caption" sx={{ color: themeColor.primary, fontWeight: 700, mt: 0.5, display: 'block' }}>
-              ยอดคงเหลือ: ${selectedAccount.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-            </Typography>
-          )}
         </Box>
 
         {/* Input Mode */}
@@ -257,46 +275,48 @@ export default function TradePanel({ symbol, currentPrice = 0, onTradeSuccess }:
         />
       </Stack>
 
-      {error && <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>{error}</Alert>}
-      {success && <Alert severity="success" sx={{ mb: 2, borderRadius: 3 }}>{success}</Alert>}
+      <Box sx={{ mt: 3 }}>
+        {error && <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>{error}</Alert>}
+        {success && <Alert severity="success" sx={{ mb: 2, borderRadius: 3 }}>{success}</Alert>}
 
-      {/* BUY / SELL */}
-      <Grid container spacing={2}>
-        <Grid size={6}>
-          <Button fullWidth variant="contained" onClick={handleBuy} disabled={loading}
-            sx={{
-              py: 2, borderRadius: 4, bgcolor: themeColor.primary, fontWeight: 900, fontSize: '1.1rem',
-              boxShadow: '0 8px 16px -4px rgba(16, 185, 129, 0.4)',
-              '&:hover': { bgcolor: '#059669', transform: 'translateY(-2px)' }, transition: '0.2s'
-            }}
-          >
-            {loading ? <CircularProgress size={22} color="inherit" /> : 'BUY'}
-          </Button>
-        </Grid>
-        <Grid size={6}>
-          <Button fullWidth variant="outlined" onClick={handleSell} disabled={loading}
-            sx={{
-              py: 2, borderRadius: 4, color: '#fff', borderColor: 'rgba(255,255,255,0.2)', fontWeight: 900, fontSize: '1.1rem',
-              '&:hover': { borderColor: '#fff', bgcolor: 'rgba(255,255,255,0.05)', transform: 'translateY(-2px)' }, transition: '0.2s'
-            }}
-          >
-            {loading ? <CircularProgress size={22} color="inherit" /> : 'SELL'}
-          </Button>
-        </Grid>
-      </Grid>
-
-      {/* Estimated */}
-      <Box sx={{ mt: 4, p: 2, borderRadius: 3, bgcolor: 'rgba(255,255,255,0.05)', border: '1px dashed rgba(255,255,255,0.1)' }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Typography variant="body2" sx={{ opacity: 0.6 }}>
-            {inputMode === 'SHARES' ? 'Estimated Cost' : 'Estimated Shares'}
-          </Typography>
-          <Typography variant="h6" fontWeight={800} color={themeColor.primary}>
-            {inputMode === 'SHARES'
-              ? `$${getEstimatedCost().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-              : getEstimatedShares().toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 8 })}
-          </Typography>
+        {/* BUY / SELL (ใช้ Stack แทน Grid) */}
+        <Stack direction="row" spacing={2}>
+          <Box flex={1}>
+            <Button fullWidth variant="contained" onClick={handleBuy} disabled={loading}
+              sx={{
+                py: 2, borderRadius: 4, bgcolor: themeColor.primary, fontWeight: 900, fontSize: '1.1rem',
+                boxShadow: '0 8px 16px -4px rgba(16, 185, 129, 0.4)',
+                '&:hover': { bgcolor: '#059669', transform: 'translateY(-2px)' }, transition: '0.2s'
+              }}
+            >
+              {loading ? <CircularProgress size={22} color="inherit" /> : 'BUY'}
+            </Button>
+          </Box>
+          <Box flex={1}>
+            <Button fullWidth variant="outlined" onClick={handleSell} disabled={loading}
+              sx={{
+                py: 2, borderRadius: 4, color: '#fff', borderColor: 'rgba(255,255,255,0.2)', fontWeight: 900, fontSize: '1.1rem',
+                '&:hover': { borderColor: '#fff', bgcolor: 'rgba(255,255,255,0.05)', transform: 'translateY(-2px)' }, transition: '0.2s'
+              }}
+            >
+              {loading ? <CircularProgress size={22} color="inherit" /> : 'SELL'}
+            </Button>
+          </Box>
         </Stack>
+
+        {/* Estimated */}
+        <Box sx={{ mt: 3, p: 2, borderRadius: 3, bgcolor: 'rgba(255,255,255,0.05)', border: '1px dashed rgba(255,255,255,0.1)' }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Typography variant="body2" sx={{ opacity: 0.6 }}>
+              {inputMode === 'SHARES' ? 'Estimated Cost' : 'Estimated Shares'}
+            </Typography>
+            <Typography variant="h6" fontWeight={800} color={themeColor.primary}>
+              {inputMode === 'SHARES'
+                ? `$${getEstimatedCost().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                : getEstimatedShares().toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 8 })}
+            </Typography>
+          </Stack>
+        </Box>
       </Box>
     </Paper>
   );
