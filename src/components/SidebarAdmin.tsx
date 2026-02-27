@@ -50,12 +50,12 @@ export default function Sidebar({ children, session }: SidebarProps) {
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardRoundedIcon  sx={{ fontSize: 20 }} />, path: '/admin/dashboard' },
     { text: 'Users',     icon: <PeopleRoundedIcon     sx={{ fontSize: 20 }} />, path: '/admin/users'     },
-    { text: 'Setting',  icon: <SettingsRoundedIcon   sx={{ fontSize: 20 }} />, path: '/admin/setting'  },
+    { text: 'Setting',  icon: <SettingsRoundedIcon   sx={{ fontSize: 20 }} />, path: '/admin/admin_setting'  },
   ]
 
   const logItems = [
     { text: 'Auth',         icon: <LoginRoundedIcon    sx={{ fontSize: 18 }} />, path: '/admin/log/auth'         },
-    { text: 'Transactions', icon: <SwapHorizRoundedIcon sx={{ fontSize: 18 }} />, path: '/admin/log/transactions' },
+    { text: 'Transactions', icon: <SwapHorizRoundedIcon sx={{ fontSize: 18 }} />, path: '/admin/log/transaction' },
   ]
 
   const NavItem = ({ text, icon, path }: { text: string; icon: React.ReactNode; path: string }) => {

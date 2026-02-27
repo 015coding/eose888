@@ -54,45 +54,141 @@ export const findUserBalance = async (userId: string) => {
     return balance;
 };
 
-export const getAllTransactionsLog = async (page: number = 1, limit: number = 10) => {
-    const offset = (page - 1) * limit;
-    const [accountLogs, stockLogs, accountLogCount, stockLogCount] = await Promise.all([
+type TransactionRangeOptions = {
+    startDate?: Date;
+    endDate?: Date;
+    all?: boolean;
+};
+
+type TransactionFilterOptions = TransactionRangeOptions & {
+    search?: string;
+    type?: string;
+};
+
+const normalizeDateRange = ({ startDate, endDate, all }: TransactionRangeOptions) => {
+    if (all || !startDate || !endDate) {
+        return null;
+    }
+
+    const normalizedStartDate = new Date(startDate);
+    normalizedStartDate.setHours(0, 0, 0, 0);
+
+    const normalizedEndDate = new Date(endDate);
+    normalizedEndDate.setHours(23, 59, 59, 999);
+
+    if (normalizedStartDate.getTime() <= normalizedEndDate.getTime()) {
+        return {
+            startDate: normalizedStartDate,
+            endDate: normalizedEndDate,
+        };
+    }
+
+    return {
+        startDate: new Date(normalizedEndDate.getFullYear(), normalizedEndDate.getMonth(), normalizedEndDate.getDate(), 0, 0, 0, 0),
+        endDate: new Date(normalizedStartDate.getFullYear(), normalizedStartDate.getMonth(), normalizedStartDate.getDate(), 23, 59, 59, 999),
+    };
+};
+
+const getUnifiedTransactions = async (rangeOptions: TransactionRangeOptions = {}) => {
+    const dateRange = normalizeDateRange(rangeOptions);
+
+    const [accountLogs, stockLogs] = await Promise.all([
         prisma_yok.accountLog.findMany({
+            where: dateRange
+                ? {
+                    createdAt: {
+                        gte: dateRange.startDate,
+                        lte: dateRange.endDate,
+                    },
+                }
+                : undefined,
             select: {
                 type: true,
                 amount: true,
                 createdAt: true,
+                account: {
+                    select: {
+                        user: {
+                            select: {
+                                id: true,
+                                firstName: true,
+                                lastName: true,
+                            },
+                        },
+                    },
+                },
             },
         }),
         prisma_yok.transactionStock.findMany({
+            where: dateRange
+                ? {
+                    tradeDate: {
+                        gte: dateRange.startDate,
+                        lte: dateRange.endDate,
+                    },
+                }
+                : undefined,
             select: {
                 type: true,
                 quantity: true,
                 price: true,
                 tradeDate: true,
+                user: {
+                    select: {
+                        id: true,
+                        firstName: true,
+                        lastName: true,
+                    },
+                },
             },
         }),
-        prisma_yok.accountLog.count(),
-        prisma_yok.transactionStock.count(),
     ]);
 
     const normalizedAccountLogs = accountLogs.map((row) => ({
         type: row.type,
-        amount: row.amount,
+        amount: Number(row.amount),
         createdAt: row.createdAt,
+        ownerId: row.account.user.id,
+        ownerName: `${row.account.user.firstName} ${row.account.user.lastName}`.trim(),
     }));
 
     const normalizedStockLogs = stockLogs.map((row) => ({
         type: `STOCK_${row.type}`,
         amount: Number(row.quantity) * Number(row.price),
         createdAt: row.tradeDate,
+        ownerId: row.user.id,
+        ownerName: `${row.user.firstName} ${row.user.lastName}`.trim(),
     }));
 
-    const transactions = [...normalizedAccountLogs, ...normalizedStockLogs]
+    return [...normalizedAccountLogs, ...normalizedStockLogs];
+};
+
+export const getAllTransactionsLog = async (
+    page: number = 1,
+    limit: number = 10,
+    rangeOptions: TransactionFilterOptions = {}
+) => {
+    const offset = (page - 1) * limit;
+    const allTransactions = await getUnifiedTransactions(rangeOptions);
+
+    const normalizedSearch = (rangeOptions.search ?? '').trim().toLowerCase();
+    const normalizedType = (rangeOptions.type ?? 'ALL').trim().toUpperCase();
+
+    const filteredTransactions = allTransactions.filter((tx) => {
+        const passType = normalizedType === 'ALL' ? true : tx.type === normalizedType;
+        if (!passType) return false;
+
+        if (!normalizedSearch) return true;
+
+        const haystack = `${tx.ownerName} ${tx.ownerId} ${tx.type}`.toLowerCase();
+        return haystack.includes(normalizedSearch);
+    });
+
+    const transactions = filteredTransactions
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
         .slice(offset, offset + limit);
 
-    const totalCount = accountLogCount + stockLogCount;
+    const totalCount = filteredTransactions.length;
 
     return {
         data: transactions,
@@ -105,6 +201,34 @@ export const getAllTransactionsLog = async (page: number = 1, limit: number = 10
     };
 };
 
+export const getTransactionSummaryByRange = async (rangeOptions: TransactionRangeOptions = {}) => {
+    const transactions = await getUnifiedTransactions(rangeOptions);
+
+    const byTypeMap = new Map<string, { amount: number; count: number }>();
+    let totalAmount = 0;
+
+    for (const tx of transactions) {
+        totalAmount += tx.amount;
+        const existing = byTypeMap.get(tx.type);
+        if (existing) {
+            existing.amount += tx.amount;
+            existing.count += 1;
+        } else {
+            byTypeMap.set(tx.type, { amount: tx.amount, count: 1 });
+        }
+    }
+
+    const breakdown = Array.from(byTypeMap.entries())
+        .map(([type, value]) => ({ type, amount: value.amount, count: value.count }))
+        .sort((a, b) => b.amount - a.amount);
+
+    return {
+        totalTransactions: transactions.length,
+        totalAmount,
+        breakdown,
+    };
+};
+
 const toLocalDateString = (date: Date): string => {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -113,37 +237,111 @@ const toLocalDateString = (date: Date): string => {
 };
 
 export const getDailyTransactionVolume = async (days: number = 7) => {
+    return getDailyTransactionVolumeByRange({ days });
+};
+
+type DailyVolumeOptions = TransactionRangeOptions & {
+    days?: number;
+};
+
+export const getDailyTransactionVolumeByRange = async (options: DailyVolumeOptions = {}) => {
     const today = new Date();
     today.setHours(23, 59, 59, 999);
 
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - (days - 1));
-    startDate.setHours(0, 0, 0, 0);
+    let startDate: Date;
+    let endDate: Date;
+
+    if (options.all) {
+        const [earliestAccountLog, earliestStockTx] = await Promise.all([
+            prisma_yok.accountLog.findFirst({
+                orderBy: { createdAt: 'asc' },
+                select: { createdAt: true },
+            }),
+            prisma_yok.transactionStock.findFirst({
+                orderBy: { tradeDate: 'asc' },
+                select: { tradeDate: true },
+            }),
+        ]);
+
+        const candidates = [
+            earliestAccountLog?.createdAt,
+            earliestStockTx?.tradeDate,
+        ].filter((date): date is Date => Boolean(date));
+
+        const earliestDate = candidates.length > 0
+            ? new Date(Math.min(...candidates.map((date) => date.getTime())))
+            : new Date(today);
+
+        startDate = earliestDate;
+        startDate.setHours(0, 0, 0, 0);
+        endDate = new Date(today);
+    } else if (options.startDate && options.endDate) {
+        startDate = new Date(options.startDate);
+        startDate.setHours(0, 0, 0, 0);
+        endDate = new Date(options.endDate);
+        endDate.setHours(23, 59, 59, 999);
+    } else {
+        const days = options.days ?? 7;
+        startDate = new Date();
+        startDate.setDate(startDate.getDate() - (days - 1));
+        startDate.setHours(0, 0, 0, 0);
+        endDate = new Date(today);
+    }
+
+    if (startDate.getTime() > endDate.getTime()) {
+        [startDate, endDate] = [endDate, startDate];
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+    }
 
     const volumeByDate: Record<string, number> = {};
-    for (let i = 0; i < days; i++) {
+    const daysInRange = Math.floor((endDate.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000)) + 1;
+
+    for (let i = 0; i < daysInRange; i++) {
         const d = new Date(startDate);
         d.setDate(startDate.getDate() + i);
         volumeByDate[toLocalDateString(d)] = 0;
     }
 
-    const transactions = await prisma_yok.accountLog.findMany({
-        where: {
-            createdAt: {
-                gte: startDate,
-                lte: today,
+    const [accountTransactions, stockTransactions] = await Promise.all([
+        prisma_yok.accountLog.findMany({
+            where: {
+                createdAt: {
+                    gte: startDate,
+                    lte: endDate,
+                },
             },
-        },
-        select: {
-            createdAt: true,
-            amount: true,
-        },
-    });
+            select: {
+                createdAt: true,
+                amount: true,
+            },
+        }),
+        prisma_yok.transactionStock.findMany({
+            where: {
+                tradeDate: {
+                    gte: startDate,
+                    lte: endDate,
+                },
+            },
+            select: {
+                tradeDate: true,
+                quantity: true,
+                price: true,
+            },
+        }),
+    ]);
 
-    transactions.forEach((tx) => {
+    accountTransactions.forEach((tx) => {
         const dateString = toLocalDateString(tx.createdAt);
         if (volumeByDate[dateString] !== undefined) {
             volumeByDate[dateString] += Number(tx.amount || 0);
+        }
+    });
+
+    stockTransactions.forEach((tx) => {
+        const dateString = toLocalDateString(tx.tradeDate);
+        if (volumeByDate[dateString] !== undefined) {
+            volumeByDate[dateString] += Number(tx.quantity || 0) * Number(tx.price || 0);
         }
     });
 

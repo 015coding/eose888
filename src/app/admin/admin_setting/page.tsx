@@ -10,7 +10,6 @@ import {
   FileDownloadRounded as DownloadIcon,
 } from '@mui/icons-material'
 
-// ── Palette — match iOS glass sidebar ────────────────────────────────────────
 const T = {
   wallpaper:   '#FFFFFF',
   glass:       'rgba(255,255,255,0.60)',
@@ -26,7 +25,6 @@ const T = {
   sans:        '"SF Pro Rounded","SF Pro Display",-apple-system,"Helvetica Neue",sans-serif',
 }
 
-// ── Shared Components ─────────────────────────────────────────────────────────
 
 function GlassCard({ children, sx = {} }: { children: React.ReactNode; sx?: object }) {
   return (
@@ -57,7 +55,6 @@ function CardHead({ label, sub }: { label: string; sub?: string }) {
   )
 }
 
-// iOS Styled Switch
 const IOSSwitch = ({ checked, onChange }: { checked: boolean; onChange: (e: any) => void }) => (
   <Switch
     disableRipple
@@ -84,7 +81,6 @@ const IOSSwitch = ({ checked, onChange }: { checked: boolean; onChange: (e: any)
   />
 )
 
-// Standard Setting Row
 function SettingRow({ title, desc, control, isLast = false }: { title: string; desc: string; control: React.ReactNode; isLast?: boolean }) {
   return (
     <Box sx={{ 
@@ -107,7 +103,6 @@ function SettingRow({ title, desc, control, isLast = false }: { title: string; d
   )
 }
 
-// Action Button Row (for things like Clear Cache, Export)
 function ActionRow({ title, desc, buttonText, onClick, icon, color = T.textBright, isLast = false }: { title: string; desc: string; buttonText: string; onClick: () => void; icon: React.ReactNode; color?: string; isLast?: boolean }) {
   return (
     <Box sx={{ 
@@ -150,10 +145,8 @@ const inputProps = {
   }
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AdminSettingsPage() {
-  // Config States
   const [telegramAlerts, setTelegramAlerts] = useState(true)
   const [suspiciousLogin, setSuspiciousLogin] = useState(true)
   const [webhookUrl, setWebhookUrl] = useState('https://api.telegram.org/bot123456...')
@@ -165,7 +158,6 @@ export default function AdminSettingsPage() {
   return (
     <Box sx={{ minHeight: '100vh', background: T.wallpaper, p: { xs: 2, md: 3 }, pb: { xs: 10, md: 4 } }}>
       
-      {/* ── Header ── */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, pb: 2.5, borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
         <Box>
           <Typography sx={{ fontFamily: T.mono, fontSize: '0.58rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: T.textDim, mb: 0.4 }}>
@@ -190,10 +182,8 @@ export default function AdminSettingsPage() {
         </Button>
       </Box>
 
-      {/* ── Single Column Stack ── */}
       <Stack spacing={4} maxWidth="800px">
         
-        {/* Section 1: Preferences */}
         <GlassCard>
           <CardHead label="Display & Preferences" sub="Adjust how information is presented" />
           <Box>
@@ -222,7 +212,6 @@ export default function AdminSettingsPage() {
           </Box>
         </GlassCard>
 
-        {/* Section 2: Alerts & Integrations */}
         <GlassCard>
           <CardHead label="Alerts & Integrations" sub="Webhook endpoints and system notifications" />
           <Box>
@@ -249,7 +238,6 @@ export default function AdminSettingsPage() {
           </Box>
         </GlassCard>
 
-        {/* Section 3: Security & Data Management */}
         <GlassCard>
           <CardHead label="Security & Data Management" sub="Access control and system maintenance" />
           <Box>
