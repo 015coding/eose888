@@ -1613,12 +1613,14 @@ export namespace Prisma {
     logs: number
     sentTransfers: number
     receivedTransfers: number
+    transactions: number
   }
 
   export type BankAccountCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     logs?: boolean | BankAccountCountOutputTypeCountLogsArgs
     sentTransfers?: boolean | BankAccountCountOutputTypeCountSentTransfersArgs
     receivedTransfers?: boolean | BankAccountCountOutputTypeCountReceivedTransfersArgs
+    transactions?: boolean | BankAccountCountOutputTypeCountTransactionsArgs
   }
 
   // Custom InputTypes
@@ -1651,6 +1653,13 @@ export namespace Prisma {
    */
   export type BankAccountCountOutputTypeCountReceivedTransfersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TransferTransactionWhereInput
+  }
+
+  /**
+   * BankAccountCountOutputType without action
+   */
+  export type BankAccountCountOutputTypeCountTransactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TransactionStockWhereInput
   }
 
 
@@ -2883,6 +2892,7 @@ export namespace Prisma {
     logs?: boolean | BankAccount$logsArgs<ExtArgs>
     sentTransfers?: boolean | BankAccount$sentTransfersArgs<ExtArgs>
     receivedTransfers?: boolean | BankAccount$receivedTransfersArgs<ExtArgs>
+    transactions?: boolean | BankAccount$transactionsArgs<ExtArgs>
     _count?: boolean | BankAccountCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["bankAccount"]>
 
@@ -2901,6 +2911,7 @@ export namespace Prisma {
     logs?: boolean | BankAccount$logsArgs<ExtArgs>
     sentTransfers?: boolean | BankAccount$sentTransfersArgs<ExtArgs>
     receivedTransfers?: boolean | BankAccount$receivedTransfersArgs<ExtArgs>
+    transactions?: boolean | BankAccount$transactionsArgs<ExtArgs>
     _count?: boolean | BankAccountCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -2911,6 +2922,7 @@ export namespace Prisma {
       logs: Prisma.$AccountLogPayload<ExtArgs>[]
       sentTransfers: Prisma.$TransferTransactionPayload<ExtArgs>[]
       receivedTransfers: Prisma.$TransferTransactionPayload<ExtArgs>[]
+      transactions: Prisma.$TransactionStockPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3263,6 +3275,7 @@ export namespace Prisma {
     logs<T extends BankAccount$logsArgs<ExtArgs> = {}>(args?: Subset<T, BankAccount$logsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccountLogPayload<ExtArgs>, T, "findMany"> | Null>
     sentTransfers<T extends BankAccount$sentTransfersArgs<ExtArgs> = {}>(args?: Subset<T, BankAccount$sentTransfersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransferTransactionPayload<ExtArgs>, T, "findMany"> | Null>
     receivedTransfers<T extends BankAccount$receivedTransfersArgs<ExtArgs> = {}>(args?: Subset<T, BankAccount$receivedTransfersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransferTransactionPayload<ExtArgs>, T, "findMany"> | Null>
+    transactions<T extends BankAccount$transactionsArgs<ExtArgs> = {}>(args?: Subset<T, BankAccount$transactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionStockPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3654,6 +3667,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: TransferTransactionScalarFieldEnum | TransferTransactionScalarFieldEnum[]
+  }
+
+  /**
+   * BankAccount.transactions
+   */
+  export type BankAccount$transactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TransactionStock
+     */
+    select?: TransactionStockSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TransactionStockInclude<ExtArgs> | null
+    where?: TransactionStockWhereInput
+    orderBy?: TransactionStockOrderByWithRelationInput | TransactionStockOrderByWithRelationInput[]
+    cursor?: TransactionStockWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TransactionStockScalarFieldEnum | TransactionStockScalarFieldEnum[]
   }
 
   /**
@@ -6536,6 +6569,7 @@ export namespace Prisma {
     type: $Enums.TradeType | null
     quantity: Decimal | null
     price: Decimal | null
+    accountId: string | null
     tradeDate: Date | null
   }
 
@@ -6546,6 +6580,7 @@ export namespace Prisma {
     type: $Enums.TradeType | null
     quantity: Decimal | null
     price: Decimal | null
+    accountId: string | null
     tradeDate: Date | null
   }
 
@@ -6556,6 +6591,7 @@ export namespace Prisma {
     type: number
     quantity: number
     price: number
+    accountId: number
     tradeDate: number
     _all: number
   }
@@ -6580,6 +6616,7 @@ export namespace Prisma {
     type?: true
     quantity?: true
     price?: true
+    accountId?: true
     tradeDate?: true
   }
 
@@ -6590,6 +6627,7 @@ export namespace Prisma {
     type?: true
     quantity?: true
     price?: true
+    accountId?: true
     tradeDate?: true
   }
 
@@ -6600,6 +6638,7 @@ export namespace Prisma {
     type?: true
     quantity?: true
     price?: true
+    accountId?: true
     tradeDate?: true
     _all?: true
   }
@@ -6697,6 +6736,7 @@ export namespace Prisma {
     type: $Enums.TradeType
     quantity: Decimal
     price: Decimal
+    accountId: string | null
     tradeDate: Date
     _count: TransactionStockCountAggregateOutputType | null
     _avg: TransactionStockAvgAggregateOutputType | null
@@ -6726,8 +6766,10 @@ export namespace Prisma {
     type?: boolean
     quantity?: boolean
     price?: boolean
+    accountId?: boolean
     tradeDate?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    account?: boolean | TransactionStock$accountArgs<ExtArgs>
   }, ExtArgs["result"]["transactionStock"]>
 
 
@@ -6738,17 +6780,20 @@ export namespace Prisma {
     type?: boolean
     quantity?: boolean
     price?: boolean
+    accountId?: boolean
     tradeDate?: boolean
   }
 
   export type TransactionStockInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    account?: boolean | TransactionStock$accountArgs<ExtArgs>
   }
 
   export type $TransactionStockPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "TransactionStock"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
+      account: Prisma.$BankAccountPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: bigint
@@ -6757,6 +6802,7 @@ export namespace Prisma {
       type: $Enums.TradeType
       quantity: Prisma.Decimal
       price: Prisma.Decimal
+      accountId: string | null
       tradeDate: Date
     }, ExtArgs["result"]["transactionStock"]>
     composites: {}
@@ -7099,6 +7145,7 @@ export namespace Prisma {
   export interface Prisma__TransactionStockClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    account<T extends TransactionStock$accountArgs<ExtArgs> = {}>(args?: Subset<T, TransactionStock$accountArgs<ExtArgs>>): Prisma__BankAccountClient<$Result.GetResult<Prisma.$BankAccountPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -7134,6 +7181,7 @@ export namespace Prisma {
     readonly type: FieldRef<"TransactionStock", 'TradeType'>
     readonly quantity: FieldRef<"TransactionStock", 'Decimal'>
     readonly price: FieldRef<"TransactionStock", 'Decimal'>
+    readonly accountId: FieldRef<"TransactionStock", 'String'>
     readonly tradeDate: FieldRef<"TransactionStock", 'DateTime'>
   }
     
@@ -7431,6 +7479,21 @@ export namespace Prisma {
      * Filter which TransactionStocks to delete
      */
     where?: TransactionStockWhereInput
+  }
+
+  /**
+   * TransactionStock.account
+   */
+  export type TransactionStock$accountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankAccount
+     */
+    select?: BankAccountSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankAccountInclude<ExtArgs> | null
+    where?: BankAccountWhereInput
   }
 
   /**
@@ -10137,6 +10200,7 @@ export namespace Prisma {
     type: 'type',
     quantity: 'quantity',
     price: 'price',
+    accountId: 'accountId',
     tradeDate: 'tradeDate'
   };
 
@@ -10349,6 +10413,7 @@ export namespace Prisma {
     logs?: AccountLogListRelationFilter
     sentTransfers?: TransferTransactionListRelationFilter
     receivedTransfers?: TransferTransactionListRelationFilter
+    transactions?: TransactionStockListRelationFilter
   }
 
   export type BankAccountOrderByWithRelationInput = {
@@ -10362,6 +10427,7 @@ export namespace Prisma {
     logs?: AccountLogOrderByRelationAggregateInput
     sentTransfers?: TransferTransactionOrderByRelationAggregateInput
     receivedTransfers?: TransferTransactionOrderByRelationAggregateInput
+    transactions?: TransactionStockOrderByRelationAggregateInput
   }
 
   export type BankAccountWhereUniqueInput = Prisma.AtLeast<{
@@ -10379,6 +10445,7 @@ export namespace Prisma {
     logs?: AccountLogListRelationFilter
     sentTransfers?: TransferTransactionListRelationFilter
     receivedTransfers?: TransferTransactionListRelationFilter
+    transactions?: TransactionStockListRelationFilter
   }, "id" | "userId_country_currency">
 
   export type BankAccountOrderByWithAggregationInput = {
@@ -10608,8 +10675,10 @@ export namespace Prisma {
     type?: EnumTradeTypeFilter<"TransactionStock"> | $Enums.TradeType
     quantity?: DecimalFilter<"TransactionStock"> | Decimal | DecimalJsLike | number | string
     price?: DecimalFilter<"TransactionStock"> | Decimal | DecimalJsLike | number | string
+    accountId?: StringNullableFilter<"TransactionStock"> | string | null
     tradeDate?: DateTimeFilter<"TransactionStock"> | Date | string
     user?: XOR<UserRelationFilter, UserWhereInput>
+    account?: XOR<BankAccountNullableRelationFilter, BankAccountWhereInput> | null
   }
 
   export type TransactionStockOrderByWithRelationInput = {
@@ -10619,8 +10688,10 @@ export namespace Prisma {
     type?: SortOrder
     quantity?: SortOrder
     price?: SortOrder
+    accountId?: SortOrderInput | SortOrder
     tradeDate?: SortOrder
     user?: UserOrderByWithRelationInput
+    account?: BankAccountOrderByWithRelationInput
   }
 
   export type TransactionStockWhereUniqueInput = Prisma.AtLeast<{
@@ -10633,8 +10704,10 @@ export namespace Prisma {
     type?: EnumTradeTypeFilter<"TransactionStock"> | $Enums.TradeType
     quantity?: DecimalFilter<"TransactionStock"> | Decimal | DecimalJsLike | number | string
     price?: DecimalFilter<"TransactionStock"> | Decimal | DecimalJsLike | number | string
+    accountId?: StringNullableFilter<"TransactionStock"> | string | null
     tradeDate?: DateTimeFilter<"TransactionStock"> | Date | string
     user?: XOR<UserRelationFilter, UserWhereInput>
+    account?: XOR<BankAccountNullableRelationFilter, BankAccountWhereInput> | null
   }, "id">
 
   export type TransactionStockOrderByWithAggregationInput = {
@@ -10644,6 +10717,7 @@ export namespace Prisma {
     type?: SortOrder
     quantity?: SortOrder
     price?: SortOrder
+    accountId?: SortOrderInput | SortOrder
     tradeDate?: SortOrder
     _count?: TransactionStockCountOrderByAggregateInput
     _avg?: TransactionStockAvgOrderByAggregateInput
@@ -10662,6 +10736,7 @@ export namespace Prisma {
     type?: EnumTradeTypeWithAggregatesFilter<"TransactionStock"> | $Enums.TradeType
     quantity?: DecimalWithAggregatesFilter<"TransactionStock"> | Decimal | DecimalJsLike | number | string
     price?: DecimalWithAggregatesFilter<"TransactionStock"> | Decimal | DecimalJsLike | number | string
+    accountId?: StringNullableWithAggregatesFilter<"TransactionStock"> | string | null
     tradeDate?: DateTimeWithAggregatesFilter<"TransactionStock"> | Date | string
   }
 
@@ -10902,6 +10977,7 @@ export namespace Prisma {
     logs?: AccountLogCreateNestedManyWithoutAccountInput
     sentTransfers?: TransferTransactionCreateNestedManyWithoutFromAccountInput
     receivedTransfers?: TransferTransactionCreateNestedManyWithoutToAccountInput
+    transactions?: TransactionStockCreateNestedManyWithoutAccountInput
   }
 
   export type BankAccountUncheckedCreateInput = {
@@ -10914,6 +10990,7 @@ export namespace Prisma {
     logs?: AccountLogUncheckedCreateNestedManyWithoutAccountInput
     sentTransfers?: TransferTransactionUncheckedCreateNestedManyWithoutFromAccountInput
     receivedTransfers?: TransferTransactionUncheckedCreateNestedManyWithoutToAccountInput
+    transactions?: TransactionStockUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type BankAccountUpdateInput = {
@@ -10926,6 +11003,7 @@ export namespace Prisma {
     logs?: AccountLogUpdateManyWithoutAccountNestedInput
     sentTransfers?: TransferTransactionUpdateManyWithoutFromAccountNestedInput
     receivedTransfers?: TransferTransactionUpdateManyWithoutToAccountNestedInput
+    transactions?: TransactionStockUpdateManyWithoutAccountNestedInput
   }
 
   export type BankAccountUncheckedUpdateInput = {
@@ -10938,6 +11016,7 @@ export namespace Prisma {
     logs?: AccountLogUncheckedUpdateManyWithoutAccountNestedInput
     sentTransfers?: TransferTransactionUncheckedUpdateManyWithoutFromAccountNestedInput
     receivedTransfers?: TransferTransactionUncheckedUpdateManyWithoutToAccountNestedInput
+    transactions?: TransactionStockUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type BankAccountCreateManyInput = {
@@ -11155,6 +11234,7 @@ export namespace Prisma {
     price: Decimal | DecimalJsLike | number | string
     tradeDate?: Date | string
     user: UserCreateNestedOneWithoutTransactionsInput
+    account?: BankAccountCreateNestedOneWithoutTransactionsInput
   }
 
   export type TransactionStockUncheckedCreateInput = {
@@ -11164,6 +11244,7 @@ export namespace Prisma {
     type: $Enums.TradeType
     quantity: Decimal | DecimalJsLike | number | string
     price: Decimal | DecimalJsLike | number | string
+    accountId?: string | null
     tradeDate?: Date | string
   }
 
@@ -11175,6 +11256,7 @@ export namespace Prisma {
     price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     tradeDate?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTransactionsNestedInput
+    account?: BankAccountUpdateOneWithoutTransactionsNestedInput
   }
 
   export type TransactionStockUncheckedUpdateInput = {
@@ -11184,6 +11266,7 @@ export namespace Prisma {
     type?: EnumTradeTypeFieldUpdateOperationsInput | $Enums.TradeType
     quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    accountId?: NullableStringFieldUpdateOperationsInput | string | null
     tradeDate?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -11194,6 +11277,7 @@ export namespace Prisma {
     type: $Enums.TradeType
     quantity: Decimal | DecimalJsLike | number | string
     price: Decimal | DecimalJsLike | number | string
+    accountId?: string | null
     tradeDate?: Date | string
   }
 
@@ -11213,6 +11297,7 @@ export namespace Prisma {
     type?: EnumTradeTypeFieldUpdateOperationsInput | $Enums.TradeType
     quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    accountId?: NullableStringFieldUpdateOperationsInput | string | null
     tradeDate?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -11817,6 +11902,25 @@ export namespace Prisma {
     not?: NestedEnumTradeTypeFilter<$PrismaModel> | $Enums.TradeType
   }
 
+  export type StringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | null
+    notIn?: string[] | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type BankAccountNullableRelationFilter = {
+    is?: BankAccountWhereInput | null
+    isNot?: BankAccountWhereInput | null
+  }
+
   export type TransactionStockCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -11824,6 +11928,7 @@ export namespace Prisma {
     type?: SortOrder
     quantity?: SortOrder
     price?: SortOrder
+    accountId?: SortOrder
     tradeDate?: SortOrder
   }
 
@@ -11840,6 +11945,7 @@ export namespace Prisma {
     type?: SortOrder
     quantity?: SortOrder
     price?: SortOrder
+    accountId?: SortOrder
     tradeDate?: SortOrder
   }
 
@@ -11850,6 +11956,7 @@ export namespace Prisma {
     type?: SortOrder
     quantity?: SortOrder
     price?: SortOrder
+    accountId?: SortOrder
     tradeDate?: SortOrder
   }
 
@@ -11867,6 +11974,23 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumTradeTypeFilter<$PrismaModel>
     _max?: NestedEnumTradeTypeFilter<$PrismaModel>
+  }
+
+  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | null
+    notIn?: string[] | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type PinnedStockUserIdStockIdCompoundUniqueInput = {
@@ -12202,6 +12326,13 @@ export namespace Prisma {
     connect?: TransferTransactionWhereUniqueInput | TransferTransactionWhereUniqueInput[]
   }
 
+  export type TransactionStockCreateNestedManyWithoutAccountInput = {
+    create?: XOR<TransactionStockCreateWithoutAccountInput, TransactionStockUncheckedCreateWithoutAccountInput> | TransactionStockCreateWithoutAccountInput[] | TransactionStockUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: TransactionStockCreateOrConnectWithoutAccountInput | TransactionStockCreateOrConnectWithoutAccountInput[]
+    createMany?: TransactionStockCreateManyAccountInputEnvelope
+    connect?: TransactionStockWhereUniqueInput | TransactionStockWhereUniqueInput[]
+  }
+
   export type AccountLogUncheckedCreateNestedManyWithoutAccountInput = {
     create?: XOR<AccountLogCreateWithoutAccountInput, AccountLogUncheckedCreateWithoutAccountInput> | AccountLogCreateWithoutAccountInput[] | AccountLogUncheckedCreateWithoutAccountInput[]
     connectOrCreate?: AccountLogCreateOrConnectWithoutAccountInput | AccountLogCreateOrConnectWithoutAccountInput[]
@@ -12221,6 +12352,13 @@ export namespace Prisma {
     connectOrCreate?: TransferTransactionCreateOrConnectWithoutToAccountInput | TransferTransactionCreateOrConnectWithoutToAccountInput[]
     createMany?: TransferTransactionCreateManyToAccountInputEnvelope
     connect?: TransferTransactionWhereUniqueInput | TransferTransactionWhereUniqueInput[]
+  }
+
+  export type TransactionStockUncheckedCreateNestedManyWithoutAccountInput = {
+    create?: XOR<TransactionStockCreateWithoutAccountInput, TransactionStockUncheckedCreateWithoutAccountInput> | TransactionStockCreateWithoutAccountInput[] | TransactionStockUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: TransactionStockCreateOrConnectWithoutAccountInput | TransactionStockCreateOrConnectWithoutAccountInput[]
+    createMany?: TransactionStockCreateManyAccountInputEnvelope
+    connect?: TransactionStockWhereUniqueInput | TransactionStockWhereUniqueInput[]
   }
 
   export type EnumCountryFieldUpdateOperationsInput = {
@@ -12289,6 +12427,20 @@ export namespace Prisma {
     deleteMany?: TransferTransactionScalarWhereInput | TransferTransactionScalarWhereInput[]
   }
 
+  export type TransactionStockUpdateManyWithoutAccountNestedInput = {
+    create?: XOR<TransactionStockCreateWithoutAccountInput, TransactionStockUncheckedCreateWithoutAccountInput> | TransactionStockCreateWithoutAccountInput[] | TransactionStockUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: TransactionStockCreateOrConnectWithoutAccountInput | TransactionStockCreateOrConnectWithoutAccountInput[]
+    upsert?: TransactionStockUpsertWithWhereUniqueWithoutAccountInput | TransactionStockUpsertWithWhereUniqueWithoutAccountInput[]
+    createMany?: TransactionStockCreateManyAccountInputEnvelope
+    set?: TransactionStockWhereUniqueInput | TransactionStockWhereUniqueInput[]
+    disconnect?: TransactionStockWhereUniqueInput | TransactionStockWhereUniqueInput[]
+    delete?: TransactionStockWhereUniqueInput | TransactionStockWhereUniqueInput[]
+    connect?: TransactionStockWhereUniqueInput | TransactionStockWhereUniqueInput[]
+    update?: TransactionStockUpdateWithWhereUniqueWithoutAccountInput | TransactionStockUpdateWithWhereUniqueWithoutAccountInput[]
+    updateMany?: TransactionStockUpdateManyWithWhereWithoutAccountInput | TransactionStockUpdateManyWithWhereWithoutAccountInput[]
+    deleteMany?: TransactionStockScalarWhereInput | TransactionStockScalarWhereInput[]
+  }
+
   export type AccountLogUncheckedUpdateManyWithoutAccountNestedInput = {
     create?: XOR<AccountLogCreateWithoutAccountInput, AccountLogUncheckedCreateWithoutAccountInput> | AccountLogCreateWithoutAccountInput[] | AccountLogUncheckedCreateWithoutAccountInput[]
     connectOrCreate?: AccountLogCreateOrConnectWithoutAccountInput | AccountLogCreateOrConnectWithoutAccountInput[]
@@ -12329,6 +12481,20 @@ export namespace Prisma {
     update?: TransferTransactionUpdateWithWhereUniqueWithoutToAccountInput | TransferTransactionUpdateWithWhereUniqueWithoutToAccountInput[]
     updateMany?: TransferTransactionUpdateManyWithWhereWithoutToAccountInput | TransferTransactionUpdateManyWithWhereWithoutToAccountInput[]
     deleteMany?: TransferTransactionScalarWhereInput | TransferTransactionScalarWhereInput[]
+  }
+
+  export type TransactionStockUncheckedUpdateManyWithoutAccountNestedInput = {
+    create?: XOR<TransactionStockCreateWithoutAccountInput, TransactionStockUncheckedCreateWithoutAccountInput> | TransactionStockCreateWithoutAccountInput[] | TransactionStockUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: TransactionStockCreateOrConnectWithoutAccountInput | TransactionStockCreateOrConnectWithoutAccountInput[]
+    upsert?: TransactionStockUpsertWithWhereUniqueWithoutAccountInput | TransactionStockUpsertWithWhereUniqueWithoutAccountInput[]
+    createMany?: TransactionStockCreateManyAccountInputEnvelope
+    set?: TransactionStockWhereUniqueInput | TransactionStockWhereUniqueInput[]
+    disconnect?: TransactionStockWhereUniqueInput | TransactionStockWhereUniqueInput[]
+    delete?: TransactionStockWhereUniqueInput | TransactionStockWhereUniqueInput[]
+    connect?: TransactionStockWhereUniqueInput | TransactionStockWhereUniqueInput[]
+    update?: TransactionStockUpdateWithWhereUniqueWithoutAccountInput | TransactionStockUpdateWithWhereUniqueWithoutAccountInput[]
+    updateMany?: TransactionStockUpdateManyWithWhereWithoutAccountInput | TransactionStockUpdateManyWithWhereWithoutAccountInput[]
+    deleteMany?: TransactionStockScalarWhereInput | TransactionStockScalarWhereInput[]
   }
 
   export type BankAccountCreateNestedOneWithoutSentTransfersInput = {
@@ -12471,6 +12637,12 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type BankAccountCreateNestedOneWithoutTransactionsInput = {
+    create?: XOR<BankAccountCreateWithoutTransactionsInput, BankAccountUncheckedCreateWithoutTransactionsInput>
+    connectOrCreate?: BankAccountCreateOrConnectWithoutTransactionsInput
+    connect?: BankAccountWhereUniqueInput
+  }
+
   export type EnumTradeTypeFieldUpdateOperationsInput = {
     set?: $Enums.TradeType
   }
@@ -12481,6 +12653,20 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutTransactionsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTransactionsInput, UserUpdateWithoutTransactionsInput>, UserUncheckedUpdateWithoutTransactionsInput>
+  }
+
+  export type BankAccountUpdateOneWithoutTransactionsNestedInput = {
+    create?: XOR<BankAccountCreateWithoutTransactionsInput, BankAccountUncheckedCreateWithoutTransactionsInput>
+    connectOrCreate?: BankAccountCreateOrConnectWithoutTransactionsInput
+    upsert?: BankAccountUpsertWithoutTransactionsInput
+    disconnect?: BankAccountWhereInput | boolean
+    delete?: BankAccountWhereInput | boolean
+    connect?: BankAccountWhereUniqueInput
+    update?: XOR<XOR<BankAccountUpdateToOneWithWhereWithoutTransactionsInput, BankAccountUpdateWithoutTransactionsInput>, BankAccountUncheckedUpdateWithoutTransactionsInput>
+  }
+
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
   }
 
   export type UserCreateNestedOneWithoutPinnedStocksInput = {
@@ -12744,6 +12930,20 @@ export namespace Prisma {
     not?: NestedEnumTradeTypeFilter<$PrismaModel> | $Enums.TradeType
   }
 
+  export type NestedStringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | null
+    notIn?: string[] | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
   export type NestedEnumTradeTypeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.TradeType | EnumTradeTypeFieldRefInput<$PrismaModel>
     in?: $Enums.TradeType[]
@@ -12752,6 +12952,23 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumTradeTypeFilter<$PrismaModel>
     _max?: NestedEnumTradeTypeFilter<$PrismaModel>
+  }
+
+  export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | null
+    notIn?: string[] | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
@@ -12779,6 +12996,7 @@ export namespace Prisma {
     logs?: AccountLogCreateNestedManyWithoutAccountInput
     sentTransfers?: TransferTransactionCreateNestedManyWithoutFromAccountInput
     receivedTransfers?: TransferTransactionCreateNestedManyWithoutToAccountInput
+    transactions?: TransactionStockCreateNestedManyWithoutAccountInput
   }
 
   export type BankAccountUncheckedCreateWithoutUserInput = {
@@ -12790,6 +13008,7 @@ export namespace Prisma {
     logs?: AccountLogUncheckedCreateNestedManyWithoutAccountInput
     sentTransfers?: TransferTransactionUncheckedCreateNestedManyWithoutFromAccountInput
     receivedTransfers?: TransferTransactionUncheckedCreateNestedManyWithoutToAccountInput
+    transactions?: TransactionStockUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type BankAccountCreateOrConnectWithoutUserInput = {
@@ -12831,6 +13050,7 @@ export namespace Prisma {
     quantity: Decimal | DecimalJsLike | number | string
     price: Decimal | DecimalJsLike | number | string
     tradeDate?: Date | string
+    account?: BankAccountCreateNestedOneWithoutTransactionsInput
   }
 
   export type TransactionStockUncheckedCreateWithoutUserInput = {
@@ -12839,6 +13059,7 @@ export namespace Prisma {
     type: $Enums.TradeType
     quantity: Decimal | DecimalJsLike | number | string
     price: Decimal | DecimalJsLike | number | string
+    accountId?: string | null
     tradeDate?: Date | string
   }
 
@@ -12952,6 +13173,7 @@ export namespace Prisma {
     type?: EnumTradeTypeFilter<"TransactionStock"> | $Enums.TradeType
     quantity?: DecimalFilter<"TransactionStock"> | Decimal | DecimalJsLike | number | string
     price?: DecimalFilter<"TransactionStock"> | Decimal | DecimalJsLike | number | string
+    accountId?: StringNullableFilter<"TransactionStock"> | string | null
     tradeDate?: DateTimeFilter<"TransactionStock"> | Date | string
   }
 
@@ -13091,6 +13313,36 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type TransactionStockCreateWithoutAccountInput = {
+    id?: bigint | number
+    stockId: string
+    type: $Enums.TradeType
+    quantity: Decimal | DecimalJsLike | number | string
+    price: Decimal | DecimalJsLike | number | string
+    tradeDate?: Date | string
+    user: UserCreateNestedOneWithoutTransactionsInput
+  }
+
+  export type TransactionStockUncheckedCreateWithoutAccountInput = {
+    id?: bigint | number
+    userId: string
+    stockId: string
+    type: $Enums.TradeType
+    quantity: Decimal | DecimalJsLike | number | string
+    price: Decimal | DecimalJsLike | number | string
+    tradeDate?: Date | string
+  }
+
+  export type TransactionStockCreateOrConnectWithoutAccountInput = {
+    where: TransactionStockWhereUniqueInput
+    create: XOR<TransactionStockCreateWithoutAccountInput, TransactionStockUncheckedCreateWithoutAccountInput>
+  }
+
+  export type TransactionStockCreateManyAccountInputEnvelope = {
+    data: TransactionStockCreateManyAccountInput | TransactionStockCreateManyAccountInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutAccountsInput = {
     update: XOR<UserUpdateWithoutAccountsInput, UserUncheckedUpdateWithoutAccountsInput>
     create: XOR<UserCreateWithoutAccountsInput, UserUncheckedCreateWithoutAccountsInput>
@@ -13199,6 +13451,22 @@ export namespace Prisma {
     data: XOR<TransferTransactionUpdateManyMutationInput, TransferTransactionUncheckedUpdateManyWithoutToAccountInput>
   }
 
+  export type TransactionStockUpsertWithWhereUniqueWithoutAccountInput = {
+    where: TransactionStockWhereUniqueInput
+    update: XOR<TransactionStockUpdateWithoutAccountInput, TransactionStockUncheckedUpdateWithoutAccountInput>
+    create: XOR<TransactionStockCreateWithoutAccountInput, TransactionStockUncheckedCreateWithoutAccountInput>
+  }
+
+  export type TransactionStockUpdateWithWhereUniqueWithoutAccountInput = {
+    where: TransactionStockWhereUniqueInput
+    data: XOR<TransactionStockUpdateWithoutAccountInput, TransactionStockUncheckedUpdateWithoutAccountInput>
+  }
+
+  export type TransactionStockUpdateManyWithWhereWithoutAccountInput = {
+    where: TransactionStockScalarWhereInput
+    data: XOR<TransactionStockUpdateManyMutationInput, TransactionStockUncheckedUpdateManyWithoutAccountInput>
+  }
+
   export type BankAccountCreateWithoutSentTransfersInput = {
     id?: string
     country: $Enums.Country
@@ -13208,6 +13476,7 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutAccountsInput
     logs?: AccountLogCreateNestedManyWithoutAccountInput
     receivedTransfers?: TransferTransactionCreateNestedManyWithoutToAccountInput
+    transactions?: TransactionStockCreateNestedManyWithoutAccountInput
   }
 
   export type BankAccountUncheckedCreateWithoutSentTransfersInput = {
@@ -13219,6 +13488,7 @@ export namespace Prisma {
     createdAt?: Date | string
     logs?: AccountLogUncheckedCreateNestedManyWithoutAccountInput
     receivedTransfers?: TransferTransactionUncheckedCreateNestedManyWithoutToAccountInput
+    transactions?: TransactionStockUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type BankAccountCreateOrConnectWithoutSentTransfersInput = {
@@ -13235,6 +13505,7 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutAccountsInput
     logs?: AccountLogCreateNestedManyWithoutAccountInput
     sentTransfers?: TransferTransactionCreateNestedManyWithoutFromAccountInput
+    transactions?: TransactionStockCreateNestedManyWithoutAccountInput
   }
 
   export type BankAccountUncheckedCreateWithoutReceivedTransfersInput = {
@@ -13246,6 +13517,7 @@ export namespace Prisma {
     createdAt?: Date | string
     logs?: AccountLogUncheckedCreateNestedManyWithoutAccountInput
     sentTransfers?: TransferTransactionUncheckedCreateNestedManyWithoutFromAccountInput
+    transactions?: TransactionStockUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type BankAccountCreateOrConnectWithoutReceivedTransfersInput = {
@@ -13303,6 +13575,7 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutAccountsNestedInput
     logs?: AccountLogUpdateManyWithoutAccountNestedInput
     receivedTransfers?: TransferTransactionUpdateManyWithoutToAccountNestedInput
+    transactions?: TransactionStockUpdateManyWithoutAccountNestedInput
   }
 
   export type BankAccountUncheckedUpdateWithoutSentTransfersInput = {
@@ -13314,6 +13587,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     logs?: AccountLogUncheckedUpdateManyWithoutAccountNestedInput
     receivedTransfers?: TransferTransactionUncheckedUpdateManyWithoutToAccountNestedInput
+    transactions?: TransactionStockUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type BankAccountUpsertWithoutReceivedTransfersInput = {
@@ -13336,6 +13610,7 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutAccountsNestedInput
     logs?: AccountLogUpdateManyWithoutAccountNestedInput
     sentTransfers?: TransferTransactionUpdateManyWithoutFromAccountNestedInput
+    transactions?: TransactionStockUpdateManyWithoutAccountNestedInput
   }
 
   export type BankAccountUncheckedUpdateWithoutReceivedTransfersInput = {
@@ -13347,6 +13622,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     logs?: AccountLogUncheckedUpdateManyWithoutAccountNestedInput
     sentTransfers?: TransferTransactionUncheckedUpdateManyWithoutFromAccountNestedInput
+    transactions?: TransactionStockUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountLogUpsertWithWhereUniqueWithoutTransferInput = {
@@ -13374,6 +13650,7 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutAccountsInput
     sentTransfers?: TransferTransactionCreateNestedManyWithoutFromAccountInput
     receivedTransfers?: TransferTransactionCreateNestedManyWithoutToAccountInput
+    transactions?: TransactionStockCreateNestedManyWithoutAccountInput
   }
 
   export type BankAccountUncheckedCreateWithoutLogsInput = {
@@ -13385,6 +13662,7 @@ export namespace Prisma {
     createdAt?: Date | string
     sentTransfers?: TransferTransactionUncheckedCreateNestedManyWithoutFromAccountInput
     receivedTransfers?: TransferTransactionUncheckedCreateNestedManyWithoutToAccountInput
+    transactions?: TransactionStockUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type BankAccountCreateOrConnectWithoutLogsInput = {
@@ -13433,6 +13711,7 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutAccountsNestedInput
     sentTransfers?: TransferTransactionUpdateManyWithoutFromAccountNestedInput
     receivedTransfers?: TransferTransactionUpdateManyWithoutToAccountNestedInput
+    transactions?: TransactionStockUpdateManyWithoutAccountNestedInput
   }
 
   export type BankAccountUncheckedUpdateWithoutLogsInput = {
@@ -13444,6 +13723,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sentTransfers?: TransferTransactionUncheckedUpdateManyWithoutFromAccountNestedInput
     receivedTransfers?: TransferTransactionUncheckedUpdateManyWithoutToAccountNestedInput
+    transactions?: TransactionStockUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type TransferTransactionUpsertWithoutLogsInput = {
@@ -13566,6 +13846,35 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutTransactionsInput, UserUncheckedCreateWithoutTransactionsInput>
   }
 
+  export type BankAccountCreateWithoutTransactionsInput = {
+    id?: string
+    country: $Enums.Country
+    currency: $Enums.Currency
+    balance?: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    user: UserCreateNestedOneWithoutAccountsInput
+    logs?: AccountLogCreateNestedManyWithoutAccountInput
+    sentTransfers?: TransferTransactionCreateNestedManyWithoutFromAccountInput
+    receivedTransfers?: TransferTransactionCreateNestedManyWithoutToAccountInput
+  }
+
+  export type BankAccountUncheckedCreateWithoutTransactionsInput = {
+    id?: string
+    userId: string
+    country: $Enums.Country
+    currency: $Enums.Currency
+    balance?: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    logs?: AccountLogUncheckedCreateNestedManyWithoutAccountInput
+    sentTransfers?: TransferTransactionUncheckedCreateNestedManyWithoutFromAccountInput
+    receivedTransfers?: TransferTransactionUncheckedCreateNestedManyWithoutToAccountInput
+  }
+
+  export type BankAccountCreateOrConnectWithoutTransactionsInput = {
+    where: BankAccountWhereUniqueInput
+    create: XOR<BankAccountCreateWithoutTransactionsInput, BankAccountUncheckedCreateWithoutTransactionsInput>
+  }
+
   export type UserUpsertWithoutTransactionsInput = {
     update: XOR<UserUpdateWithoutTransactionsInput, UserUncheckedUpdateWithoutTransactionsInput>
     create: XOR<UserCreateWithoutTransactionsInput, UserUncheckedCreateWithoutTransactionsInput>
@@ -13599,6 +13908,41 @@ export namespace Prisma {
     accounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
     holdings?: HoldingUncheckedUpdateManyWithoutUserNestedInput
     pinnedStocks?: PinnedStockUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type BankAccountUpsertWithoutTransactionsInput = {
+    update: XOR<BankAccountUpdateWithoutTransactionsInput, BankAccountUncheckedUpdateWithoutTransactionsInput>
+    create: XOR<BankAccountCreateWithoutTransactionsInput, BankAccountUncheckedCreateWithoutTransactionsInput>
+    where?: BankAccountWhereInput
+  }
+
+  export type BankAccountUpdateToOneWithWhereWithoutTransactionsInput = {
+    where?: BankAccountWhereInput
+    data: XOR<BankAccountUpdateWithoutTransactionsInput, BankAccountUncheckedUpdateWithoutTransactionsInput>
+  }
+
+  export type BankAccountUpdateWithoutTransactionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    country?: EnumCountryFieldUpdateOperationsInput | $Enums.Country
+    currency?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
+    balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutAccountsNestedInput
+    logs?: AccountLogUpdateManyWithoutAccountNestedInput
+    sentTransfers?: TransferTransactionUpdateManyWithoutFromAccountNestedInput
+    receivedTransfers?: TransferTransactionUpdateManyWithoutToAccountNestedInput
+  }
+
+  export type BankAccountUncheckedUpdateWithoutTransactionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    country?: EnumCountryFieldUpdateOperationsInput | $Enums.Country
+    currency?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
+    balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    logs?: AccountLogUncheckedUpdateManyWithoutAccountNestedInput
+    sentTransfers?: TransferTransactionUncheckedUpdateManyWithoutFromAccountNestedInput
+    receivedTransfers?: TransferTransactionUncheckedUpdateManyWithoutToAccountNestedInput
   }
 
   export type UserCreateWithoutPinnedStocksInput = {
@@ -13685,6 +14029,7 @@ export namespace Prisma {
     type: $Enums.TradeType
     quantity: Decimal | DecimalJsLike | number | string
     price: Decimal | DecimalJsLike | number | string
+    accountId?: string | null
     tradeDate?: Date | string
   }
 
@@ -13702,6 +14047,7 @@ export namespace Prisma {
     logs?: AccountLogUpdateManyWithoutAccountNestedInput
     sentTransfers?: TransferTransactionUpdateManyWithoutFromAccountNestedInput
     receivedTransfers?: TransferTransactionUpdateManyWithoutToAccountNestedInput
+    transactions?: TransactionStockUpdateManyWithoutAccountNestedInput
   }
 
   export type BankAccountUncheckedUpdateWithoutUserInput = {
@@ -13713,6 +14059,7 @@ export namespace Prisma {
     logs?: AccountLogUncheckedUpdateManyWithoutAccountNestedInput
     sentTransfers?: TransferTransactionUncheckedUpdateManyWithoutFromAccountNestedInput
     receivedTransfers?: TransferTransactionUncheckedUpdateManyWithoutToAccountNestedInput
+    transactions?: TransactionStockUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type BankAccountUncheckedUpdateManyWithoutUserInput = {
@@ -13748,6 +14095,7 @@ export namespace Prisma {
     quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     tradeDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    account?: BankAccountUpdateOneWithoutTransactionsNestedInput
   }
 
   export type TransactionStockUncheckedUpdateWithoutUserInput = {
@@ -13756,6 +14104,7 @@ export namespace Prisma {
     type?: EnumTradeTypeFieldUpdateOperationsInput | $Enums.TradeType
     quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    accountId?: NullableStringFieldUpdateOperationsInput | string | null
     tradeDate?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -13765,6 +14114,7 @@ export namespace Prisma {
     type?: EnumTradeTypeFieldUpdateOperationsInput | $Enums.TradeType
     quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    accountId?: NullableStringFieldUpdateOperationsInput | string | null
     tradeDate?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -13805,6 +14155,16 @@ export namespace Prisma {
     fromAccountId: string
     amount: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
+  }
+
+  export type TransactionStockCreateManyAccountInput = {
+    id?: bigint | number
+    userId: string
+    stockId: string
+    type: $Enums.TradeType
+    quantity: Decimal | DecimalJsLike | number | string
+    price: Decimal | DecimalJsLike | number | string
+    tradeDate?: Date | string
   }
 
   export type AccountLogUpdateWithoutAccountInput = {
@@ -13881,6 +14241,36 @@ export namespace Prisma {
     fromAccountId?: StringFieldUpdateOperationsInput | string
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TransactionStockUpdateWithoutAccountInput = {
+    id?: BigIntFieldUpdateOperationsInput | bigint | number
+    stockId?: StringFieldUpdateOperationsInput | string
+    type?: EnumTradeTypeFieldUpdateOperationsInput | $Enums.TradeType
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    tradeDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutTransactionsNestedInput
+  }
+
+  export type TransactionStockUncheckedUpdateWithoutAccountInput = {
+    id?: BigIntFieldUpdateOperationsInput | bigint | number
+    userId?: StringFieldUpdateOperationsInput | string
+    stockId?: StringFieldUpdateOperationsInput | string
+    type?: EnumTradeTypeFieldUpdateOperationsInput | $Enums.TradeType
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    tradeDate?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TransactionStockUncheckedUpdateManyWithoutAccountInput = {
+    id?: BigIntFieldUpdateOperationsInput | bigint | number
+    userId?: StringFieldUpdateOperationsInput | string
+    stockId?: StringFieldUpdateOperationsInput | string
+    type?: EnumTradeTypeFieldUpdateOperationsInput | $Enums.TradeType
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    tradeDate?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AccountLogCreateManyTransferInput = {
