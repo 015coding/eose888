@@ -28,7 +28,7 @@ type Props = { accounts: BankAccount[] }
 const themeColor = {
   primary: '#10b981',
   primaryDark: '#059669',
-  bgGradient: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+  bgGradient: '#f8fafc',
   cardBg: '#ffffff',
   textMain: '#1e293b',
   textSecondary: '#64748b',
@@ -105,18 +105,29 @@ export default function AccountCards({ accounts }: Props) {
   const dwAccount = accounts.find(a => a.id === dwAccountId)
 
   return (
-    <Box sx={{ minHeight: '100vh', background: themeColor.bgGradient, pt: 8, pb: 8, px: 2 }}>
+    <Box sx={{ 
+      minHeight: 'auto', 
+      py: 6, 
+      px: { xs: 2, md: 4 },
+      background: 'rgba(255, 255, 255, 0)', 
+      backdropFilter: 'blur(20px) saturate(180%)', 
+      WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+      borderRadius: '40px', 
+      border: '1px solid rgb(255, 255, 255)', 
+      boxShadow: '0 10px 40px -10px rgb(255, 255, 255), inset 0 0 20px rgba(255, 255, 255, 0)',
+    }}>
       <Box sx={{ maxWidth: '1100px', mx: 'auto' }}>
-        <Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' }} gap={3}>
+        <Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' }} gap={4}>
           {accounts.map((account) => (
             <Card key={account.id} sx={{
               borderRadius: 6,
-              border: '1px solid rgba(255,255,255,0.7)',
-              boxShadow: '0 15px 35px -5px rgba(0,0,0,0.05)',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              bgcolor: 'rgba(255, 255, 255, 0.9)', 
+              border: '1px solid hsla(0, 3%, 56%, 0.36)',
+              boxShadow: '0 20px 25px -5px rgba(42, 5, 5, 0.05)',
+              transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
               '&:hover': {
-                transform: 'translateY(-10px)',
-                boxShadow: '0 20px 40px -10px rgba(16, 185, 129, 0.25)',
+                transform: 'translateY(-12px) scale(1.02)',
+                boxShadow: '0 30px 60px -15px rgba(16, 185, 129, 0.15)',
                 borderColor: themeColor.primary,
               }
             }}>
@@ -125,8 +136,7 @@ export default function AccountCards({ accounts }: Props) {
                   <Box sx={{ bgcolor: 'rgba(16, 185, 129, 0.1)', p: 1.5, borderRadius: 4 }}>
                     <AccountBalanceWalletIcon sx={{ color: themeColor.primary }} />
                   </Box>
-                  <Chip label={account.country} size="small"
-                    sx={{ fontWeight: 800, borderRadius: 2, fontSize: '0.65rem', bgcolor: '#f1f5f9' }} />
+                  <Chip label={account.country} size="small" sx={{ fontWeight: 800, borderRadius: 2, fontSize: '0.65rem', bgcolor: '#f1f5f9' }} />
                 </Box>
 
                 <Typography variant="subtitle2" sx={{ color: themeColor.textSecondary, fontWeight: 600, mb: 0.5, textTransform: 'uppercase', fontSize: '0.7rem' }}>
@@ -137,12 +147,10 @@ export default function AccountCards({ accounts }: Props) {
                   <Typography variant="h3" sx={{ fontWeight: 800, color: themeColor.textMain, letterSpacing: '-1.5px' }}>
                     {account.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </Typography>
-                  <Typography variant="subtitle1" sx={{ color: themeColor.textSecondary, fontWeight: 700 }}>
-                    {account.currency}
-                  </Typography>
+                  <Typography variant="subtitle1" sx={{ color: themeColor.textSecondary, fontWeight: 700 }}>{account.currency}</Typography>
                 </Box>
 
-                <Divider sx={{ my: 3, opacity: 0.5 }} />
+                <Divider sx={{ my: 3, opacity: 0.3 }} />
 
                 <Button
                   fullWidth variant="contained"
@@ -151,8 +159,8 @@ export default function AccountCards({ accounts }: Props) {
                   disabled={accounts.length < 2}
                   sx={{
                     py: 1.8, borderRadius: 4, textTransform: 'none', fontWeight: 800,
-                    bgcolor: themeColor.textMain, boxShadow: 'none',
-                    '&:hover': { bgcolor: '#000', boxShadow: '0 10px 20px rgba(0,0,0,0.1)' },
+                    bgcolor: themeColor.textMain, 
+                    '&:hover': { bgcolor: '#000', transform: 'translateY(-2px)' },
                   }}
                 >
                   ทำรายการโอนเงิน
@@ -164,11 +172,7 @@ export default function AccountCards({ accounts }: Props) {
                       fullWidth variant="outlined"
                       startIcon={<ArrowDownwardIcon sx={{ fontSize: '14px !important' }} />}
                       onClick={() => handleOpenDW(account.id, 'DEPOSIT')}
-                      sx={{
-                        py: 1.5, borderRadius: 4, textTransform: 'none', fontWeight: 700,
-                        borderColor: themeColor.primary, color: themeColor.primary,
-                        '&:hover': { bgcolor: '#d1fae5', borderColor: themeColor.primaryDark },
-                      }}
+                      sx={{ py: 1.5, borderRadius: 4, textTransform: 'none', fontWeight: 700, borderColor: themeColor.primary, color: themeColor.primary }}
                     >
                       ฝาก
                     </Button>
@@ -176,11 +180,7 @@ export default function AccountCards({ accounts }: Props) {
                       fullWidth variant="outlined"
                       startIcon={<ArrowUpwardIcon sx={{ fontSize: '14px !important' }} />}
                       onClick={() => handleOpenDW(account.id, 'WITHDRAW')}
-                      sx={{
-                        py: 1.5, borderRadius: 4, textTransform: 'none', fontWeight: 700,
-                        borderColor: '#ef4444', color: '#ef4444',
-                        '&:hover': { bgcolor: '#fee2e2', borderColor: '#dc2626' },
-                      }}
+                      sx={{ py: 1.5, borderRadius: 4, textTransform: 'none', fontWeight: 700, borderColor: '#ef4444', color: '#ef4444' }}
                     >
                       ถอน
                     </Button>
@@ -191,6 +191,8 @@ export default function AccountCards({ accounts }: Props) {
           ))}
         </Box>
       </Box>
+
+      {/* --- ALL FUNCTIONAL DIALOGS RE-ADDED BELOW --- */}
 
       {/* Transfer Dialog */}
       <Dialog
@@ -242,15 +244,8 @@ export default function AccountCards({ accounts }: Props) {
               ระบุจำนวนเงิน
             </Typography>
             <TextField
-              placeholder="0.00"
-              type="text"
-              fullWidth
-              margin="dense"
-              value={amount}
-              onChange={(e) => {
-                const val = e.target.value
-                if (/^\d*\.?\d*$/.test(val)) setAmount(val)
-              }}
+              placeholder="0.00" type="number" fullWidth margin="dense"
+              value={amount} onChange={(e) => setAmount(e.target.value)}
               InputProps={{
                 startAdornment: <Typography sx={{ mr: 1.5, fontWeight: 800, color: themeColor.textSecondary }}>{fromAccount?.currency}</Typography>
               }}

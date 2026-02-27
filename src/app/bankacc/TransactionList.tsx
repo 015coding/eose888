@@ -2,154 +2,322 @@
 
 import { useState } from 'react'
 import {
-  Box, Typography, Tabs, Tab, Chip, Divider
+  Box, Typography, Tabs, Tab, Chip,
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination,
 } from '@mui/material'
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz'
+import ArrowUpwardIcon   from '@mui/icons-material/ArrowUpward'
+import SwapHorizIcon     from '@mui/icons-material/SwapHoriz'
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type Account = {
-  id: string
+  id:       string
   currency: string
-  country: string
+  country:  string
 }
 
 type TransactionLog = {
-  id: string
-  accountId: string
-  type: 'DEPOSIT' | 'WITHDRAW' | 'TRANSFER_OUT' | 'TRANSFER_IN'
-  amount: number
+  id:            string
+  accountId:     string
+  type:          'DEPOSIT' | 'WITHDRAW' | 'TRANSFER_OUT' | 'TRANSFER_IN'
+  amount:        number
   balanceBefore: number
-  balanceAfter: number
-  createdAt: string
-  transfer: {
-    fromAccountId: string
-    toAccountId: string
-  } | null
+  balanceAfter:  number
+  createdAt:     string
+  transfer: { fromAccountId: string; toAccountId: string } | null
 }
 
 type Props = {
   accounts: Account[]
-  logs: TransactionLog[]
+  logs:     TransactionLog[]
 }
 
-const themeColor = {
-  primary: '#10b981',
-  secondary: '#d1fae5',
-  text: '#065f46',
+// ─── Design tokens (mirroring admin palette) ──────────────────────────────────
+
+const T = {
+  glass:       'rgba(255,255,255,0.60)',
+  glassBorder: 'rgba(255,255,255,0.85)',
+  shadow:      '0 4px 24px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04)',
+
+  text:       '#374151',
+  textDim:    '#9CA3AF',
+  textBright: '#111827',
+
+  emerald:    '#10B981',
+  emeraldBg:  'rgba(16,185,129,0.10)',
+
+  blue:       '#3B82F6',
+  blueBg:     'rgba(59,130,246,0.10)',
+
+  amber:      '#F59E0B',
+  amberBg:    'rgba(245,158,11,0.10)',
+
+  red:        '#EF4444',
+  redBg:      'rgba(239,68,68,0.10)',
+
+  purple:     '#8B5CF6',
+  purpleBg:   'rgba(139,92,246,0.10)',
+
+  mono: '"DM Mono","JetBrains Mono",monospace',
+  sans: '"SF Pro Rounded","SF Pro Display",-apple-system,"Helvetica Neue",sans-serif',
 }
 
-function formatMoney(amount: number, currency: string) {
-  return `${currency === 'THB' ? '฿' : '$'}${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+// ─── Per-type config (same pattern as admin txMeta) ───────────────────────────
+
+const TYPE_META = {
+  DEPOSIT:      { label: 'ฝากเงิน',   labelEn: 'DEPOSIT',      color: T.emerald, bg: T.emeraldBg, sign: '+', Icon: ArrowDownwardIcon },
+  WITHDRAW:     { label: 'ถอนเงิน',   labelEn: 'WITHDRAW',     color: T.red,     bg: T.redBg,     sign: '-', Icon: ArrowUpwardIcon   },
+  TRANSFER_OUT: { label: 'โอนออก',    labelEn: 'TRANSFER_OUT', color: T.purple,  bg: T.purpleBg,  sign: '-', Icon: ArrowUpwardIcon   },
+  TRANSFER_IN:  { label: 'รับโอน',    labelEn: 'TRANSFER_IN',  color: T.blue,    bg: T.blueBg,    sign: '+', Icon: ArrowDownwardIcon },
 }
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleString('th-TH', {
-    day: '2-digit', month: 'short', year: 'numeric',
-    hour: '2-digit', minute: '2-digit'
-  })
+const SYM: Record<string, string> = { THB: '฿', USD: '$' }
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function fmtMoney(amount: number, currency: string) {
+  const sym = SYM[currency] ?? ''
+  return `${sym}${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
-const TYPE_CONFIG = {
-  DEPOSIT:      { label: 'ฝากเงิน',  color: '#10b981', bg: '#d1fae5', icon: <ArrowDownwardIcon fontSize="small" /> },
-  WITHDRAW:     { label: 'ถอนเงิน',  color: '#ef4444', bg: '#fee2e2', icon: <ArrowUpwardIcon fontSize="small" /> },
-  TRANSFER_OUT: { label: 'โอนออก',   color: '#f59e0b', bg: '#fef3c7', icon: <ArrowUpwardIcon fontSize="small" /> },
-  TRANSFER_IN:  { label: 'รับโอน',   color: '#3b82f6', bg: '#dbeafe', icon: <ArrowDownwardIcon fontSize="small" /> },
+function fmtShort(amount: number, currency: string) {
+  const sym = SYM[currency] ?? ''
+  if (amount >= 1_000_000) return `${sym}${(amount / 1_000_000).toFixed(2)}M`
+  if (amount >= 1_000)     return `${sym}${(amount / 1_000).toFixed(1)}K`
+  return null // no shorthand needed below 1K
 }
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function TransactionList({ accounts, logs }: Props) {
   const [selectedAccountId, setSelectedAccountId] = useState(accounts[0]?.id ?? '')
+  const [page,         setPage]         = useState(0)
+  const [rowsPerPage,  setRowsPerPage]  = useState(10)
 
   const selectedAccount = accounts.find(a => a.id === selectedAccountId)
-  const filteredLogs = logs.filter(l => l.accountId === selectedAccountId)
+  const currency        = selectedAccount?.currency ?? 'THB'
+  const filteredLogs    = logs.filter(l => l.accountId === selectedAccountId)
+  const paginated       = filteredLogs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
 
-  const getTransferCounterpart = (log: TransactionLog) => {
+  const getCounterpart = (log: TransactionLog) => {
     if (!log.transfer) return null
-    const otherAccountId = log.type === 'TRANSFER_OUT'
-      ? log.transfer.toAccountId
-      : log.transfer.fromAccountId
-    const other = accounts.find(a => a.id === otherAccountId)
-    return other ? `${other.currency} — ${other.country}` : 'บัญชีอื่น'
+    const otherId = log.type === 'TRANSFER_OUT' ? log.transfer.toAccountId : log.transfer.fromAccountId
+    const other   = accounts.find(a => a.id === otherId)
+    return other ? `${other.currency} · ${other.country}` : 'Other account'
+  }
+
+  const handleTabChange = (_: any, val: string) => {
+    setSelectedAccountId(val)
+    setPage(0)
   }
 
   return (
-    <Box sx={{ width: '100%', maxWidth: '1100px', px: 2, mt: 4 }}>
-      <Typography variant="h6" fontWeight={700} color="#1e293b" mb={2}>
-        ประวัติธุรกรรม
-      </Typography>
+    <Box sx={{ width: '100%', px: 2.5, pt: 3, pb: 1 }}>
 
-      {/* Account Tabs */}
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 2 }}>
+        <Box>
+          <Typography sx={{ fontFamily: T.mono, fontSize: '0.58rem', letterSpacing: '0.13em',
+            textTransform: 'uppercase', color: T.textDim, mb: 0.3 }}>
+            Transaction History
+          </Typography>
+          <Typography sx={{ fontFamily: T.sans, fontSize: '1rem', fontWeight: 700,
+            color: T.textBright, letterSpacing: '-0.03em' }}>
+            ประวัติธุรกรรม
+          </Typography>
+        </Box>
+        <Typography sx={{ fontFamily: T.mono, fontSize: '0.65rem', color: T.textDim }}>
+          {filteredLogs.length} รายการ
+        </Typography>
+      </Box>
+
+      {/* ── Account Tabs ───────────────────────────────────────────────────── */}
       <Tabs
         value={selectedAccountId}
-        onChange={(_, val) => setSelectedAccountId(val)}
+        onChange={handleTabChange}
         sx={{
-          mb: 3,
-          '& .MuiTab-root': { textTransform: 'none', fontWeight: 600, borderRadius: 2 },
-          '& .Mui-selected': { color: themeColor.primary },
-          '& .MuiTabs-indicator': { bgcolor: themeColor.primary },
+          mb: 0,
+          minHeight: 36,
+          '& .MuiTab-root': {
+            fontFamily: T.mono, fontSize: '0.7rem', letterSpacing: '0.04em',
+            textTransform: 'none', fontWeight: 600, minHeight: 36,
+            color: T.textDim, px: 2,
+          },
+          '& .Mui-selected':       { color: T.emerald },
+          '& .MuiTabs-indicator':  { bgcolor: T.emerald, height: 2 },
         }}
       >
         {accounts.map(acc => (
-          <Tab key={acc.id} value={acc.id} label={`${acc.currency} — ${acc.country}`} />
+          <Tab
+            key={acc.id} value={acc.id}
+            label={`${acc.currency} · ${acc.country}`}
+          />
         ))}
       </Tabs>
 
-      {/* Transaction Rows */}
-      <Box sx={{ bgcolor: 'white', borderRadius: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
-        {filteredLogs.length === 0 ? (
-          <Box sx={{ p: 4, textAlign: 'center' }}>
-            <Typography color="text.secondary">ยังไม่มีธุรกรรม</Typography>
-          </Box>
-        ) : (
-          filteredLogs.map((log, index) => {
-            const config = TYPE_CONFIG[log.type]
-            const counterpart = getTransferCounterpart(log)
-            const isDebit = log.type === 'WITHDRAW' || log.type === 'TRANSFER_OUT'
+      {/* ── Table ──────────────────────────────────────────────────────────── */}
+      <Box sx={{
+        bgcolor: T.glass,
+        backdropFilter: 'blur(20px)',
+        border: `1px solid ${T.glassBorder}`,
+        borderRadius: '16px',
+        boxShadow: T.shadow,
+        overflow: 'hidden',
+        mt: 2,
+      }}>
+        <TableContainer>
+          <Table size="small">
 
-            return (
-              <Box key={log.id}>
-                <Box sx={{ display: 'flex', alignItems: 'center', px: 3, py: 2, gap: 2 }}>
-                  {/* Icon */}
-                  <Box sx={{
-                    width: 40, height: 40, borderRadius: '50%',
-                    bgcolor: config.bg, color: config.color,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-                  }}>
-                    {config.icon}
-                  </Box>
+            {/* Head */}
+            <TableHead>
+              <TableRow sx={{ bgcolor: 'rgba(0,0,0,0.02)' }}>
+                {['ประเภท', 'จำนวนเงิน', 'คงเหลือ', 'วันที่'].map((h, i) => (
+                  <TableCell key={h} align={i === 0 ? 'left' : 'right'}
+                    sx={{ borderBottom: '1px solid rgba(0,0,0,0.06)',
+                      py: 1.4, px: i === 0 ? 2.5 : 2,
+                      ...(i === 3 ? { pr: 2.5 } : {}) }}>
+                    <Typography sx={{ fontFamily: T.mono, fontSize: '0.58rem',
+                      letterSpacing: '0.12em', textTransform: 'uppercase', color: T.textDim, fontWeight: 600 }}>
+                      {h}
+                    </Typography>
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
 
-                  {/* Info */}
-                  <Box flex={1}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <Chip label={config.label} size="small"
-                        sx={{ bgcolor: config.bg, color: config.color, fontWeight: 600, fontSize: '0.7rem' }} />
-                      {counterpart && (
-                        <Typography variant="caption" color="text.secondary">
-                          {log.type === 'TRANSFER_OUT' ? `→ ${counterpart}` : `← ${counterpart}`}
+            {/* Body */}
+            <TableBody>
+              {paginated.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} sx={{ py: 5, textAlign: 'center', border: 'none' }}>
+                    <Typography sx={{ fontFamily: T.sans, fontSize: '0.85rem', color: T.textDim }}>
+                      ยังไม่มีธุรกรรม
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              ) : paginated.map((log) => {
+                const meta        = TYPE_META[log.type]
+                const { color, bg, sign, Icon, label, labelEn } = meta
+                const counterpart = getCounterpart(log)
+                const isLarge     = log.amount >= 10_000
+                const short       = fmtShort(log.amount, currency)
+                const ts          = new Date(log.createdAt)
+
+                return (
+                  <TableRow
+                    key={log.id}
+                    sx={{ '&:hover': { bgcolor: 'rgba(0,0,0,0.015)' }, transition: 'background 0.15s' }}
+                  >
+                    {/* Type column */}
+                    <TableCell sx={{ borderBottom: '1px solid rgba(0,0,0,0.04)', py: 1.75, pl: 2.5, pr: 2 }}>
+                      <Box display="flex" alignItems="center" gap={1.5}>
+                        {/* Icon bubble */}
+                        <Box sx={{
+                          width: 32, height: 32, borderRadius: '10px', flexShrink: 0,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          bgcolor: bg, color,
+                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.6)',
+                        }}>
+                          <Icon sx={{ fontSize: 16 }} />
+                        </Box>
+
+                        <Box>
+                          {/* Thai label */}
+                          <Box display="flex" alignItems="center" gap={0.75}>
+                            <Typography sx={{ fontFamily: T.sans, fontSize: '0.845rem', fontWeight: 600,
+                              color: T.textBright, letterSpacing: '-0.02em', lineHeight: 1.3 }}>
+                              {label}
+                            </Typography>
+                            {/* Counterpart badge */}
+                            {counterpart && (
+                              <Typography sx={{ fontFamily: T.mono, fontSize: '0.6rem', color: T.textDim }}>
+                                {sign === '-' ? `→ ${counterpart}` : `← ${counterpart}`}
+                              </Typography>
+                            )}
+                            {/* Large transaction badge */}
+                            {isLarge && (
+                              <Box sx={{ px: 0.75, py: 0.15, borderRadius: '6px',
+                                bgcolor: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.2)' }}>
+                                <Typography sx={{ fontFamily: T.mono, fontSize: '0.5rem',
+                                  letterSpacing: '0.08em', color: T.amber, fontWeight: 700 }}>
+                                  LARGE
+                                </Typography>
+                              </Box>
+                            )}
+                          </Box>
+                          {/* Raw type code */}
+                          <Typography sx={{ fontFamily: T.mono, fontSize: '0.6rem',
+                            color: T.textDim, letterSpacing: '0.02em' }}>
+                            {labelEn}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </TableCell>
+
+                    {/* Amount column */}
+                    <TableCell align="right" sx={{ borderBottom: '1px solid rgba(0,0,0,0.04)', py: 1.75, px: 2 }}>
+                      <Typography sx={{ fontFamily: T.mono, fontSize: '0.9rem', fontWeight: 700,
+                        color, letterSpacing: '-0.03em', lineHeight: 1.3 }}>
+                        {sign}{fmtMoney(log.amount, currency)}
+                      </Typography>
+                      {short && (
+                        <Typography sx={{ fontFamily: T.mono, fontSize: '0.6rem', color: T.textDim, textAlign: 'right' }}>
+                          {short}
                         </Typography>
                       )}
-                    </Box>
-                    <Typography variant="caption" color="text.secondary" mt={0.5} display="block">
-                      {formatDate(log.createdAt)}
-                    </Typography>
-                  </Box>
+                    </TableCell>
 
-                  {/* Amount */}
-                  <Box textAlign="right">
-                    <Typography fontWeight={700} sx={{ color: isDebit ? '#ef4444' : '#10b981' }}>
-                      {isDebit ? '-' : '+'}{formatMoney(log.amount, selectedAccount?.currency ?? '')}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      คงเหลือ {formatMoney(log.balanceAfter, selectedAccount?.currency ?? '')}
-                    </Typography>
-                  </Box>
-                </Box>
+                    {/* Balance after column */}
+                    <TableCell align="right" sx={{ borderBottom: '1px solid rgba(0,0,0,0.04)', py: 1.75, px: 2 }}>
+                      <Typography sx={{ fontFamily: T.mono, fontSize: '0.82rem', fontWeight: 600,
+                        color: T.text, letterSpacing: '-0.02em' }}>
+                        {fmtMoney(log.balanceAfter, currency)}
+                      </Typography>
+                      <Typography sx={{ fontFamily: T.mono, fontSize: '0.6rem', color: T.textDim }}>
+                        after tx
+                      </Typography>
+                    </TableCell>
 
-                {index < filteredLogs.length - 1 && <Divider />}
-              </Box>
-            )
-          })
-        )}
+                    {/* Date column */}
+                    <TableCell align="right" sx={{ borderBottom: '1px solid rgba(0,0,0,0.04)', py: 1.75, pl: 2, pr: 2.5 }}>
+                      <Typography sx={{ fontFamily: T.sans, fontSize: '0.8rem', fontWeight: 500,
+                        color: T.text, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
+                        {ts.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </Typography>
+                      <Typography sx={{ fontFamily: T.mono, fontSize: '0.65rem', color: T.textDim, mt: '1px' }}>
+                        {ts.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                      </Typography>
+                    </TableCell>
+
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        {/* Pagination */}
+        <TablePagination
+          component="div"
+          count={filteredLogs.length}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={(_, p) => setPage(p)}
+          onRowsPerPageChange={e => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0) }}
+          rowsPerPageOptions={[10, 25, 50]}
+          labelRowsPerPage="แถว:"
+          sx={{
+            borderTop: '1px solid rgba(0,0,0,0.05)',
+            color: T.textDim, fontFamily: T.mono,
+            bgcolor: 'rgba(0,0,0,0.015)',
+            '.MuiTablePagination-select':         { color: T.text,    fontFamily: T.mono },
+            '.MuiTablePagination-selectIcon':     { color: T.textDim },
+            '.MuiTablePagination-actions button': { color: T.text     },
+            '.MuiTablePagination-displayedRows':  { fontFamily: T.mono, fontSize: '0.72rem' },
+            '.MuiTablePagination-selectLabel':    { fontFamily: T.mono, fontSize: '0.72rem' },
+          }}
+        />
       </Box>
     </Box>
   )
