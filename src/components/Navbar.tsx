@@ -10,9 +10,11 @@ import PinnedStocksPanel from './PinnedStocksPanel';
 
 
 const NAV_ITEMS = [
-  { label: 'Dashboard', path: '/dashboard' },
-  { label: 'Markets', path: '/stock' },
-  { label: 'Bank Account', path: '/bankacc' }
+  { label: 'Watch List', path: '/favstock' },
+  {label : 'Trade' , path:"/buying-stock"},
+  { label: 'Portfolio', path: '/my-stock' },
+  { label: 'Bank Account', path: '/bankacc' },
+
 ]
 
 const THEME = {
@@ -38,8 +40,8 @@ export default function NavbarAuth() {
     <AppBar position="sticky" elevation={0} sx={{ bgcolor: THEME.bg, borderBottom: `1px solid ${THEME.grid}`, color: '#fff' }}>
       <Container maxWidth="xl">
         <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
-          <Box onClick={() => router.push('/dashboard')} sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer' }}>
-            <Typography variant="h5" sx={{ fontWeight: 800, letterSpacing: '-1px' }}>
+          <Box onClick={() => router.push('/')} sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer' }}>
+            <Typography variant="h5" sx={{ fontWeight: 800, letterSpacing: '-1px' }} >
               Eose<span style={{ color: THEME.accent }}>888</span>
             </Typography>
           </Box>
