@@ -57,6 +57,7 @@ interface DashboardData {
   totalCount: number
   dailyVolume: { date: string; volume: number }[]
   totalBalance: number
+  selectedTotalBalance: number
   txSummary: {
     totalTransactions: number
     totalAmount: number
@@ -224,7 +225,7 @@ function TxBreakdownPie({ data }: { data: TxBreakdownItem[] }) {
             <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
               <Typography sx={{ fontFamily: T.mono, fontSize: '0.65rem', color: T.textDim }}>{fmt(d.value)}</Typography>
               <Typography sx={{ fontFamily: T.mono, fontSize: '0.65rem', fontWeight: 700, color: d.color, minWidth: 36, textAlign: 'right' }}>
-                {((d.value/total)*100).toFixed(1)}%
+                {total > 0 ? ((d.value / total) * 100).toFixed(1) : '0.0'}%
               </Typography>
             </Box>
           </Box>
@@ -441,7 +442,7 @@ export default function AdminDashboard() {
             iconBg={T.purpleBg} icon={<Receipt sx={{ fontSize: 16, color: T.purple }} />} />
         </Grid>
         <Grid size={{ xs: 12, sm: 4 }}>
-          <StatCard label="Total Balance" value={`฿${data.totalBalance.toLocaleString()}`} sub={`${volumeLabel} · ${fmt(totalVolume)}`}
+          <StatCard label="Total Balance" value={`฿${data.selectedTotalBalance.toLocaleString()}`} sub={`${volumeLabel} · ${fmt(totalVolume)}`}
             iconBg={T.amberBg} icon={<AccountBalanceWallet sx={{ fontSize: 16, color: T.amber }} />}
             delta={volDeltaPct ? { value: `${volDeltaPct}% vs prev`, up: Number(volDeltaPct) >= 0 } : undefined} />
         </Grid>
@@ -466,7 +467,7 @@ export default function AdminDashboard() {
           <Box sx={{ width: '100%' }}><TxRadarChart data={data.txSummary.breakdown} /></Box>
         </Grid>
         <Grid size={{ xs: 12, md: 3 }} sx={{ display: 'flex' }}>
-          <Box sx={{ width: '100%' }}><SummaryCard total={data.totalBalance} txCount={data.txSummary.totalTransactions} /></Box>
+          <Box sx={{ width: '100%' }}><SummaryCard total={data.selectedTotalBalance} txCount={data.txSummary.totalTransactions} /></Box>
         </Grid>
       </Grid>
     </Box>

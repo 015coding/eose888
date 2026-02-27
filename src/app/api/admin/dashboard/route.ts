@@ -38,13 +38,15 @@ export async function GET(request: Request) {
        
         const thbBalance = Number(balances.THB || 0);
         const usdBalance = Number(balances.USD || 0);
-        const totalBalance = Number(((thbBalance/30)+usdBalance).toFixed(2));     
+        const totalBalance = Number((thbBalance + (usdBalance * 30)).toFixed(2));
+        const selectedTotalBalance = Number((txSummary.totalAmount || 0).toFixed(2));
 
         return NextResponse.json({
             Allbalances: totalBalance,
             totalCount: totalCount,
             dailyVolume: dailyVolume,
             totalBalance: totalBalance,
+            selectedTotalBalance,
             txSummary,
         });
     } catch (error) {

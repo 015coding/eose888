@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import {
   Box,
+  Chip,
   CircularProgress,
   InputAdornment,
   MenuItem,
@@ -66,6 +67,19 @@ const fmt = (n: number) =>
   : n >= 1_000 ? `฿${(n / 1_000).toFixed(1)}K`
   : `฿${n.toLocaleString()}`
 
+const toInputDate = (date: Date) => {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+const shiftDays = (date: Date, days: number) => {
+  const d = new Date(date)
+  d.setDate(d.getDate() + days)
+  return d
+}
+
 export default function AdminTransactionLogsPage() {
   const [loading, setLoading] = useState(true)
   const [rows, setRows] = useState<TxRow[]>([])
@@ -75,6 +89,9 @@ export default function AdminTransactionLogsPage() {
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
   const [typeFilter, setTypeFilter] = useState<string>('ALL')
+  const [startDate, setStartDate] = useState<string>(toInputDate(shiftDays(new Date(), -6)))
+  const [endDate, setEndDate] = useState<string>(toInputDate(new Date()))
+  const [isAllRange, setIsAllRange] = useState(false)
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -95,6 +112,13 @@ export default function AdminTransactionLogsPage() {
           type: typeFilter,
         })
 
+        if (isAllRange) {
+          params.set('all', 'true')
+        } else {
+          params.set('startDate', startDate)
+          params.set('endDate', endDate)
+        }
+
         if (search) {
           params.set('search', search)
         }
@@ -109,7 +133,7 @@ export default function AdminTransactionLogsPage() {
       }
     }
     load()
-  }, [page, rowsPerPage, search, typeFilter])
+  }, [page, rowsPerPage, search, typeFilter, startDate, endDate, isAllRange])
 
   if (loading) {
     return (
@@ -168,6 +192,55 @@ export default function AdminTransactionLogsPage() {
             </MenuItem>
           ))}
         </TextField>
+
+        <TextField
+          type="date"
+          size="small"
+          value={startDate}
+          disabled={isAllRange}
+          onChange={(e) => {
+            setStartDate(e.target.value)
+            setPage(0)
+          }}
+          sx={{ minWidth: 155, bgcolor: 'rgba(255,255,255,0.65)', borderRadius: '10px' }}
+          InputProps={{ sx: { fontFamily: T.mono, fontSize: '0.72rem' } }}
+        />
+
+        <TextField
+          type="date"
+          size="small"
+          value={endDate}
+          disabled={isAllRange}
+          onChange={(e) => {
+            setEndDate(e.target.value)
+            setPage(0)
+          }}
+          sx={{ minWidth: 155, bgcolor: 'rgba(255,255,255,0.65)', borderRadius: '10px' }}
+          InputProps={{ sx: { fontFamily: T.mono, fontSize: '0.72rem' } }}
+        />
+
+        <Chip
+          label="All"
+          size="small"
+          clickable
+          onClick={() => {
+            setIsAllRange((prev) => !prev)
+            setPage(0)
+          }}
+          variant={isAllRange ? 'filled' : 'outlined'}
+          sx={{
+            height: 40,
+            borderRadius: '10px',
+            fontFamily: T.mono,
+            fontSize: '0.72rem',
+            color: isAllRange ? '#fff' : T.textDim,
+            bgcolor: isAllRange ? T.emerald : 'rgba(255,255,255,0.65)',
+            borderColor: 'rgba(0,0,0,0.12)',
+            '&:hover': {
+              bgcolor: isAllRange ? T.emerald : 'rgba(255,255,255,0.8)',
+            },
+          }}
+        />
       </Box>
 
       <Box sx={{ bgcolor: T.glass, backdropFilter: 'blur(20px)', border: `1px solid ${T.glassBorder}`, borderRadius: '20px', boxShadow: T.shadow, overflow: 'hidden' }}>
