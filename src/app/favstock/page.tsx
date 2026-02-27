@@ -6,6 +6,7 @@ import StockChart from "@/components/StockChart";
 import { usePinned } from "../../../context/PinnedStocksContext";
 import { pinStock } from "@/app/action/pinStock";
 import { Box } from "@mui/material";
+import { useRouter } from "next/navigation";
 
 interface StockData {
   time: string;
@@ -19,6 +20,7 @@ const themeColor = { background: '#ebebeb' };
 export default function PinnedStocksPage() {
   const { pinnedSymbols, refresh } = usePinned();
   const symbols = Array.from(pinnedSymbols);
+  const router = useRouter();
 
   const [stocksMonthly, setStocksMonthly] = useState<Record<string, StockData[]>>({});
   const [stocksDaily, setStocksDaily] = useState<Record<string, StockData[]>>({});
@@ -170,19 +172,10 @@ export default function PinnedStocksPage() {
 
           {symbols.length === 0 ? (
             <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "60vh", gap: 2 }}>
-              {/* <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="120" height="120" rx="24" fill="#1e293b"/>
-                <path d="M20 85 L35 65 L50 72 L65 45 L80 55 L100 30" stroke="#2a3a4a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M20 85 L35 65 L50 72 L65 45 L80 55 L100 30" stroke="#00c853" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="6 4" opacity="0.4"/>
-                <circle cx="60" cy="60" r="18" fill="#151c2c" stroke="#2a3a4a" strokeWidth="1.5"/>
-                <path d="M54 60 L58 64 L66 56" stroke="#4a5d70" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <circle cx="84" cy="36" r="5" fill="#1e293b" stroke="#00c853" strokeWidth="1.5"/>
-                <path d="M82 36 L84 38 L87 33" stroke="#00c853" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
-              </svg> */}
               <img
-              src="/image/about/cat2.png"
-              alt="No pinned stocks"
-              style={{ width: 300, opacity: 0.7 }}
+                src="/image/about/cat2.png"
+                alt="No pinned stocks"
+                style={{ width: 300, opacity: 0.7 }}
               />
               <p style={{ color: "#4a5d70", fontSize: 16, fontWeight: 600, margin: 0 }}>
                 No pinned stocks yet
@@ -199,16 +192,26 @@ export default function PinnedStocksPage() {
             </Box>
           ) : (
             visibleSymbols.map(symbol => (
-              <StockChart
+              <Box
                 key={symbol}
-                symbol={symbol}
-                monthlyData={stocksMonthly[symbol] ?? []}
-                dailyData={stocksDaily[symbol] ?? []}
-                range={ranges[symbol] ?? "30"}
-                onRangeChange={handleRangeChange}
-                isPinned={true}
-                onPinChange={() => {}}
-              />
+                onClick={() => router.push(`/buying-stock?symbol=${symbol}`)}
+                sx={{
+                  cursor: 'pointer',
+                  transition: 'opacity 0.2s',
+                  '&:hover': { opacity: 0.85 },
+                }}
+              >
+                <StockChart
+                  symbol={symbol}
+                  monthlyData={stocksMonthly[symbol] ?? []}
+                  dailyData={stocksDaily[symbol] ?? []}
+                  range={ranges[symbol] ?? "30"}
+                  onRangeChange={(sym, range) => {
+                    // หยุด propagation ไม่ให้ navigate เมื่อเปลี่ยน range
+                    handleRangeChange(sym, range);
+                  }}
+                />
+              </Box>
             ))
           )}
 

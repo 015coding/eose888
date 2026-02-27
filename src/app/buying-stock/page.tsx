@@ -8,6 +8,7 @@ import HoldingCard from "./Holding-Card";
 import StockChart from "@/components/StockChart";
 import StockTransactionList from "./StockTransactionList";
 import { Box, Grid } from "@mui/material";
+import { useSearchParams } from "next/navigation";
 
 interface StockData {
   time: string;
@@ -19,6 +20,7 @@ type Range = "30" | "7" | "1";
 const themeColor = { background: '#ebebeb' };
 
 export default function StockPage() {
+  const searchParams = useSearchParams();
   const [stocksMonthly, setStocksMonthly] = useState<Record<string, StockData[]>>({});
   const [stocksDaily, setStocksDaily] = useState<Record<string, StockData[]>>({});
   const [ranges, setRanges] = useState<Record<string, Range>>({});
@@ -41,7 +43,13 @@ export default function StockPage() {
         Object.keys(monthly).forEach(s => { if (!updated[s]) updated[s] = "30"; });
         return updated;
       });
-      const first = Object.keys(monthly)[0];
+
+      // ← อ่าน symbol จาก URL ก่อน ถ้าไม่มีค่อยใช้ตัวแรก
+      const urlSymbol = searchParams.get("symbol");
+      const first = urlSymbol && Object.keys(monthly).includes(urlSymbol)
+        ? urlSymbol
+        : Object.keys(monthly)[0];
+
       if (first) {
         setSymbol(first);
         setQuery(first);
@@ -75,12 +83,10 @@ export default function StockPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setShowDropdown(false);
-        // Reset query to current symbol if user didn't select anything
         setQuery(symbol);
       }
     };
