@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { pinStock } from "@/app/action/pinStock";
 import { getPinStatus } from "@/app/action/getPinStatus";
+import { usePinned } from "../../context/PinnedStocksContext";
 
 interface PinButtonProps {
   symbol: string;
@@ -12,6 +13,7 @@ interface PinButtonProps {
 export default function PinButton({ symbol }: PinButtonProps) {
   const [pinned, setPinned] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { refresh } = usePinned();
 
   // Fetch pin status on mount
   useEffect(() => {
@@ -31,6 +33,7 @@ export default function PinButton({ symbol }: PinButtonProps) {
     try {
       const result = await pinStock(symbol);
       setPinned(result.pinned);
+      refresh(); // ← notify navbar instantly
     } catch (e) {
       console.error("Failed to pin:", e);
     } finally {

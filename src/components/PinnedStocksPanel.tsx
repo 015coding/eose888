@@ -1,28 +1,11 @@
 // components/PinnedStocksPanel.tsx
 "use client";
 
-import { useState, useEffect } from "react";
-import { getPinnedStocks } from "@/app/action/getPinnedStocks";
-
-interface PinnedStock {
-  symbol: string;
-  price?: number;
-}
+import { usePinned } from "../../context/PinnedStocksContext";
 
 export default function PinnedStocksPanel() {
-  const [stocks, setStocks] = useState<PinnedStock[]>([]);
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const result = await getPinnedStocks();
-        setStocks(result);
-      } catch (e) {
-        console.error("Failed to fetch pinned stocks:", e);
-      }
-    };
-    load();
-  }, []);
+  const { pinnedSymbols } = usePinned();
+  const stocks = Array.from(pinnedSymbols);
 
   if (stocks.length === 0) return null;
 
@@ -39,9 +22,9 @@ export default function PinnedStocksPanel() {
         paddingTop: 8,
       }}
     >
-      {stocks.map(stock => (
+      {stocks.map(symbol => (
         <div
-          key={stock.symbol}
+          key={symbol}
           style={{
             background: "#151c2c",
             border: "1px solid #1e2d3d",
@@ -58,14 +41,10 @@ export default function PinnedStocksPanel() {
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <span style={{ color: "#00c853", fontSize: 10 }}>★</span>
             <span style={{ color: "#ffffff", fontWeight: 700, fontSize: 13 }}>
-              {stock.symbol}
+              {symbol}
             </span>
           </div>
-          <span style={{ color: "#6b7f94", fontSize: 12 }}>
-            {stock.price !== undefined
-              ? `$${stock.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}`
-              : "—"}
-          </span>
+          <span style={{ color: "#6b7f94", fontSize: 12 }}>—</span>
         </div>
       ))}
     </div>
