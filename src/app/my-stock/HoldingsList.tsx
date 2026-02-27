@@ -17,9 +17,6 @@ interface HoldingsListProps {
 export default function HoldingsList({ holdings, selectedSymbol, onSelect }: HoldingsListProps) {
   return (
     <Box flex={1}>
-      <Typography variant="h6" fontWeight={800} color={themeColor.secondary} mb={2}>
-        Your Holdings ({holdings.length})
-      </Typography>
       <Stack spacing={3}>
         {holdings.map((h) => (
           <Box
