@@ -92,6 +92,7 @@ export default function AdminTransactionLogsPage() {
   const [startDate, setStartDate] = useState<string>(toInputDate(shiftDays(new Date(), -6)))
   const [endDate, setEndDate] = useState<string>(toInputDate(new Date()))
   const [isAllRange, setIsAllRange] = useState(false)
+  const isInvalidDateRange = !isAllRange && startDate > endDate
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -104,6 +105,13 @@ export default function AdminTransactionLogsPage() {
 
   useEffect(() => {
     const load = async () => {
+      if (isInvalidDateRange) {
+        setRows([])
+        setMeta({ total: 0, page: 1, limit: rowsPerPage, totalPage: 0 })
+        setLoading(false)
+        return
+      }
+
       if (!rows.length) setLoading(true)
       try {
         const params = new URLSearchParams({
@@ -133,7 +141,7 @@ export default function AdminTransactionLogsPage() {
       }
     }
     load()
-  }, [page, rowsPerPage, search, typeFilter, startDate, endDate, isAllRange])
+  }, [page, rowsPerPage, search, typeFilter, startDate, endDate, isAllRange, isInvalidDateRange])
 
   if (loading) {
     return (
@@ -198,12 +206,15 @@ export default function AdminTransactionLogsPage() {
           size="small"
           value={startDate}
           disabled={isAllRange}
+          error={isInvalidDateRange}
+          helperText={isInvalidDateRange ? 'Start date must be before or equal to end date' : ' '}
           onChange={(e) => {
             setStartDate(e.target.value)
             setPage(0)
           }}
           sx={{ minWidth: 155, bgcolor: 'rgba(255,255,255,0.65)', borderRadius: '10px' }}
           InputProps={{ sx: { fontFamily: T.mono, fontSize: '0.72rem' } }}
+          inputProps={{ max: endDate }}
         />
 
         <TextField
@@ -211,12 +222,15 @@ export default function AdminTransactionLogsPage() {
           size="small"
           value={endDate}
           disabled={isAllRange}
+          error={isInvalidDateRange}
+          helperText={isInvalidDateRange ? 'End date must be after or equal to start date' : ' '}
           onChange={(e) => {
             setEndDate(e.target.value)
             setPage(0)
           }}
           sx={{ minWidth: 155, bgcolor: 'rgba(255,255,255,0.65)', borderRadius: '10px' }}
           InputProps={{ sx: { fontFamily: T.mono, fontSize: '0.72rem' } }}
+          inputProps={{ min: startDate }}
         />
 
         <Chip

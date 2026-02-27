@@ -19,6 +19,10 @@ export async function GET(request: Request) {
     const startDate = parseLocalDate(searchParams.get('startDate'), false);
     const endDate = parseLocalDate(searchParams.get('endDate'), true);
 
+    if (!all && startDate && endDate && startDate.getTime() > endDate.getTime()) {
+        return NextResponse.json({ error: 'Invalid date range' }, { status: 400 });
+    }
+
     try {
         const [totalCount, balances, dailyVolume, txSummary] = await Promise.all([
             countUsers(),

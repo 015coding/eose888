@@ -19,6 +19,10 @@ export async function GET(request: Request) {
   const search = (searchParams.get('search') || '').trim()
   const type = (searchParams.get('type') || 'ALL').trim().toUpperCase()
 
+  if (!all && startDate && endDate && startDate.getTime() > endDate.getTime()) {
+    return NextResponse.json({ error: 'Invalid date range' }, { status: 400 })
+  }
+
   try {
     const transactions = await getAllTransactionsLog(page, limit, {
       all,

@@ -327,9 +327,15 @@ export default function AdminDashboard() {
   const [startDate, setStartDate]     = useState<string>(toInputDate(shiftDays(new Date(), -6)))
   const [endDate, setEndDate]         = useState<string>(today)
   const [isAllRange, setIsAllRange]   = useState<boolean>(false)
+  const isInvalidDateRange            = !isAllRange && startDate > endDate
 
   useEffect(() => {
     const load = async () => {
+      if (isInvalidDateRange) {
+        setLoading(false)
+        return
+      }
+
       if (!data) setLoading(true)
       try {
         const params = new URLSearchParams()
@@ -347,7 +353,7 @@ export default function AdminDashboard() {
       finally { setLoading(false) }
     }
     load()
-  }, [startDate, endDate, isAllRange])
+  }, [startDate, endDate, isAllRange, isInvalidDateRange])
 
   if (loading) return (
     <Box sx={{ minHeight: '100vh', background: T.wallpaper, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -381,6 +387,8 @@ export default function AdminDashboard() {
             size="small"
             value={startDate}
             disabled={isAllRange}
+            error={isInvalidDateRange}
+            helperText={isInvalidDateRange ? 'Invalid date range' : ' '}
             onChange={(e) => setStartDate(e.target.value)}
             sx={{
               width: 132,
@@ -390,6 +398,7 @@ export default function AdminDashboard() {
                 fontSize: '0.62rem',
               },
             }}
+            inputProps={{ max: endDate }}
           />
           <Typography sx={{ fontFamily: T.mono, fontSize: '0.6rem', color: T.textDim }}>to</Typography>
           <TextField
@@ -397,6 +406,8 @@ export default function AdminDashboard() {
             size="small"
             value={endDate}
             disabled={isAllRange}
+            error={isInvalidDateRange}
+            helperText={isInvalidDateRange ? 'Invalid date range' : ' '}
             onChange={(e) => setEndDate(e.target.value)}
             sx={{
               width: 132,
@@ -406,6 +417,7 @@ export default function AdminDashboard() {
                 fontSize: '0.62rem',
               },
             }}
+            inputProps={{ min: startDate }}
           />
           <Chip
             label="All"
