@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import TradePanel from "./TradePanel";
 import WalletCard from "./WalletCard";
@@ -25,6 +25,9 @@ export default function StockPage() {
   const [symbol, setSymbol] = useState<string>("");
   const [refreshTx, setRefreshTx] = useState(0);
   const [holding, setHolding] = useState<{ quantity: number; avgCost: number } | null>(null);
+  const [query, setQuery] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     Promise.all([
@@ -39,7 +42,10 @@ export default function StockPage() {
         return updated;
       });
       const first = Object.keys(monthly)[0];
-      if (first) setSymbol(first);
+      if (first) {
+        setSymbol(first);
+        setQuery(first);
+      }
     });
 
     const interval = setInterval(() => {
@@ -69,11 +75,33 @@ export default function StockPage() {
     return () => clearInterval(interval);
   }, []);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+        // Reset query to current symbol if user didn't select anything
+        setQuery(symbol);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [symbol]);
+
   const handleRangeChange = (sym: string, range: Range) => {
     setRanges(prev => ({ ...prev, [sym]: range }));
   };
 
+  const handleSelect = (sym: string) => {
+    setSymbol(sym);
+    setQuery(sym);
+    setShowDropdown(false);
+  };
+
   const symbols = Object.keys(stocksMonthly);
+  const filteredSymbols = symbols.filter(s =>
+    s.toLowerCase().includes(query.toLowerCase())
+  );
   const currentPrice = Number(stocksDaily[symbol]?.at(-1)?.price ?? 0);
 
   return (
@@ -82,26 +110,69 @@ export default function StockPage() {
       <Box style={{ background: themeColor.background, minHeight: "100vh", padding: 20 }}>
         <Box sx={{ maxWidth: '1200px', mx: 'auto' }}>
 
-          <select
-            value={symbol}
-            onChange={e => setSymbol(e.target.value)}
-            style={{
-              marginBottom: 16,
-              padding: "8px 16px",
-              borderRadius: 8,
-              border: "none",
-              background: "#1e293b",
-              color: "#fff",
-              fontWeight: 700,
-              fontSize: 14,
-              cursor: "pointer",
-              outline: "none",
-            }}
-          >
-            {symbols.map(s => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
+          {/* Search bar */}
+          <div ref={searchRef} style={{ position: "relative", marginBottom: 16, width: 260 }}>
+            <input
+              value={query}
+              onChange={e => {
+                setQuery(e.target.value);
+                setShowDropdown(true);
+              }}
+              onFocus={() => {
+                setQuery("");
+                setShowDropdown(true);
+              }}
+              placeholder="Search stock..."
+              style={{
+                width: "100%",
+                padding: "8px 16px",
+                borderRadius: 8,
+                border: "none",
+                background: "#1e293b",
+                color: "#fff",
+                fontWeight: 700,
+                fontSize: 14,
+                outline: "none",
+                boxSizing: "border-box",
+              }}
+            />
+
+            {showDropdown && filteredSymbols.length > 0 && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "calc(100% + 4px)",
+                  left: 0,
+                  width: "100%",
+                  background: "#1e293b",
+                  borderRadius: 8,
+                  overflow: "hidden",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
+                  zIndex: 1000,
+                }}
+              >
+                {filteredSymbols.map(s => (
+                  <div
+                    key={s}
+                    onMouseDown={() => handleSelect(s)}
+                    style={{
+                      padding: "8px 16px",
+                      color: s === symbol ? "#00c853" : "#fff",
+                      fontWeight: s === symbol ? 700 : 500,
+                      fontSize: 14,
+                      cursor: "pointer",
+                      background: s === symbol ? "rgba(0,200,83,0.08)" : "transparent",
+                      transition: "background 0.15s",
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")}
+                    onMouseLeave={e => (e.currentTarget.style.background = s === symbol ? "rgba(0,200,83,0.08)" : "transparent")}
+                  >
+                    {s}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           {symbol && (
             <StockChart
