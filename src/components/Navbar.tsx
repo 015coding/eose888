@@ -6,6 +6,7 @@ import { AppBar, Toolbar, Container, Typography, Box, Button, IconButton, Drawer
 import { Menu as MenuIcon, Close as CloseIcon, Logout as LogoutIcon } from '@mui/icons-material'
 import { motion } from 'framer-motion'
 import LogoutButton from '@/app/dashboard/LogoutButton'
+import PinnedStocksPanel from './PinnedStocksPanel';
 
 
 const NAV_ITEMS = [
@@ -89,6 +90,7 @@ export default function NavbarAuth() {
           </List>
         </Box>
       </Drawer>
+      <PinnedStocksPanel />
     </AppBar>
   )
 }
