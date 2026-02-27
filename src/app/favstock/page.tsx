@@ -42,7 +42,7 @@ export default function PinnedStocksPage() {
         const updated = { ...prev };
         Object.keys(monthly).forEach(s => { if (!updated[s]) updated[s] = "30"; });
         return updated;
-      });
+      })
     });
 
     const interval = setInterval(() => {
@@ -197,8 +197,6 @@ export default function PinnedStocksPage() {
                 onClick={() => router.push(`/buying-stock?symbol=${symbol}`)}
                 sx={{
                   cursor: 'pointer',
-                  transition: 'opacity 0.2s',
-                  '&:hover': { opacity: 0.85 },
                 }}
               >
                 <StockChart

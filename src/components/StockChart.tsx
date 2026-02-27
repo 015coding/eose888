@@ -140,7 +140,12 @@ export default function StockChart({
                 tickLine={false}
                 width={80}
               />
-              <Tooltip content={<StockTooltip />} cursor={{ stroke: "#00c853", strokeWidth: 1, strokeDasharray: "4 4" }} />
+              <Tooltip
+                content={<StockTooltip />}
+                cursor={{ stroke: "#00c853", strokeWidth: 1, strokeDasharray: "4 4" }}
+                isAnimationActive={false}
+                wrapperStyle={{ transition: "none" }}
+              />
               <Line
                 dataKey="price"
                 stroke="#00c853"

@@ -1,7 +1,7 @@
 // components/PinButton.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type MouseEvent } from "react";
 import { pinStock } from "@/app/action/pinStock";
 import { getPinStatus } from "@/app/action/getPinStatus";
 import { usePinned } from "../../context/PinnedStocksContext";
@@ -28,7 +28,9 @@ export default function PinButton({ symbol }: PinButtonProps) {
     fetchStatus();
   }, [symbol]);
 
-  const handlePin = async () => {
+  const handlePin = async (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
     setLoading(true);
     try {
       const result = await pinStock(symbol);

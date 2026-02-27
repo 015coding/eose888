@@ -221,7 +221,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\phuri\\Desktop\\Eose\\eose888\\src\\lib\\generated\\prismaApp",
+      "value": "D:\\CPE_KU\\KU_y2_2\\database\\project\\eose888\\src\\lib\\generated\\prismaApp",
       "fromEnvVar": null
     },
     "config": {
@@ -235,7 +235,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\phuri\\Desktop\\Eose\\eose888\\prisma-App\\schema.prisma",
+    "sourceFilePath": "D:\\CPE_KU\\KU_y2_2\\database\\project\\eose888\\prisma-App\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
