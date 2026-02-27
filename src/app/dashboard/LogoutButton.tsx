@@ -7,7 +7,7 @@ export default function LogoutButton() {
   return (
     <Button 
       variant="contained" 
-      sx={{ bgcolor: '#49e6b7' }}
+      sx={{ bgcolor: '#eb495c' }}
       onClick={() => signOut({ callbackUrl: '/login' })}
     >
       Logout

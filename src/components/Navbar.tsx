@@ -1,35 +1,94 @@
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
+'use client'
 
-export default function Navbar() {
+import { useState } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
+import { AppBar, Toolbar, Container, Typography, Box, Button, IconButton, Drawer, List, ListItem, ListItemButton, ListItemText, useTheme, useMediaQuery } from '@mui/material'
+import { Menu as MenuIcon, Close as CloseIcon, Logout as LogoutIcon } from '@mui/icons-material'
+import { motion } from 'framer-motion'
+import LogoutButton from '@/app/dashboard/LogoutButton'
+
+
+const NAV_ITEMS = [
+  { label: 'Dashboard', path: '/dashboard' },
+  { label: 'Markets', path: '/stock' },
+  { label: 'Bank Account', path: '/bankacc' }
+]
+
+const THEME = {
+  bg: '#131722',
+  accent: '#10b981',
+  textMain: '#D1D4DC',
+  grid: '#2A2E39'
+}
+
+export default function NavbarAuth() {
+  const router = useRouter()
+  const pathname = usePathname()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+
+  const handleLogout = () => {
+    // Add your logout logic here (e.g., clearing cookies/tokens)
+    router.push('/')
+  }
+
   return (
-    <>
-<Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" color="transparent" sx={{ backgroundColor: '#49e6b7', color: '#000' }}>
+    <AppBar position="sticky" elevation={0} sx={{ bgcolor: THEME.bg, borderBottom: `1px solid ${THEME.grid}`, color: '#fff' }}>
+      <Container maxWidth="xl">
+        <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
+          <Box onClick={() => router.push('/dashboard')} sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer' }}>
+            <Typography variant="h5" sx={{ fontWeight: 800, letterSpacing: '-1px' }}>
+              Eose<span style={{ color: THEME.accent }}>888</span>
+            </Typography>
+          </Box>
 
-        <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2}}
-            
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            News
-          </Typography>
-          <Button color="inherit">Login</Button>
+          {!isMobile && (
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              {NAV_ITEMS.map((item) => (
+                <Button 
+                  key={item.label}
+                  onClick={() => router.push(item.path)}
+                  sx={{ 
+                    color: pathname === item.path ? '#fff' : THEME.textMain, 
+                    px: 2, textTransform: 'none', fontWeight: 500,
+                    borderBottom: pathname === item.path ? `2px solid ${THEME.accent}` : '2px solid transparent',
+                    borderRadius: 0, '&:hover': { color: '#fff', bgcolor: 'transparent' }
+                  }}
+                >
+                  {item.label}
+                </Button>
+              ))}
+              <LogoutButton/>
+            </Box>
+          )}
+
+          {isMobile && (
+            <IconButton onClick={() => setMobileMenuOpen(true)} sx={{ color: '#fff' }}><MenuIcon /></IconButton>
+          )}
         </Toolbar>
-      </AppBar> 
-    </Box>
-    </>
-  );
+      </Container>
+
+      <Drawer anchor="right" open={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} PaperProps={{ sx: { width: 280, bgcolor: THEME.bg, color: '#fff' } }}>
+        <Box sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
+            <Typography variant="h6">Menu</Typography>
+            <IconButton onClick={() => setMobileMenuOpen(false)} sx={{ color: '#fff' }}><CloseIcon /></IconButton>
+          </Box>
+          <List>
+            {NAV_ITEMS.map((item) => (
+              <ListItem key={item.label} disablePadding>
+                <ListItemButton onClick={() => { router.push(item.path); setMobileMenuOpen(false); }}>
+                  <ListItemText primary={item.label} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+            <ListItemButton onClick={handleLogout} sx={{ mt: 2, color: '#F23645' }}>
+              <ListItemText primary="Logout" />
+            </ListItemButton>
+          </List>
+        </Box>
+      </Drawer>
+    </AppBar>
+  )
 }

@@ -109,12 +109,12 @@ export default function AccountCards({ accounts }: Props) {
       minHeight: 'auto', 
       py: 6, 
       px: { xs: 2, md: 4 },
-      background: 'rgba(255, 255, 255, 0.4)', 
+      background: 'rgba(255, 255, 255, 0)', 
       backdropFilter: 'blur(20px) saturate(180%)', 
       WebkitBackdropFilter: 'blur(20px) saturate(180%)',
       borderRadius: '40px', 
-      border: '1px solid rgba(255, 255, 255, 0.7)', 
-      boxShadow: '0 10px 40px -10px rgba(0,0,0,0.05), inset 0 0 20px rgba(255,255,255,0.5)',
+      border: '1px solid rgb(255, 255, 255)', 
+      boxShadow: '0 10px 40px -10px rgb(255, 255, 255), inset 0 0 20px rgba(255, 255, 255, 0)',
     }}>
       <Box sx={{ maxWidth: '1100px', mx: 'auto' }}>
         <Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' }} gap={4}>
@@ -122,8 +122,8 @@ export default function AccountCards({ accounts }: Props) {
             <Card key={account.id} sx={{
               borderRadius: 6,
               bgcolor: 'rgba(255, 255, 255, 0.9)', 
-              border: '1px solid rgba(255, 255, 255, 1)',
-              boxShadow: '0 20px 25px -5px rgba(0,0,0,0.05)',
+              border: '1px solid hsla(0, 3%, 56%, 0.36)',
+              boxShadow: '0 20px 25px -5px rgba(42, 5, 5, 0.05)',
               transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
               '&:hover': {
                 transform: 'translateY(-12px) scale(1.02)',
