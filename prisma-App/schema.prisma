@@ -70,6 +70,7 @@ model BankAccount {
   logs              AccountLog[]
   sentTransfers     TransferTransaction[] @relation("FromAccount")
   receivedTransfers TransferTransaction[] @relation("ToAccount")
+  transactions TransactionStock[] 
 
   @@unique([userId, country, currency])
   @@index([userId])
@@ -138,11 +139,14 @@ model TransactionStock {
   userId    String
   stockId   String
   type      TradeType
-  quantity  Decimal  @db.Decimal(18,8)  
-  price     Decimal  @db.Decimal(18,8)  
+  quantity  Decimal  @db.Decimal(18,8)
+  price     Decimal  @db.Decimal(18,8)
+  accountId String?  
   tradeDate DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id])
+  user    User         @relation(fields: [userId], references: [id])
+  account BankAccount? @relation(fields: [accountId], references: [id])
+
   @@index([userId])
 }
 

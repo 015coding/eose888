@@ -173,6 +173,7 @@ exports.Prisma.TransactionStockScalarFieldEnum = {
   type: 'type',
   quantity: 'quantity',
   price: 'price',
+  accountId: 'accountId',
   tradeDate: 'tradeDate'
 };
 

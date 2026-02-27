@@ -25,8 +25,13 @@ const SLIDES = [
   },
   { 
     src: "/image/about/image2.jpg", // เพิ่มรูปแนวตั้งอื่นๆ ใน public
-    title: "Core Engineering", 
+    title: "Chief Executive Officer", 
     location: "System Foundation" 
+  },
+  { 
+    src: "/image/about/image3.jpg", 
+    title: "จงกล้า ในวันที่อื่นกลัว", 
+    location: "Beyond Passion" 
   }
 ]
 

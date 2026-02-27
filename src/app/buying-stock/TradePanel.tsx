@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
   Box, Typography, Button, Paper, Stack, TextField, 
   InputAdornment, Alert, CircularProgress, Select, MenuItem, FormControl
@@ -33,6 +33,19 @@ export default function TradePanel({ symbol, currentPrice = 0, onTradeSuccess }:
   const [success, setSuccess] = useState('');
   const [usdAccounts, setUsdAccounts] = useState<USDAccount[]>([]);
   const [selectedAccountId, setSelectedAccountId] = useState('');
+
+  const paperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (paperRef.current && !paperRef.current.contains(e.target as Node)) {
+        setSuccess('');
+        setError('');
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const fetchAccounts = () => {
     fetch('/api/bank-accounts/accounts')
@@ -159,7 +172,7 @@ export default function TradePanel({ symbol, currentPrice = 0, onTradeSuccess }:
   };
 
   return (
-    <Paper sx={{ p: 4, borderRadius: 6, bgcolor: themeColor.secondary, color: '#fff', height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Paper ref={paperRef} sx={{ p: 4, borderRadius: 6, bgcolor: themeColor.secondary, color: '#fff', height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>
         Trade {symbol}
       </Typography>
@@ -178,7 +191,7 @@ export default function TradePanel({ symbol, currentPrice = 0, onTradeSuccess }:
         ))}
       </Stack>
 
-      <Stack spacing={3} sx={{ mb: 'auto' }}> 
+      <Stack spacing={3} sx={{ mb: 'auto' }}>
 
         {/* เลือกบัญชี USD */}
         <Box>
@@ -279,7 +292,6 @@ export default function TradePanel({ symbol, currentPrice = 0, onTradeSuccess }:
         {error && <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>{error}</Alert>}
         {success && <Alert severity="success" sx={{ mb: 2, borderRadius: 3 }}>{success}</Alert>}
 
-        {/* BUY / SELL (ใช้ Stack แทน Grid) */}
         <Stack direction="row" spacing={2}>
           <Box flex={1}>
             <Button fullWidth variant="contained" onClick={handleBuy} disabled={loading}

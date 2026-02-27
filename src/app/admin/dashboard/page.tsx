@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import {
-  Box, Typography, CircularProgress, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, TablePagination, Stack, Chip,
+  Box, Typography, CircularProgress, Stack, Chip,
+  TextField,
 } from '@mui/material'
 import { Grid } from '@mui/material'
 import {
   People, Receipt, AccountBalanceWallet,
-  ArrowUpward, ArrowDownward, SwapHoriz,
   TrendingUp, TrendingDown,
 } from '@mui/icons-material'
 import { LineChart, BarChart, PieChart } from '@mui/x-charts'
@@ -52,30 +51,37 @@ const T = {
   sans:        '"SF Pro Rounded","SF Pro Display",-apple-system,"Helvetica Neue",sans-serif',
 }
 
-interface TxRow { type: string; amount: string; createdAt: string }
+interface TxBreakdownItem { type: string; amount: number; count: number }
 interface DashboardData {
-  transactions: { data: TxRow[]; meta: { total: number; page: number; limit: number; totalPage: number } }
   Allbalances: number
   totalCount: number
   dailyVolume: { date: string; volume: number }[]
   totalBalance: number
-}
-
-const txMeta = (type: string) => {
-  if (type === 'DEPOSIT')      return { color: T.emerald, bg: T.emeraldBg, sign: '+', Icon: ArrowDownward, label: 'Deposit'      }
-  if (type === 'TRANSFER_IN')  return { color: T.blue,    bg: T.blueBg,    sign: '+', Icon: ArrowDownward, label: 'Transfer In'  }
-  if (type === 'TRANSFER_OUT') return { color: T.purple,  bg: T.purpleBg,  sign: '-', Icon: ArrowUpward,   label: 'Transfer Out' }
-  if (type === 'STOCK_BUY')    return { color: T.amber,   bg: T.amberBg,   sign: '-', Icon: SwapHoriz,     label: 'Stock Buy'    }
-  if (type === 'STOCK_SELL')   return { color: T.emerald, bg: T.emeraldBg, sign: '+', Icon: SwapHoriz,     label: 'Stock Sell'   }
-  if (type === 'STOCK_PENDING') return { color: T.blue,   bg: T.blueBg,    sign: '•', Icon: SwapHoriz,     label: 'Stock Pending'}
-  if (type === 'STOCK_CANCELLED') return { color: T.textDim, bg: T.hover,  sign: '•', Icon: SwapHoriz,     label: 'Stock Cancelled'}
-  return                              { color: T.red,     bg: T.redBg,     sign: '-', Icon: ArrowUpward,   label: 'Withdraw'     }
+  selectedTotalBalance: number
+  txSummary: {
+    totalTransactions: number
+    totalAmount: number
+    breakdown: TxBreakdownItem[]
+  }
 }
 
 const fmt = (n: number) =>
   n >= 1_000_000 ? `฿${(n/1_000_000).toFixed(2)}M`
   : n >= 1_000   ? `฿${(n/1_000).toFixed(1)}K`
   : `฿${n.toLocaleString()}`
+
+const toInputDate = (date: Date) => {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+const shiftDays = (date: Date, days: number) => {
+  const d = new Date(date)
+  d.setDate(d.getDate() + days)
+  return d
+}
 
 // ── Shared ────────────────────────────────────────────────────────────────────
 
@@ -164,10 +170,14 @@ function StatCard({ label, value, sub, iconBg, icon, delta }: {
 
 const axisStyle = { fill: T.textDim, fontFamily: 'DM Mono, monospace', fontSize: 10 }
 
-function VolumeLineChart({ data }: { data: { date: string; volume: number }[] }) {
+function VolumeLineChart({
+  data,
+}: {
+  data: { date: string; volume: number }[]
+}) {
   return (
     <GlassCard sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <CardHead label="Volume · 7 Days" sub="Daily transaction volume (฿ THB)" />
+      <CardHead label="Daily Volume" sub="Daily transaction volume (฿ THB)" />
       <Box sx={{ flex: 1, px: 1, pb: 1.5 }}>
         <LineChart
           xAxis={[{ scaleType: 'point', data: data.map(d => d.date.slice(5)), tickLabelStyle: axisStyle }]}
@@ -189,11 +199,9 @@ function VolumeLineChart({ data }: { data: { date: string; volume: number }[] })
   )
 }
 
-function TxBreakdownPie({ data }: { data: TxRow[] }) {
-  const agg: Record<string, number> = {}
-  data.forEach(r => { const k = r.type.replace(/_/g,' '); agg[k] = (agg[k]||0) + Number(r.amount) })
+function TxBreakdownPie({ data }: { data: TxBreakdownItem[] }) {
   const palette = [T.emerald, T.red, T.blue, T.amber, T.purple]
-  const pieData = Object.entries(agg).map(([label, value], i) => ({ id: i, label, value, color: palette[i % palette.length] }))
+  const pieData = data.map((entry, i) => ({ id: i, label: entry.type.replace(/_/g, ' '), value: entry.amount, color: palette[i % palette.length] }))
   const total   = pieData.reduce((s,d) => s + d.value, 0)
 
   return (
@@ -217,7 +225,7 @@ function TxBreakdownPie({ data }: { data: TxRow[] }) {
             <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
               <Typography sx={{ fontFamily: T.mono, fontSize: '0.65rem', color: T.textDim }}>{fmt(d.value)}</Typography>
               <Typography sx={{ fontFamily: T.mono, fontSize: '0.65rem', fontWeight: 700, color: d.color, minWidth: 36, textAlign: 'right' }}>
-                {((d.value/total)*100).toFixed(1)}%
+                {total > 0 ? ((d.value / total) * 100).toFixed(1) : '0.0'}%
               </Typography>
             </Box>
           </Box>
@@ -227,20 +235,13 @@ function TxBreakdownPie({ data }: { data: TxRow[] }) {
   )
 }
 
-function TxRadarChart({ data }: { data: TxRow[] }) {
-  const countMap: Record<string, number> = {}
-  const amountMap: Record<string, number> = {}
-  data.forEach(r => {
-    const k = r.type.replace(/_/g,' ')
-    countMap[k]  = (countMap[k]  || 0) + 1
-    amountMap[k] = (amountMap[k] || 0) + Number(r.amount)
-  })
-  const maxC = Math.max(...Object.values(countMap), 1)
-  const maxA = Math.max(...Object.values(amountMap), 1)
-  const radarData = Object.keys(countMap).map(type => ({
-    type: type.replace('TRANSFER ', 'XFER '),
-    count:  Math.round((countMap[type]  / maxC) * 100),
-    amount: Math.round((amountMap[type] / maxA) * 100),
+function TxRadarChart({ data }: { data: TxBreakdownItem[] }) {
+  const maxC = Math.max(...data.map(item => item.count), 1)
+  const maxA = Math.max(...data.map(item => item.amount), 1)
+  const radarData = data.map((item) => ({
+    type: item.type.replace(/_/g, ' ').replace('TRANSFER ', 'XFER '),
+    count: Math.round((item.count / maxC) * 100),
+    amount: Math.round((item.amount / maxA) * 100),
   }))
 
   return (
@@ -273,17 +274,15 @@ function TxRadarChart({ data }: { data: TxRow[] }) {
   )
 }
 
-function TxTypeBarChart({ data }: { data: TxRow[] }) {
-  const agg: Record<string, number> = {}
-  data.forEach(r => { const k = r.type.replace(/_/g,' '); agg[k] = (agg[k]||0) + Number(r.amount) })
+function TxTypeBarChart({ data }: { data: TxBreakdownItem[] }) {
   return (
     <GlassCard sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <CardHead label="By Transaction Type" sub="Total amount per type (฿)" />
       <Box sx={{ flex: 1, px: 1, pb: 1.5 }}>
         <BarChart
-          xAxis={[{ scaleType: 'band', data: Object.keys(agg), tickLabelStyle: { ...axisStyle, fontSize: 9 } }]}
+          xAxis={[{ scaleType: 'band', data: data.map(item => item.type.replace(/_/g, ' ')), tickLabelStyle: { ...axisStyle, fontSize: 9 } }]}
           yAxis={[{ width: 68, tickLabelStyle: axisStyle }]}
-          series={[{ data: Object.values(agg), label: 'Amount', color: T.blue }]}
+          series={[{ data: data.map(item => item.amount), label: 'Amount', color: T.blue }]}
           height={210}
           margin={{ top: 12, bottom: 40, left: 8, right: 16 }}
           sx={{
@@ -319,163 +318,42 @@ function SummaryCard({ total, txCount }: { total: number; txCount: number }) {
   )
 }
 
-// ── Transaction Table ── improved readability ─────────────────────────────────
-
-function TxTable({ rows, meta, page, rowsPerPage, onPage, onRows }: {
-  rows: TxRow[]
-  meta: DashboardData['transactions']['meta']
-  page: number; rowsPerPage: number
-  onPage: (e: unknown, p: number) => void
-  onRows: (e: React.ChangeEvent<HTMLInputElement>) => void
-}) {
-  return (
-    <GlassCard>
-      {/* Header */}
-      <Box sx={{ px: 2.5, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-        <Typography sx={{ fontFamily: T.mono, fontSize: '0.58rem', letterSpacing: '0.13em', textTransform: 'uppercase', color: T.textDim }}>
-          Transaction Feed
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: T.emerald, boxShadow: `0 0 6px ${T.emeraldGlow}` }} />
-          <Typography sx={{ fontFamily: T.mono, fontSize: '0.58rem', letterSpacing: '0.1em', color: T.emerald }}>LIVE</Typography>
-        </Box>
-      </Box>
-
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontFamily: T.mono, fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: T.textDim, fontWeight: 600, borderBottom: '1px solid rgba(0,0,0,0.05)', py: 1.5, bgcolor: 'rgba(0,0,0,0.015)' }}>
-                Transaction
-              </TableCell>
-              <TableCell align="right" sx={{ fontFamily: T.mono, fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: T.textDim, fontWeight: 600, borderBottom: '1px solid rgba(0,0,0,0.05)', py: 1.5, bgcolor: 'rgba(0,0,0,0.015)' }}>
-                Amount
-              </TableCell>
-              <TableCell align="right" sx={{ fontFamily: T.mono, fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: T.textDim, fontWeight: 600, borderBottom: '1px solid rgba(0,0,0,0.05)', py: 1.5, bgcolor: 'rgba(0,0,0,0.015)' }}>
-                Time
-              </TableCell>
-            </TableRow>
-          </TableHead>
-
-          <TableBody>
-            {rows.map((row, i) => {
-              const { color, bg, sign, Icon, label } = txMeta(row.type)
-              const amount  = Number(row.amount)
-              const ts      = new Date(row.createdAt)
-              const isLarge = amount >= 100_000
-              const isEven  = i % 2 === 0
-
-              return (
-                <TableRow
-                  key={i}
-                  sx={{
-                    bgcolor: isEven ? 'transparent' : 'rgba(0,0,0,0.012)',
-                    transition: 'background 0.15s',
-                    '&:hover': { bgcolor: 'rgba(255,255,255,0.7)' },
-                    '&:last-child td': { border: 0 },
-                  }}
-                >
-                  {/* Type */}
-                  <TableCell sx={{ borderBottom: '1px solid rgba(0,0,0,0.04)', py: 1.75, pl: 2.5 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      {/* Icon pill */}
-                      <Box sx={{
-                        width: 36, height: 36, borderRadius: '12px', flexShrink: 0,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        bgcolor: bg, color,
-                        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.6)',
-                      }}>
-                        <Icon sx={{ fontSize: 16 }} />
-                      </Box>
-
-                      <Box>
-                        {/* Human-readable label */}
-                        <Typography sx={{ fontFamily: T.sans, fontSize: '0.845rem', fontWeight: 600, color: T.textBright, letterSpacing: '-0.02em', lineHeight: 1.3 }}>
-                          {label}
-                        </Typography>
-                        {/* Raw type code */}
-                        <Typography sx={{ fontFamily: T.mono, fontSize: '0.62rem', color: T.textDim, letterSpacing: '0.02em' }}>
-                          {row.type}
-                        </Typography>
-                      </Box>
-
-                      {isLarge && (
-                        <Box sx={{ ml: 0.5, px: 0.75, py: 0.2, borderRadius: '6px', bgcolor: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.2)' }}>
-                          <Typography sx={{ fontFamily: T.mono, fontSize: '0.52rem', letterSpacing: '0.08em', color: T.amber, fontWeight: 700 }}>
-                            LARGE
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
-                  </TableCell>
-
-                  {/* Amount */}
-                  <TableCell align="right" sx={{ borderBottom: '1px solid rgba(0,0,0,0.04)', py: 1.75, pr: 2.5 }}>
-                    <Typography sx={{ fontFamily: T.mono, fontSize: '0.95rem', fontWeight: 700, color, letterSpacing: '-0.03em', lineHeight: 1.3 }}>
-                      {sign}฿{amount.toLocaleString()}
-                    </Typography>
-                    {amount >= 1000 && (
-                      <Typography sx={{ fontFamily: T.mono, fontSize: '0.62rem', color: T.textDim, textAlign: 'right' }}>
-                        {fmt(amount)}
-                      </Typography>
-                    )}
-                  </TableCell>
-
-                  {/* Time */}
-                  <TableCell align="right" sx={{ borderBottom: '1px solid rgba(0,0,0,0.04)', py: 1.75, pr: 2.5 }}>
-                    <Typography sx={{ fontFamily: T.sans, fontSize: '0.8rem', fontWeight: 500, color: T.text, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
-                      {ts.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
-                    </Typography>
-                    <Typography sx={{ fontFamily: T.mono, fontSize: '0.68rem', color: T.textDim, mt: '1px' }}>
-                      {ts.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      <TablePagination
-        component="div"
-        count={meta.total} page={page} rowsPerPage={rowsPerPage}
-        onPageChange={onPage} onRowsPerPageChange={onRows}
-        rowsPerPageOptions={[5, 10, 25]}
-        sx={{
-          borderTop: '1px solid rgba(0,0,0,0.05)',
-          color: T.textDim, fontFamily: T.mono,
-          bgcolor: 'rgba(0,0,0,0.015)',
-          '.MuiTablePagination-select':         { color: T.text, fontFamily: T.mono },
-          '.MuiTablePagination-selectIcon':     { color: T.textDim },
-          '.MuiTablePagination-actions button': { color: T.text },
-          '.MuiTablePagination-displayedRows':  { fontFamily: T.mono, fontSize: '0.72rem' },
-          '.MuiTablePagination-selectLabel':    { fontFamily: T.mono, fontSize: '0.72rem' },
-        }}
-      />
-    </GlassCard>
-  )
-}
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
   const [data, setData]               = useState<DashboardData | null>(null)
   const [loading, setLoading]         = useState(true)
-  const [page, setPage]               = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const today = toInputDate(new Date())
+  const [startDate, setStartDate]     = useState<string>(toInputDate(shiftDays(new Date(), -6)))
+  const [endDate, setEndDate]         = useState<string>(today)
+  const [isAllRange, setIsAllRange]   = useState<boolean>(false)
+  const isInvalidDateRange            = !isAllRange && startDate > endDate
 
   useEffect(() => {
     const load = async () => {
+      if (isInvalidDateRange) {
+        setLoading(false)
+        return
+      }
+
       if (!data) setLoading(true)
       try {
-        const res = await fetch(`/api/admin/dashboard?page=${page+1}&limit=${rowsPerPage}`)
+        const params = new URLSearchParams()
+
+        if (isAllRange) {
+          params.set('all', 'true')
+        } else {
+          params.set('startDate', startDate)
+          params.set('endDate', endDate)
+        }
+
+        const res = await fetch(`/api/admin/dashboard?${params.toString()}`)
         if (res.ok) setData(await res.json())
       } catch(e) { console.error(e) }
       finally { setLoading(false) }
     }
     load()
-  }, [page, rowsPerPage])
+  }, [startDate, endDate, isAllRange, isInvalidDateRange])
 
   if (loading) return (
     <Box sx={{ minHeight: '100vh', background: T.wallpaper, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -488,6 +366,7 @@ export default function AdminDashboard() {
   const latestVol   = data.dailyVolume.at(-1)?.volume ?? 0
   const prevVol     = data.dailyVolume.at(-2)?.volume ?? 0
   const volDeltaPct = prevVol > 0 ? (((latestVol-prevVol)/prevVol)*100).toFixed(1) : null
+  const volumeLabel = isAllRange ? 'All-time' : `${startDate} → ${endDate}`
 
   return (
     <Box sx={{ minHeight: '100vh', background: T.wallpaper, p: { xs: 2, md: 3 } }}>
@@ -502,7 +381,65 @@ export default function AdminDashboard() {
             Dashboard
           </Typography>
         </Box>
-        <Clock />
+        <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <TextField
+            type="date"
+            size="small"
+            value={startDate}
+            disabled={isAllRange}
+            error={isInvalidDateRange}
+            helperText={isInvalidDateRange ? 'Invalid date range' : ' '}
+            onChange={(e) => setStartDate(e.target.value)}
+            sx={{
+              width: 132,
+              '& .MuiInputBase-root': {
+                height: 30,
+                fontFamily: T.mono,
+                fontSize: '0.62rem',
+              },
+            }}
+            inputProps={{ max: endDate }}
+          />
+          <Typography sx={{ fontFamily: T.mono, fontSize: '0.6rem', color: T.textDim }}>to</Typography>
+          <TextField
+            type="date"
+            size="small"
+            value={endDate}
+            disabled={isAllRange}
+            error={isInvalidDateRange}
+            helperText={isInvalidDateRange ? 'Invalid date range' : ' '}
+            onChange={(e) => setEndDate(e.target.value)}
+            sx={{
+              width: 132,
+              '& .MuiInputBase-root': {
+                height: 30,
+                fontFamily: T.mono,
+                fontSize: '0.62rem',
+              },
+            }}
+            inputProps={{ min: startDate }}
+          />
+          <Chip
+            label="All"
+            size="small"
+            clickable
+            onClick={() => setIsAllRange(!isAllRange)}
+            variant={isAllRange ? 'filled' : 'outlined'}
+            sx={{
+              height: 24,
+              borderRadius: '8px',
+              fontFamily: T.mono,
+              fontSize: '0.58rem',
+              color: isAllRange ? '#fff' : T.textDim,
+              bgcolor: isAllRange ? T.emerald : 'transparent',
+              borderColor: 'rgba(0,0,0,0.12)',
+              '&:hover': {
+                bgcolor: isAllRange ? T.emerald : 'rgba(0,0,0,0.03)',
+              },
+            }}
+          />
+          <Clock />
+        </Stack>
       </Box>
 
       {/* ── Row 1 — Stat Cards ── */}
@@ -513,11 +450,11 @@ export default function AdminDashboard() {
             delta={{ value: '+2 this week', up: true }} />
         </Grid>
         <Grid size={{ xs: 12, sm: 4 }}>
-          <StatCard label="Transactions" value={String(data.transactions.meta.total)} sub={`${data.transactions.meta.totalPage} pages`}
+          <StatCard label="Transactions" value={String(data.txSummary.totalTransactions)} sub={isAllRange ? 'all history' : volumeLabel}
             iconBg={T.purpleBg} icon={<Receipt sx={{ fontSize: 16, color: T.purple }} />} />
         </Grid>
         <Grid size={{ xs: 12, sm: 4 }}>
-          <StatCard label="Total Balance" value={`฿${data.totalBalance.toLocaleString()}`} sub={`7D vol · ${fmt(totalVolume)}`}
+          <StatCard label="Total Balance" value={`฿${data.selectedTotalBalance.toLocaleString()}`} sub={`${volumeLabel} · ${fmt(totalVolume)}`}
             iconBg={T.amberBg} icon={<AccountBalanceWallet sx={{ fontSize: 16, color: T.amber }} />}
             delta={volDeltaPct ? { value: `${volDeltaPct}% vs prev`, up: Number(volDeltaPct) >= 0 } : undefined} />
         </Grid>
@@ -529,31 +466,22 @@ export default function AdminDashboard() {
           <Box sx={{ width: '100%' }}><VolumeLineChart data={data.dailyVolume} /></Box>
         </Grid>
         <Grid size={{ xs: 12, md: 4 }} sx={{ display: 'flex' }}>
-          <Box sx={{ width: '100%' }}><TxBreakdownPie data={data.transactions.data} /></Box>
+          <Box sx={{ width: '100%' }}><TxBreakdownPie data={data.txSummary.breakdown} /></Box>
         </Grid>
       </Grid>
 
       {/* ── Row 3 — Bar + Radar + Summary ── */}
       <Grid container spacing={2} sx={{ mb: 2.5 }}>
         <Grid size={{ xs: 12, md: 4 }} sx={{ display: 'flex' }}>
-          <Box sx={{ width: '100%' }}><TxTypeBarChart data={data.transactions.data} /></Box>
+          <Box sx={{ width: '100%' }}><TxTypeBarChart data={data.txSummary.breakdown} /></Box>
         </Grid>
         <Grid size={{ xs: 12, md: 5 }} sx={{ display: 'flex' }}>
-          <Box sx={{ width: '100%' }}><TxRadarChart data={data.transactions.data} /></Box>
+          <Box sx={{ width: '100%' }}><TxRadarChart data={data.txSummary.breakdown} /></Box>
         </Grid>
         <Grid size={{ xs: 12, md: 3 }} sx={{ display: 'flex' }}>
-          <Box sx={{ width: '100%' }}><SummaryCard total={data.totalBalance} txCount={data.transactions.meta.total} /></Box>
+          <Box sx={{ width: '100%' }}><SummaryCard total={data.selectedTotalBalance} txCount={data.txSummary.totalTransactions} /></Box>
         </Grid>
       </Grid>
-
-      {/* ── Row 4 — Table ── */}
-      <TxTable
-        rows={data.transactions.data}
-        meta={data.transactions.meta}
-        page={page} rowsPerPage={rowsPerPage}
-        onPage={(_, p) => setPage(p)}
-        onRows={e => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0) }}
-      />
     </Box>
   )
 }
