@@ -81,7 +81,7 @@ export default function PinnedStocksPage() {
         <Box sx={{ maxWidth: '1200px', mx: 'auto' }}>
 
           {/* Search bar */}
-          {symbols.length > 0 && (
+          
             <div ref={searchRef} style={{ position: "relative", marginBottom: 16, width: 260 }}>
               <input
                 value={query}
@@ -147,7 +147,7 @@ export default function PinnedStocksPage() {
                 </div>
               )}
             </div>
-          )}
+         
 
           {symbols.length === 0 ? (
             <Box
