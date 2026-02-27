@@ -16,12 +16,16 @@ export async function GET(request: Request) {
   const all = searchParams.get('all') === 'true'
   const startDate = parseLocalDate(searchParams.get('startDate'), false)
   const endDate = parseLocalDate(searchParams.get('endDate'), true)
+  const search = (searchParams.get('search') || '').trim()
+  const type = (searchParams.get('type') || 'ALL').trim().toUpperCase()
 
   try {
     const transactions = await getAllTransactionsLog(page, limit, {
       all,
       startDate,
       endDate,
+      search,
+      type,
     })
 
     return NextResponse.json(transactions)

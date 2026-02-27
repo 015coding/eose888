@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import {
   Box,
   CircularProgress,
+  InputAdornment,
+  MenuItem,
   Table,
   TableBody,
   TableCell,
@@ -11,9 +13,10 @@ import {
   TableHead,
   TablePagination,
   TableRow,
+  TextField,
   Typography,
 } from '@mui/material'
-import { ArrowDownward, ArrowUpward, SwapHoriz } from '@mui/icons-material'
+import { ArrowDownward, ArrowUpward, Search, SwapHoriz } from '@mui/icons-material'
 
 const T = {
   wallpaper: '#FFFFFF',
@@ -37,8 +40,15 @@ const T = {
   sans: '"SF Pro Rounded","SF Pro Display",-apple-system,"Helvetica Neue",sans-serif',
 }
 
-type TxRow = { type: string; amount: number; createdAt: string }
+type TxRow = {
+  type: string
+  amount: number
+  createdAt: string
+  ownerId: string
+  ownerName: string
+}
 type TxMeta = { total: number; page: number; limit: number; totalPage: number }
+const TYPE_OPTIONS = ['ALL', 'DEPOSIT', 'WITHDRAW', 'TRANSFER_IN', 'TRANSFER_OUT', 'STOCK_BUY', 'STOCK_SELL', 'STOCK_PENDING', 'STOCK_CANCELLED'] as const
 
 const txMeta = (type: string) => {
   if (type === 'DEPOSIT') return { color: T.emerald, bg: T.emeraldBg, sign: '+', Icon: ArrowDownward, label: 'Deposit' }
@@ -62,12 +72,34 @@ export default function AdminTransactionLogsPage() {
   const [meta, setMeta] = useState<TxMeta>({ total: 0, page: 1, limit: 10, totalPage: 0 })
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [search, setSearch] = useState('')
+  const [searchInput, setSearchInput] = useState('')
+  const [typeFilter, setTypeFilter] = useState<string>('ALL')
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setSearch(searchInput.trim())
+      setPage(0)
+    }, 350)
+
+    return () => clearTimeout(timeout)
+  }, [searchInput])
 
   useEffect(() => {
     const load = async () => {
       if (!rows.length) setLoading(true)
       try {
-        const res = await fetch(`/api/admin/transactions?page=${page + 1}&limit=${rowsPerPage}`)
+        const params = new URLSearchParams({
+          page: String(page + 1),
+          limit: String(rowsPerPage),
+          type: typeFilter,
+        })
+
+        if (search) {
+          params.set('search', search)
+        }
+
+        const res = await fetch(`/api/admin/transactions?${params.toString()}`)
         if (!res.ok) return
         const payload = await res.json()
         setRows(payload.data ?? [])
@@ -77,7 +109,7 @@ export default function AdminTransactionLogsPage() {
       }
     }
     load()
-  }, [page, rowsPerPage])
+  }, [page, rowsPerPage, search, typeFilter])
 
   if (loading) {
     return (
@@ -98,6 +130,46 @@ export default function AdminTransactionLogsPage() {
         </Typography>
       </Box>
 
+      <Box sx={{ display: 'flex', gap: 1.2, mb: 2, flexWrap: 'wrap' }}>
+        <TextField
+          placeholder="Search owner ID, owner name, or type"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          size="small"
+          sx={{ minWidth: { xs: '100%', sm: 320 }, bgcolor: 'rgba(255,255,255,0.65)', borderRadius: '10px' }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search sx={{ fontSize: 16, color: T.textDim }} />
+              </InputAdornment>
+            ),
+            sx: {
+              fontFamily: T.mono,
+              fontSize: '0.72rem',
+            },
+          }}
+        />
+
+        <TextField
+          select
+          label="Type"
+          size="small"
+          value={typeFilter}
+          onChange={(e) => {
+            setTypeFilter(e.target.value)
+            setPage(0)
+          }}
+          sx={{ minWidth: 180, bgcolor: 'rgba(255,255,255,0.65)', borderRadius: '10px' }}
+          InputProps={{ sx: { fontFamily: T.mono, fontSize: '0.72rem' } }}
+        >
+          {TYPE_OPTIONS.map((option) => (
+            <MenuItem key={option} value={option} sx={{ fontFamily: T.mono, fontSize: '0.72rem' }}>
+              {option}
+            </MenuItem>
+          ))}
+        </TextField>
+      </Box>
+
       <Box sx={{ bgcolor: T.glass, backdropFilter: 'blur(20px)', border: `1px solid ${T.glassBorder}`, borderRadius: '20px', boxShadow: T.shadow, overflow: 'hidden' }}>
         <Box sx={{ px: 2.5, py: 2, borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
           <Typography sx={{ fontFamily: T.mono, fontSize: '0.58rem', letterSpacing: '0.13em', textTransform: 'uppercase', color: T.textDim }}>
@@ -111,6 +183,9 @@ export default function AdminTransactionLogsPage() {
               <TableRow>
                 <TableCell sx={{ fontFamily: T.mono, fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: T.textDim, fontWeight: 600, borderBottom: '1px solid rgba(0,0,0,0.05)', py: 1.5, bgcolor: 'rgba(0,0,0,0.015)' }}>
                   Transaction
+                </TableCell>
+                <TableCell sx={{ fontFamily: T.mono, fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: T.textDim, fontWeight: 600, borderBottom: '1px solid rgba(0,0,0,0.05)', py: 1.5, bgcolor: 'rgba(0,0,0,0.015)' }}>
+                  Owner
                 </TableCell>
                 <TableCell align="right" sx={{ fontFamily: T.mono, fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: T.textDim, fontWeight: 600, borderBottom: '1px solid rgba(0,0,0,0.05)', py: 1.5, bgcolor: 'rgba(0,0,0,0.015)' }}>
                   Amount
@@ -151,6 +226,15 @@ export default function AdminTransactionLogsPage() {
                           </Typography>
                         </Box>
                       </Box>
+                    </TableCell>
+
+                    <TableCell sx={{ borderBottom: '1px solid rgba(0,0,0,0.04)', py: 1.75 }}>
+                      <Typography sx={{ fontFamily: T.sans, fontSize: '0.82rem', fontWeight: 600, color: T.textBright, lineHeight: 1.25 }}>
+                        {row.ownerName || '-'}
+                      </Typography>
+                      <Typography sx={{ fontFamily: T.mono, fontSize: '0.62rem', color: T.textDim, mt: '1px' }}>
+                        {row.ownerId}
+                      </Typography>
                     </TableCell>
 
                     <TableCell align="right" sx={{ borderBottom: '1px solid rgba(0,0,0,0.04)', py: 1.75, pr: 2.5 }}>

@@ -60,6 +60,11 @@ type TransactionRangeOptions = {
     all?: boolean;
 };
 
+type TransactionFilterOptions = TransactionRangeOptions & {
+    search?: string;
+    type?: string;
+};
+
 const normalizeDateRange = ({ startDate, endDate, all }: TransactionRangeOptions) => {
     if (all || !startDate || !endDate) {
         return null;
@@ -101,6 +106,17 @@ const getUnifiedTransactions = async (rangeOptions: TransactionRangeOptions = {}
                 type: true,
                 amount: true,
                 createdAt: true,
+                account: {
+                    select: {
+                        user: {
+                            select: {
+                                id: true,
+                                firstName: true,
+                                lastName: true,
+                            },
+                        },
+                    },
+                },
             },
         }),
         prisma_yok.transactionStock.findMany({
@@ -117,6 +133,13 @@ const getUnifiedTransactions = async (rangeOptions: TransactionRangeOptions = {}
                 quantity: true,
                 price: true,
                 tradeDate: true,
+                user: {
+                    select: {
+                        id: true,
+                        firstName: true,
+                        lastName: true,
+                    },
+                },
             },
         }),
     ]);
@@ -125,12 +148,16 @@ const getUnifiedTransactions = async (rangeOptions: TransactionRangeOptions = {}
         type: row.type,
         amount: Number(row.amount),
         createdAt: row.createdAt,
+        ownerId: row.account.user.id,
+        ownerName: `${row.account.user.firstName} ${row.account.user.lastName}`.trim(),
     }));
 
     const normalizedStockLogs = stockLogs.map((row) => ({
         type: `STOCK_${row.type}`,
         amount: Number(row.quantity) * Number(row.price),
         createdAt: row.tradeDate,
+        ownerId: row.user.id,
+        ownerName: `${row.user.firstName} ${row.user.lastName}`.trim(),
     }));
 
     return [...normalizedAccountLogs, ...normalizedStockLogs];
@@ -139,16 +166,29 @@ const getUnifiedTransactions = async (rangeOptions: TransactionRangeOptions = {}
 export const getAllTransactionsLog = async (
     page: number = 1,
     limit: number = 10,
-    rangeOptions: TransactionRangeOptions = {}
+    rangeOptions: TransactionFilterOptions = {}
 ) => {
     const offset = (page - 1) * limit;
     const allTransactions = await getUnifiedTransactions(rangeOptions);
 
-    const transactions = allTransactions
+    const normalizedSearch = (rangeOptions.search ?? '').trim().toLowerCase();
+    const normalizedType = (rangeOptions.type ?? 'ALL').trim().toUpperCase();
+
+    const filteredTransactions = allTransactions.filter((tx) => {
+        const passType = normalizedType === 'ALL' ? true : tx.type === normalizedType;
+        if (!passType) return false;
+
+        if (!normalizedSearch) return true;
+
+        const haystack = `${tx.ownerName} ${tx.ownerId} ${tx.type}`.toLowerCase();
+        return haystack.includes(normalizedSearch);
+    });
+
+    const transactions = filteredTransactions
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
         .slice(offset, offset + limit);
 
-    const totalCount = allTransactions.length;
+    const totalCount = filteredTransactions.length;
 
     return {
         data: transactions,

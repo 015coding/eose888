@@ -55,7 +55,7 @@ export default function Sidebar({ children, session }: SidebarProps) {
 
   const logItems = [
     { text: 'Auth',         icon: <LoginRoundedIcon    sx={{ fontSize: 18 }} />, path: '/admin/log/auth'         },
-    { text: 'Transactions', icon: <SwapHorizRoundedIcon sx={{ fontSize: 18 }} />, path: '/admin/log/transactions' },
+    { text: 'Transactions', icon: <SwapHorizRoundedIcon sx={{ fontSize: 18 }} />, path: '/admin/log/transaction' },
   ]
 
   const NavItem = ({ text, icon, path }: { text: string; icon: React.ReactNode; path: string }) => {
