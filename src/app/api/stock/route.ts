@@ -3,6 +3,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prismaApp } from "@/lib/prismaApp";
 
+declare global {
+  var historyStore: Record<string, Array<{ time: string; price: number }>>;
+}
+
 global.historyStore = global.historyStore || {};
 
 const API_KEY = process.env.STOCK_API_KEY;
