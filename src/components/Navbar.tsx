@@ -5,10 +5,12 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
+import PinnedStocksPanel from './PinnedStocksPanel';
 
 export default function Navbar() {
   return (
     <>
+    <div style={{ position: "relative" }}>
 <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" color="transparent" sx={{ backgroundColor: '#49e6b7', color: '#000' }}>
 
@@ -29,7 +31,9 @@ export default function Navbar() {
           <Button color="inherit">Login</Button>
         </Toolbar>
       </AppBar> 
+      <PinnedStocksPanel />
     </Box>
+    </div>
     </>
   );
 }
