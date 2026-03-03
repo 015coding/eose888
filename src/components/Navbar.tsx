@@ -11,9 +11,10 @@ import PinnedStocksPanel from './PinnedStocksPanel';
 
 const NAV_ITEMS = [
   { label: 'Watch List', path: '/favstock' },
-  {label : 'Trade' , path:"/buying-stock"},
+  { label: 'Trade' , path:"/buying-stock"},
   { label: 'Portfolio', path: '/my-stock' },
   { label: 'Bank Account', path: '/bankacc' },
+  { label: 'Setting', path: '/setting' },
 
 ]
 
