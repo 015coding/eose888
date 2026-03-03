@@ -37,7 +37,6 @@ const themeColor = {
 export default function AccountCards({ accounts }: Props) {
   const router = useRouter()
 
-  // Transfer state
   const [open, setOpen] = useState(false)
   const [fromId, setFromId] = useState('')
   const [toId, setToId] = useState('')
@@ -46,7 +45,6 @@ export default function AccountCards({ accounts }: Props) {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
-  // Deposit/Withdraw state
   const [dwOpen, setDwOpen] = useState(false)
   const [dwAccountId, setDwAccountId] = useState('')
   const [dwMode, setDwMode] = useState<'DEPOSIT' | 'WITHDRAW'>('DEPOSIT')
@@ -118,81 +116,90 @@ export default function AccountCards({ accounts }: Props) {
     }}>
       <Box sx={{ maxWidth: '1100px', mx: 'auto' }}>
         <Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' }} gap={4}>
-          {accounts.map((account) => (
-            <Card key={account.id} sx={{
-              borderRadius: 6,
-              bgcolor: 'rgba(255, 255, 255, 0.9)', 
-              border: '1px solid hsla(0, 3%, 56%, 0.36)',
-              boxShadow: '0 20px 25px -5px rgba(42, 5, 5, 0.05)',
-              transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-              '&:hover': {
-                transform: 'translateY(-12px) scale(1.02)',
-                boxShadow: '0 30px 60px -15px rgba(16, 185, 129, 0.15)',
-                borderColor: themeColor.primary,
-              }
-            }}>
-              <CardContent sx={{ p: 4 }}>
-                <Box display="flex" justifyContent="space-between" mb={4}>
-                  <Box sx={{ bgcolor: 'rgba(16, 185, 129, 0.1)', p: 1.5, borderRadius: 4 }}>
-                    <AccountBalanceWalletIcon sx={{ color: themeColor.primary }} />
+          {accounts.map((account) => {
+            const formatted = account.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+            const [intPart, decPart] = formatted.split('.')
+
+            return (
+              <Card key={account.id} sx={{
+                borderRadius: 6,
+                bgcolor: 'rgba(255, 255, 255, 0.9)', 
+                border: '1px solid hsla(0, 3%, 56%, 0.36)',
+                boxShadow: '0 20px 25px -5px rgba(42, 5, 5, 0.05)',
+                transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                '&:hover': {
+                  transform: 'translateY(-12px) scale(1.02)',
+                  boxShadow: '0 30px 60px -15px rgba(16, 185, 129, 0.15)',
+                  borderColor: themeColor.primary,
+                }
+              }}>
+                <CardContent sx={{ p: 4 }}>
+                  <Box display="flex" justifyContent="space-between" mb={4}>
+                    <Box sx={{ bgcolor: 'rgba(16, 185, 129, 0.1)', p: 1.5, borderRadius: 4 }}>
+                      <AccountBalanceWalletIcon sx={{ color: themeColor.primary }} />
+                    </Box>
+                    <Chip label={account.country} size="small" sx={{ fontWeight: 800, borderRadius: 2, fontSize: '0.65rem', bgcolor: '#f1f5f9' }} />
                   </Box>
-                  <Chip label={account.country} size="small" sx={{ fontWeight: 800, borderRadius: 2, fontSize: '0.65rem', bgcolor: '#f1f5f9' }} />
-                </Box>
 
-                <Typography variant="subtitle2" sx={{ color: themeColor.textSecondary, fontWeight: 600, mb: 0.5, textTransform: 'uppercase', fontSize: '0.7rem' }}>
-                  Total Balance ({account.currency})
-                </Typography>
-
-                <Box display="flex" alignItems="baseline" gap={1}>
-                  <Typography variant="h3" sx={{ fontWeight: 800, color: themeColor.textMain, letterSpacing: '-1.5px' }}>
-                    {account.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  <Typography variant="subtitle2" sx={{ color: themeColor.textSecondary, fontWeight: 600, mb: 0.5, textTransform: 'uppercase', fontSize: '0.7rem' }}>
+                    Total Balance ({account.currency})
                   </Typography>
-                  <Typography variant="subtitle1" sx={{ color: themeColor.textSecondary, fontWeight: 700 }}>{account.currency}</Typography>
-                </Box>
 
-                <Divider sx={{ my: 3, opacity: 0.3 }} />
-
-                <Button
-                  fullWidth variant="contained"
-                  endIcon={<ArrowForwardIosIcon sx={{ fontSize: '10px !important' }} />}
-                  onClick={() => handleOpen(account.id)}
-                  disabled={accounts.length < 2}
-                  sx={{
-                    py: 1.8, borderRadius: 4, textTransform: 'none', fontWeight: 800,
-                    bgcolor: themeColor.textMain, 
-                    '&:hover': { bgcolor: '#000', transform: 'translateY(-2px)' },
-                  }}
-                >
-                  ทำรายการโอนเงิน
-                </Button>
-
-                {account.currency === 'THB' && (
-                  <Box display="flex" gap={1.5} mt={1.5}>
-                    <Button
-                      fullWidth variant="outlined"
-                      startIcon={<ArrowDownwardIcon sx={{ fontSize: '14px !important' }} />}
-                      onClick={() => handleOpenDW(account.id, 'DEPOSIT')}
-                      sx={{ py: 1.5, borderRadius: 4, textTransform: 'none', fontWeight: 700, borderColor: themeColor.primary, color: themeColor.primary }}
-                    >
-                      ฝาก
-                    </Button>
-                    <Button
-                      fullWidth variant="outlined"
-                      startIcon={<ArrowUpwardIcon sx={{ fontSize: '14px !important' }} />}
-                      onClick={() => handleOpenDW(account.id, 'WITHDRAW')}
-                      sx={{ py: 1.5, borderRadius: 4, textTransform: 'none', fontWeight: 700, borderColor: '#ef4444', color: '#ef4444' }}
-                    >
-                      ถอน
-                    </Button>
+                  {/* ✅ จำนวนเต็มใหญ่ ทศนิยมเล็ก */}
+                  <Box display="flex" alignItems="flex-end" gap={0}>
+                    <Typography variant="h3" sx={{ fontWeight: 800, color: themeColor.textMain, letterSpacing: '-1.5px', lineHeight: 1 }}>
+                      {intPart}
+                    </Typography>
+                    <Typography sx={{ fontWeight: 700, color: themeColor.textSecondary, fontSize: '1.1rem', lineHeight: 1, mb: '4px' }}>
+                      .{decPart}
+                    </Typography>
+                    <Typography variant="subtitle1" sx={{ color: themeColor.textSecondary, fontWeight: 700, ml: 1, mb: '2px' }}>
+                      {account.currency}
+                    </Typography>
                   </Box>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+
+                  <Divider sx={{ my: 3, opacity: 0.3 }} />
+
+                  <Button
+                    fullWidth variant="contained"
+                    endIcon={<ArrowForwardIosIcon sx={{ fontSize: '10px !important' }} />}
+                    onClick={() => handleOpen(account.id)}
+                    disabled={accounts.length < 2}
+                    sx={{
+                      py: 1.8, borderRadius: 4, textTransform: 'none', fontWeight: 800,
+                      bgcolor: themeColor.textMain, 
+                      '&:hover': { bgcolor: '#000', transform: 'translateY(-2px)' },
+                    }}
+                  >
+                    ทำรายการโอนเงิน
+                  </Button>
+
+                  {account.currency === 'THB' && (
+                    <Box display="flex" gap={1.5} mt={1.5}>
+                      <Button
+                        fullWidth variant="outlined"
+                        startIcon={<ArrowDownwardIcon sx={{ fontSize: '14px !important' }} />}
+                        onClick={() => handleOpenDW(account.id, 'DEPOSIT')}
+                        sx={{ py: 1.5, borderRadius: 4, textTransform: 'none', fontWeight: 700, borderColor: themeColor.primary, color: themeColor.primary }}
+                      >
+                        ฝาก
+                      </Button>
+                      <Button
+                        fullWidth variant="outlined"
+                        startIcon={<ArrowUpwardIcon sx={{ fontSize: '14px !important' }} />}
+                        onClick={() => handleOpenDW(account.id, 'WITHDRAW')}
+                        sx={{ py: 1.5, borderRadius: 4, textTransform: 'none', fontWeight: 700, borderColor: '#ef4444', color: '#ef4444' }}
+                      >
+                        ถอน
+                      </Button>
+                    </Box>
+                  )}
+                </CardContent>
+              </Card>
+            )
+          })}
         </Box>
       </Box>
-
-      {/* --- ALL FUNCTIONAL DIALOGS RE-ADDED BELOW --- */}
 
       {/* Transfer Dialog */}
       <Dialog

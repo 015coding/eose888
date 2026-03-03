@@ -6736,7 +6736,7 @@ export namespace Prisma {
     type: $Enums.TradeType
     quantity: Decimal
     price: Decimal
-    accountId: string | null
+    accountId: string
     tradeDate: Date
     _count: TransactionStockCountAggregateOutputType | null
     _avg: TransactionStockAvgAggregateOutputType | null
@@ -6802,7 +6802,7 @@ export namespace Prisma {
       type: $Enums.TradeType
       quantity: Prisma.Decimal
       price: Prisma.Decimal
-      accountId: string | null
+      accountId: string
       tradeDate: Date
     }, ExtArgs["result"]["transactionStock"]>
     composites: {}
@@ -10675,7 +10675,7 @@ export namespace Prisma {
     type?: EnumTradeTypeFilter<"TransactionStock"> | $Enums.TradeType
     quantity?: DecimalFilter<"TransactionStock"> | Decimal | DecimalJsLike | number | string
     price?: DecimalFilter<"TransactionStock"> | Decimal | DecimalJsLike | number | string
-    accountId?: StringNullableFilter<"TransactionStock"> | string | null
+    accountId?: StringFilter<"TransactionStock"> | string
     tradeDate?: DateTimeFilter<"TransactionStock"> | Date | string
     user?: XOR<UserRelationFilter, UserWhereInput>
     account?: XOR<BankAccountNullableRelationFilter, BankAccountWhereInput> | null
@@ -10688,7 +10688,7 @@ export namespace Prisma {
     type?: SortOrder
     quantity?: SortOrder
     price?: SortOrder
-    accountId?: SortOrderInput | SortOrder
+    accountId?: SortOrder
     tradeDate?: SortOrder
     user?: UserOrderByWithRelationInput
     account?: BankAccountOrderByWithRelationInput
@@ -10704,7 +10704,7 @@ export namespace Prisma {
     type?: EnumTradeTypeFilter<"TransactionStock"> | $Enums.TradeType
     quantity?: DecimalFilter<"TransactionStock"> | Decimal | DecimalJsLike | number | string
     price?: DecimalFilter<"TransactionStock"> | Decimal | DecimalJsLike | number | string
-    accountId?: StringNullableFilter<"TransactionStock"> | string | null
+    accountId?: StringFilter<"TransactionStock"> | string
     tradeDate?: DateTimeFilter<"TransactionStock"> | Date | string
     user?: XOR<UserRelationFilter, UserWhereInput>
     account?: XOR<BankAccountNullableRelationFilter, BankAccountWhereInput> | null
@@ -10717,7 +10717,7 @@ export namespace Prisma {
     type?: SortOrder
     quantity?: SortOrder
     price?: SortOrder
-    accountId?: SortOrderInput | SortOrder
+    accountId?: SortOrder
     tradeDate?: SortOrder
     _count?: TransactionStockCountOrderByAggregateInput
     _avg?: TransactionStockAvgOrderByAggregateInput
@@ -10736,7 +10736,7 @@ export namespace Prisma {
     type?: EnumTradeTypeWithAggregatesFilter<"TransactionStock"> | $Enums.TradeType
     quantity?: DecimalWithAggregatesFilter<"TransactionStock"> | Decimal | DecimalJsLike | number | string
     price?: DecimalWithAggregatesFilter<"TransactionStock"> | Decimal | DecimalJsLike | number | string
-    accountId?: StringNullableWithAggregatesFilter<"TransactionStock"> | string | null
+    accountId?: StringWithAggregatesFilter<"TransactionStock"> | string
     tradeDate?: DateTimeWithAggregatesFilter<"TransactionStock"> | Date | string
   }
 
@@ -11244,7 +11244,7 @@ export namespace Prisma {
     type: $Enums.TradeType
     quantity: Decimal | DecimalJsLike | number | string
     price: Decimal | DecimalJsLike | number | string
-    accountId?: string | null
+    accountId: string
     tradeDate?: Date | string
   }
 
@@ -11266,7 +11266,7 @@ export namespace Prisma {
     type?: EnumTradeTypeFieldUpdateOperationsInput | $Enums.TradeType
     quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    accountId?: NullableStringFieldUpdateOperationsInput | string | null
+    accountId?: StringFieldUpdateOperationsInput | string
     tradeDate?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -11277,7 +11277,7 @@ export namespace Prisma {
     type: $Enums.TradeType
     quantity: Decimal | DecimalJsLike | number | string
     price: Decimal | DecimalJsLike | number | string
-    accountId?: string | null
+    accountId: string
     tradeDate?: Date | string
   }
 
@@ -11297,7 +11297,7 @@ export namespace Prisma {
     type?: EnumTradeTypeFieldUpdateOperationsInput | $Enums.TradeType
     quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    accountId?: NullableStringFieldUpdateOperationsInput | string | null
+    accountId?: StringFieldUpdateOperationsInput | string
     tradeDate?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -11902,20 +11902,6 @@ export namespace Prisma {
     not?: NestedEnumTradeTypeFilter<$PrismaModel> | $Enums.TradeType
   }
 
-  export type StringNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | null
-    notIn?: string[] | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedStringNullableFilter<$PrismaModel> | string | null
-  }
-
   export type BankAccountNullableRelationFilter = {
     is?: BankAccountWhereInput | null
     isNot?: BankAccountWhereInput | null
@@ -11974,23 +11960,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumTradeTypeFilter<$PrismaModel>
     _max?: NestedEnumTradeTypeFilter<$PrismaModel>
-  }
-
-  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | null
-    notIn?: string[] | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedStringNullableFilter<$PrismaModel>
-    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type PinnedStockUserIdStockIdCompoundUniqueInput = {
@@ -12665,10 +12634,6 @@ export namespace Prisma {
     update?: XOR<XOR<BankAccountUpdateToOneWithWhereWithoutTransactionsInput, BankAccountUpdateWithoutTransactionsInput>, BankAccountUncheckedUpdateWithoutTransactionsInput>
   }
 
-  export type NullableStringFieldUpdateOperationsInput = {
-    set?: string | null
-  }
-
   export type UserCreateNestedOneWithoutPinnedStocksInput = {
     create?: XOR<UserCreateWithoutPinnedStocksInput, UserUncheckedCreateWithoutPinnedStocksInput>
     connectOrCreate?: UserCreateOrConnectWithoutPinnedStocksInput
@@ -12930,20 +12895,6 @@ export namespace Prisma {
     not?: NestedEnumTradeTypeFilter<$PrismaModel> | $Enums.TradeType
   }
 
-  export type NestedStringNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | null
-    notIn?: string[] | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedStringNullableFilter<$PrismaModel> | string | null
-  }
-
   export type NestedEnumTradeTypeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.TradeType | EnumTradeTypeFieldRefInput<$PrismaModel>
     in?: $Enums.TradeType[]
@@ -12952,23 +12903,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumTradeTypeFilter<$PrismaModel>
     _max?: NestedEnumTradeTypeFilter<$PrismaModel>
-  }
-
-  export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | null
-    notIn?: string[] | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedStringNullableFilter<$PrismaModel>
-    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
@@ -13059,7 +12993,7 @@ export namespace Prisma {
     type: $Enums.TradeType
     quantity: Decimal | DecimalJsLike | number | string
     price: Decimal | DecimalJsLike | number | string
-    accountId?: string | null
+    accountId: string
     tradeDate?: Date | string
   }
 
@@ -13173,7 +13107,7 @@ export namespace Prisma {
     type?: EnumTradeTypeFilter<"TransactionStock"> | $Enums.TradeType
     quantity?: DecimalFilter<"TransactionStock"> | Decimal | DecimalJsLike | number | string
     price?: DecimalFilter<"TransactionStock"> | Decimal | DecimalJsLike | number | string
-    accountId?: StringNullableFilter<"TransactionStock"> | string | null
+    accountId?: StringFilter<"TransactionStock"> | string
     tradeDate?: DateTimeFilter<"TransactionStock"> | Date | string
   }
 
@@ -14029,7 +13963,7 @@ export namespace Prisma {
     type: $Enums.TradeType
     quantity: Decimal | DecimalJsLike | number | string
     price: Decimal | DecimalJsLike | number | string
-    accountId?: string | null
+    accountId: string
     tradeDate?: Date | string
   }
 
@@ -14104,7 +14038,7 @@ export namespace Prisma {
     type?: EnumTradeTypeFieldUpdateOperationsInput | $Enums.TradeType
     quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    accountId?: NullableStringFieldUpdateOperationsInput | string | null
+    accountId?: StringFieldUpdateOperationsInput | string
     tradeDate?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -14114,7 +14048,7 @@ export namespace Prisma {
     type?: EnumTradeTypeFieldUpdateOperationsInput | $Enums.TradeType
     quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    accountId?: NullableStringFieldUpdateOperationsInput | string | null
+    accountId?: StringFieldUpdateOperationsInput | string
     tradeDate?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

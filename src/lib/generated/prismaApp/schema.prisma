@@ -142,7 +142,7 @@ model TransactionStock {
   type      TradeType
   quantity  Decimal   @db.Decimal(18, 8)
   price     Decimal   @db.Decimal(18, 8)
-  accountId String?
+  accountId String
   tradeDate DateTime  @default(now())
 
   user    User         @relation(fields: [userId], references: [id])
