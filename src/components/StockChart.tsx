@@ -81,7 +81,6 @@ export default function StockChart({
         padding: 24,
         border: "1px solid #1e2d3d",
         width: "100%",
-        //maxWidth: 1200,
         boxShadow: "0 8px 32px rgba(0,0,0,0.35)",
         position: "relative",
       }}
@@ -111,8 +110,11 @@ export default function StockChart({
         </div>
       </div>
 
-      {/* Chart */}
-      <div style={{ position: "relative", width: "100%", height: 260 }}>
+      {/* Chart — stopPropagation ไม่ให้ click บน chart navigate ออกไป */}
+      <div
+        style={{ position: "relative", width: "100%", height: 260 }}
+        onClick={e => e.stopPropagation()}
+      >
         {chartData.length > 0 ? (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
@@ -161,13 +163,15 @@ export default function StockChart({
           </div>
         )}
 
-        <PinButton 
-          symbol={symbol} 
+        <PinButton
+          symbol={symbol}
         />
       </div>
 
-      {/* Range selector */}
-      <RangeSelector symbol={symbol} currentRange={range} onChange={onRangeChange} />
+      {/* Range selector — stopPropagation ไม่ให้กดปุ่ม range แล้ว navigate */}
+      <div onClick={e => e.stopPropagation()}>
+        <RangeSelector symbol={symbol} currentRange={range} onChange={onRangeChange} />
+      </div>
     </div>
   );
 }
