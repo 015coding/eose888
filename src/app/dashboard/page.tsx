@@ -18,14 +18,7 @@ export default async function Dashboard() {
 
   const displayName = session.user?.name ?? ''
   const email = session.user?.email ?? ''
-  const slugFromName = displayName
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-_]/g, '')
-  const slugFromEmail = email.split('@')[0]?.toLowerCase() ?? ''
-  const userSlug = slugFromEmail || slugFromName
-  const settingHref = userSlug ? `/${userSlug}/setting` : '/dashboard'
+  const settingHref = '/setting'
 
   return (
     <div className="flex h-screen flex-col items-center justify-center gap-4">
