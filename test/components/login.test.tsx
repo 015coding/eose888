@@ -113,7 +113,7 @@ describe('Login', () => {
   })
 
   it('shows Signing in... while loading', async () => {
-    mockSignIn.mockImplementation(() => new Promise(() => {})) // ไม่ resolve เพื่อค้าง loading
+    mockSignIn.mockImplementation(() => new Promise(() => {}))
     const user = userEvent.setup()
     render(<Login />)
     await user.type(screen.getByLabelText(/email address/i), 'test@test.com')
