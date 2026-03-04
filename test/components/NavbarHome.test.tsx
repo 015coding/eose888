@@ -67,7 +67,15 @@ describe('NavbarHome', () => {
 
     })
 
+    it('navigates to hame when clicking logo' , async () => {
+        const user = userEvent.setup()
 
+        render(<NavbarHome/>)
+
+        await user.click(screen.getByText('Eose', {exact: false}))
+
+        expect(mockPush).toHaveBeenCalledWith('/')
+    })    
 })
 
 
