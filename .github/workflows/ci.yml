@@ -40,6 +40,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+
+      - name: Generate Prisma client
+        run: | 
+            npx prisma generate --schema=./prisma/schema.prisma
+            npx prisma generate --schema=./prisma-App/schema.prisma
+
+
       - name: Run tests
         run: npm test
 
