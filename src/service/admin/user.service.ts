@@ -2,6 +2,18 @@
 import { prisma } from '@/lib/prisma'
 import { prismaApp } from '@/lib/prismaApp'
 import bcrypt from 'bcrypt'
+import { Role } from '@prisma/client'
+
+function parseRole(role?: string): Role {
+  if (!role) return Role.USER
+
+  const normalizedRole = role.toUpperCase()
+  if (normalizedRole === Role.USER || normalizedRole === Role.ADMIN) {
+    return normalizedRole as Role
+  }
+
+  throw new Error('Invalid role. Allowed values are USER or ADMIN')
+}
 
 export async function getUsers(page: number = 1, limit: number = 10) {
   const skip = (page - 1) * limit
@@ -45,13 +57,14 @@ export async function createUser(data: any) {
   }
 
   const hashedPassword = await bcrypt.hash(password, 10)
+  const parsedRole = parseRole(role)
 
   const newUser = await prisma.user.create({
     data: {
       name,
       email,
       password: hashedPassword,
-      role: role || 'USER',
+      role: parsedRole,
     },
   })
 
@@ -63,9 +76,11 @@ export async function updateUserRole(userId: string, role: string) {
     throw new Error('User ID and role are required')
   }
 
+  const parsedRole = parseRole(role)
+
   const updatedUser = await prisma.user.update({
     where: { id: userId },
-    data: { role },
+    data: { role: parsedRole },
   })
 
   return updatedUser

@@ -3,6 +3,8 @@ import { prismaApp as prisma_yok } from '@/lib/prismaApp';
 import { Currency } from '@/lib/generated/prismaApp';
 import bcrypt from 'bcrypt';
 
+
+
 const toUsernameSlug = (value: string) =>
     value
         .trim()
