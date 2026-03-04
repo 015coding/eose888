@@ -6,20 +6,13 @@ import { prismaApp } from '@/lib/prismaApp'
 import ResetPasswordForm from './ResetPasswordForm'
 import ChangeUsernameForm from './ChangeUsernameForm'
 
-
-
-type Props = {
-  params: Promise<{ user: string }>
-}
-
-export default async function UserSettingPage({ params }: Props) {
+export default async function UserSettingPage() {
   const session = await getServerSession(authOptions)
 
   if (!session?.user) {
     redirect('/login')
   }
 
-  const { user } = await params
   const email = session.user.email ?? ''
   const displayName = session.user.name ?? ''
   const slugFromName = displayName
@@ -29,17 +22,6 @@ export default async function UserSettingPage({ params }: Props) {
     .replace(/[^a-z0-9-_]/g, '')
   const slugFromEmail = email.split('@')[0]?.toLowerCase() ?? ''
   const usernameSlug = slugFromEmail || slugFromName
-  const routeSlug = user.toLowerCase()
-
-  if (session.user.role !== 'USER') {
-    redirect('/dashboard')
-  }
-
-  const allowedSlugs = [slugFromEmail, slugFromName].filter(Boolean)
-
-  if (!allowedSlugs.includes(routeSlug)) {
-    redirect('/dashboard')
-  }
 
   const profile = await prismaApp.user.findUnique({
     where: { id: session.user.id },

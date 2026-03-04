@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAllBalances } from "@/service/user/user.service";
 
+
 export async function GET() {
     try {
         const allbalances = await getAllBalances();
