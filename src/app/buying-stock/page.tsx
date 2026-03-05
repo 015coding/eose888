@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { Suspense, useState, useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import TradePanel from "./TradePanel";
 import WalletCard from "./WalletCard";
@@ -19,7 +19,7 @@ type Range = "30" | "7" | "1";
 
 const themeColor = { background: '#ebebeb' };
 
-export default function StockPage() {
+function StockPageContent() {
   const searchParams = useSearchParams();
   const [stocksMonthly, setStocksMonthly] = useState<Record<string, StockData[]>>({});
   const [stocksDaily, setStocksDaily] = useState<Record<string, StockData[]>>({});
@@ -220,5 +220,13 @@ export default function StockPage() {
         </Box>
       </Box>
     </>
+  );
+}
+
+export default function StockPage() {
+  return (
+    <Suspense fallback={null}>
+      <StockPageContent />
+    </Suspense>
   );
 }
