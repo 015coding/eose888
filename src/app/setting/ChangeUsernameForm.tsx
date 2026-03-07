@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function ChangeUsernameForm() {
+    const router = useRouter();
     const [newUsername, setNewUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -43,6 +45,9 @@ export default function ChangeUsernameForm() {
             setSuccess(data.message || 'Username changed successfully');
             setNewUsername('');
             setPassword('');
+
+            // Refresh once so server-rendered profile data reflects the latest username.
+            router.refresh();
         } catch {
             setError('Something went wrong');
         } finally {

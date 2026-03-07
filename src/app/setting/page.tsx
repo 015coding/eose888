@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import Navbar from '@/components/Navbar'
+import { prisma } from '@/lib/prisma'
 import { prismaApp } from '@/lib/prismaApp'
 import ResetPasswordForm from './ResetPasswordForm'
 import ChangeUsernameForm from './ChangeUsernameForm'
@@ -13,23 +14,32 @@ export default async function UserSettingPage() {
     redirect('/login')
   }
 
-  const email = session.user.email ?? ''
-  const displayName = session.user.name ?? ''
+  const [profile, loginUser] = await Promise.all([
+    prismaApp.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        firstName: true,
+        lastName: true,
+      },
+    }),
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        name: true,
+        email: true,
+      },
+    }),
+  ])
+
+  const email = loginUser?.email ?? session.user.email ?? ''
+  const displayName = loginUser?.name ?? session.user.name ?? ''
   const slugFromName = displayName
     .trim()
     .toLowerCase()
     .replace(/\s+/g, '-')
     .replace(/[^a-z0-9-_]/g, '')
   const slugFromEmail = email.split('@')[0]?.toLowerCase() ?? ''
-  const usernameSlug = slugFromEmail || slugFromName
-
-  const profile = await prismaApp.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      firstName: true,
-      lastName: true,
-    },
-  })
+  const usernameSlug = slugFromName || slugFromEmail
 
   const firstName = profile?.firstName ?? '-'
   const lastName = profile?.lastName ?? '-'

@@ -24,7 +24,7 @@ export async function middleware(request: NextRequest) {
 
   if (adminRoutes.some(route => pathname.startsWith(route))) {
     if (!token || token.role !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+      return NextResponse.redirect(new URL('/bankacc', request.url))
     }
     
     if (pathname === '/admin') {
@@ -38,7 +38,7 @@ export async function middleware(request: NextRequest) {
       if (token.role === 'ADMIN') {
         return NextResponse.redirect(new URL('/admin/dashboard', request.url))
       }
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+      return NextResponse.redirect(new URL('/bankacc', request.url))
     }
   }
   
@@ -47,7 +47,10 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/dashboard/:path*',
+    '/bankacc/:path*',
+    '/favstock/:path*',
+    '/buying-stock/:path*',
+    '/my-stock/:path*',
     '/setting/:path*',
     '/login',
     '/register',
