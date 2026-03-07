@@ -51,16 +51,16 @@ describe('Middleware', () => {
   })
 
 
-  it('redirects unauthenticated user from /admin to /dashboard', async () => {
+  it('redirects unauthenticated user from /admin to /bankacc', async () => {
     mockGetToken.mockResolvedValue(null)
     const res = await middleware(createRequest('/admin/dashboard'))
-    expect(res.headers.get('location')).toContain('/dashboard')
+    expect(res.headers.get('location')).toContain('/bankacc')
   })
 
-  it('redirects USER from /admin to /dashboard', async () => {
+  it('redirects USER from /admin to /bankacc', async () => {
     mockGetToken.mockResolvedValue({ role: 'USER', email: 'user@test.com' })
     const res = await middleware(createRequest('/admin'))
-    expect(res.headers.get('location')).toContain('/dashboard')
+    expect(res.headers.get('location')).toContain('/bankacc')
   })
 
   it('redirects ADMIN from /admin to /admin/dashboard', async () => {
@@ -88,10 +88,10 @@ describe('Middleware', () => {
     expect(res.status).toBe(200)
   })
 
-  it('redirects logged in USER from /login to /dashboard', async () => {
+  it('redirects logged in USER from /login to /bankacc', async () => {
     mockGetToken.mockResolvedValue({ role: 'USER', email: 'user@test.com' })
     const res = await middleware(createRequest('/login'))
-    expect(res.headers.get('location')).toContain('/dashboard')
+    expect(res.headers.get('location')).toContain('/bankacc')
   })
 
   it('redirects logged in ADMIN from /login to /admin/dashboard', async () => {
@@ -100,9 +100,9 @@ describe('Middleware', () => {
     expect(res.headers.get('location')).toContain('/admin/dashboard')
   })
 
-  it('redirects logged in USER from /register to /dashboard', async () => {
+  it('redirects logged in USER from /register to /bankacc', async () => {
     mockGetToken.mockResolvedValue({ role: 'USER', email: 'user@test.com' })
     const res = await middleware(createRequest('/register'))
-    expect(res.headers.get('location')).toContain('/dashboard')
+    expect(res.headers.get('location')).toContain('/bankacc')
   })
 })
