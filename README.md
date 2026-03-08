@@ -61,3 +61,41 @@ http://localhost:3000
 - `npm run test` - Run tests once using Vitest.
 - `npm run test:watch` - Run Vitest in watch mode.
 - `npm run test:coverage` - Run test coverage.
+
+## Run With Docker
+
+### Prerequisites
+
+- Docker Engine and Docker Compose installed.
+- A valid `.env` file for the Next.js app.
+
+### Start all services (web + MongoDB + MySQL)
+
+```bash
+docker compose up --build -d
+```
+
+Then open:
+
+```text
+http://localhost:3000
+```
+
+### Stop services
+
+```bash
+docker compose down
+```
+
+### View logs
+
+```bash
+docker compose logs -f web
+```
+
+### Notes for this repository
+
+- The current `docker-compose.yml` expects the web app at `./project/eose888-main` and env file at `./project/eose888-main/.env`.
+- If your local path is this repository root, set `build.context` to `.` and `env_file` to `./.env`.
+- MySQL is exposed at host port `800` and MongoDB at host port `801`.
+- The web app is exposed on `127.0.0.1:3000`.
