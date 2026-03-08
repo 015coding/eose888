@@ -57,10 +57,7 @@ http://localhost:3000
 - `npm run dev` - Run stock sync scripts and Next.js development server.
 - `npm run build` - Build the application for production.
 - `npm run start` - Start the production server.
-- `npm run lint` - Run ESLint checks.
 - `npm run test` - Run tests once using Vitest.
-- `npm run test:watch` - Run Vitest in watch mode.
-- `npm run test:coverage` - Run test coverage.
 
 ## Run With Docker
 
