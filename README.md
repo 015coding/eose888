@@ -92,7 +92,7 @@ docker compose logs -f web
 
 ### Notes for this repository
 
-- The current `docker-compose.yml` expects the web app at `./project/eose888-main` and env file at `./project/eose888-main/.env`.
+- The current `docker-compose.yml` expects the web app at `.` and env file at `.env`.
 - If your local path is this repository root, set `build.context` to `.` and `env_file` to `./.env`.
 - MySQL is exposed at host port `800` and MongoDB at host port `801`.
 - The web app is exposed on `127.0.0.1:3000`.
