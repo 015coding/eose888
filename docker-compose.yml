@@ -1,0 +1,52 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: example_password 
+    ports:
+      - "801:27017"
+    volumes:
+      - ~/docker-data/mongodb:/data/db
+    networks:
+      - app-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    security_opt:
+      - apparmor=unconfined
+    environment:
+      MYSQL_ROOT_PASSWORD: example_root_password
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: example_user_password
+    ports:
+      - "800:3306"
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    networks:
+      - app-network
+
+  web:
+    build:
+      context: ./project/eose888-main
+      dockerfile: Dockerfile
+    container_name: eose888-web
+    restart: unless-stopped
+    env_file:
+      - ./project/eose888-main/.env
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - mongodb
+      - mysql
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
