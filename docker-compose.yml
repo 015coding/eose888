@@ -33,12 +33,12 @@ services:
 
   web:
     build:
-      context: ./project/eose888-main
+      context: .
       dockerfile: Dockerfile
     container_name: eose888-web
     restart: unless-stopped
     env_file:
-      - ./project/eose888-main/.env
+      - .env
     ports:
       - "127.0.0.1:3000:3000"
     depends_on:
